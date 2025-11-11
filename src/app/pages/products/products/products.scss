@@ -1,0 +1,37 @@
+.wrap {
+  max-width: 900px;
+  margin: 24px auto;
+  color: #eee;
+  font-family: system-ui, Arial;
+}
+
+.info {
+  margin: 12px 0;
+}
+
+.err {
+  margin: 12px 0;
+  background: #3a1616;
+  border: 1px solid #7a2b2b;
+  color: #ffc0c0;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.card {
+  background: #181818;
+  border: 1px solid #262626;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.price {
+  font-weight: 600;
+  margin-top: 10px;
+}
