@@ -1,10 +1,62 @@
-<div class="admin-wrapper">
-  <h1>Enoch Leathercraft – Admin</h1>
-  <p>Bienvenue dans le tableau de bord administrateur.</p>
+<div class="admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Dashboard administrateur</h1>
+      <p class="subtitle">
+        Gestion des produits Enoch Leathercraft
+      </p>
+    </div>
 
-  <ul>
-    <li>Gérer les produits</li>
-    <li>Voir les commandes</li>
-    <li>Gérer les utilisateurs</li>
-  </ul>
+    <div class="admin-actions">
+      <button disabled title="Fonctionnalité à venir">
+        + Ajouter un produit
+      </button>
+      <a routerLink="/products" class="link-back">Retour à la boutique</a>
+    </div>
+  </div>
+
+  <!-- chargement -->
+  <div *ngIf="loading" class="panel">
+    Chargement des produits...
+  </div>
+
+  <!-- erreur -->
+  <div *ngIf="error" class="panel error">
+    {{ error }}
+  </div>
+
+  <!-- contenu -->
+  <div *ngIf="!loading && !error" class="panel">
+    <!-- tableau si produits -->
+    <table
+      class="product-table"
+      *ngIf="products && products.length > 0"
+    >
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Description</th>
+        <th>Prix</th>
+        <th>SKU</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let p of products">
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}</td>
+        <td class="desc">
+          {{ p.description }}
+        </td>
+        <td>{{ p.price | currency:'EUR' }}</td>
+        <td>{{ p.sku }}</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- message si pas de produits -->
+    <p *ngIf="products && products.length === 0">
+      Aucun produit trouvé pour le moment.
+    </p>
+  </div>
 </div>

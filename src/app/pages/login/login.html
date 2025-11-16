@@ -3,22 +3,37 @@
     <h1>Connexion</h1>
     <p class="subtitle">Ravi de te revoir 😊</p>
 
+    <!-- LE POINT IMPORTANT -->
     <form (ngSubmit)="onSubmit()">
       <div class="form-group">
-        <label>Email ou pseudo</label>
-        <input type="text" [(ngModel)]="identifier" name="identifier" required />
+        <label for="identifier">Email ou pseudo</label>
+        <input
+          id="identifier"
+          name="identifier"
+          type="text"
+          [(ngModel)]="identifier"
+          required
+        />
       </div>
 
       <div class="form-group">
-        <label>Mot de passe</label>
-        <input type="password" [(ngModel)]="password" name="password" required />
+        <label for="password">Mot de passe</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          required
+        />
       </div>
 
-      <button type="submit">Se connecter</button>
+      <!-- IMPORTANT : type="submit" -->
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Connexion...' : 'Se connecter' }}
+      </button>
 
       <p class="error" *ngIf="error">{{ error }}</p>
 
-      <!-- ⭐ Lien vers register -->
       <p class="switch-link">
         Pas encore de compte ?
         <a routerLink="/register">Créer un compte</a>

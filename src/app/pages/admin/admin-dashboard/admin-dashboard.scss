@@ -1,0 +1,99 @@
+.admin-page {
+  min-height: 100vh;
+  padding: 2rem 3rem;
+  background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+  color: #e5e7eb;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    margin: 0.25rem 0 0;
+    color: #9ca3af;
+    font-size: 0.9rem;
+  }
+}
+
+.admin-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+
+  button {
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #f9fafb;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .link-back {
+    font-size: 0.85rem;
+    color: #93c5fd;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.panel {
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+  font-size: 0.9rem;
+
+  &.error {
+    border-color: rgba(248, 113, 113, 0.7);
+    color: #fecaca;
+  }
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+  }
+
+  th {
+    text-align: left;
+    font-weight: 600;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  tbody tr:hover {
+    background: rgba(30, 64, 175, 0.25);
+  }
+
+  .desc {
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
