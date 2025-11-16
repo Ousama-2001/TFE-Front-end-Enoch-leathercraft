@@ -1,32 +1,45 @@
+// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';   // *ngIf
-import { FormsModule } from '@angular/forms';     // ngModel
-import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.scss']
+  styleUrls: ['./login.scss'],
 })
 export class LoginComponent {
-  email = '';
+  identifier = ''; // email OU pseudo
   password = '';
-  loading = false;
+
   error = '';
+  loading = false;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-  submit() {
+  onSubmit() {
     this.loading = true;
     this.error = '';
-    this.auth.login(this.email, this.password).subscribe({
-      next: () => (this.loading = false),
-      error: (e) => {
+
+    this.auth.login(this.identifier, this.password).subscribe({
+      next: (res) => {
         this.loading = false;
-        this.error = e?.error?.message || 'Email ou mot de passe incorrect';
+        this.auth.setSession(res);
+
+        if (this.auth.isAdmin()) {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/products']);
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Login error', err);
+        this.error = 'Identifiants incorrects.';
       },
     });
   }

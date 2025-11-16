@@ -1,25 +1,59 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+export interface AuthResponse {
+  token: string;
+  role: string;
+}
+
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthService {
-  constructor(private http: HttpClient, private router: Router) {}
+  private apiUrl = 'http://localhost:8080/api/auth';
+  private tokenKey = 'auth_token';
+  private roleKey = 'auth_role';
 
-  register(data: {email:string; password:string; firstName:string; lastName:string; username?:string}) {
-    return this.http.post<{token:string}>(`/api/auth/register`, data).pipe(
-      tap(res => { localStorage.setItem('token', res.token); this.router.navigateByUrl('/'); })
-    );
+  constructor(private http: HttpClient) {}
+
+  register(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+  }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
   }
 
-  login(email: string, password: string) {
-    return this.http.post<{token:string}>(`/api/auth/login`, { email, password }).pipe(
-      tap(res => { localStorage.setItem('token', res.token); this.router.navigateByUrl('/'); })
-    );
+  login(identifier: string, password: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
+      identifier,
+      password,
+    });
   }
 
-  logout(){ localStorage.removeItem('token'); this.router.navigateByUrl('/login'); }
-  get token(){ return localStorage.getItem('token'); }
-  isLoggedIn(){ return !!this.token; }
+  setSession(res: AuthResponse) {
+    localStorage.setItem(this.tokenKey, res.token);
+    localStorage.setItem(this.roleKey, res.role);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  getRole(): string | null {
+    return localStorage.getItem(this.roleKey);
+  }
+
+  isAdmin(): boolean {
+    return this.getRole() === 'ADMIN';
+  }
+
+  logout() {
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
+  }
 }
