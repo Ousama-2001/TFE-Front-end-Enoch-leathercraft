@@ -6,67 +6,36 @@
     <form (ngSubmit)="onSubmit()">
       <div class="form-row two-cols">
         <div class="form-group">
-          <label for="firstName">Prénom</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            [(ngModel)]="firstName"
-            required
-          />
+          <label>Prénom</label>
+          <input type="text" [(ngModel)]="firstName" name="firstName" required />
         </div>
 
         <div class="form-group">
-          <label for="lastName">Nom</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            [(ngModel)]="lastName"
-            required
-          />
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="lastName" name="lastName" required />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="username">Pseudo</label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          [(ngModel)]="username"
-          required
-        />
+        <label>Pseudo</label>
+        <input type="text" [(ngModel)]="username" name="username" required />
       </div>
 
       <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          [(ngModel)]="email"
-          required
-        />
+        <label>Email</label>
+        <input type="email" [(ngModel)]="email" name="email" required />
       </div>
 
       <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          [(ngModel)]="password"
-          required
-        />
+        <label>Mot de passe</label>
+        <input type="password" [(ngModel)]="password" name="password" required />
       </div>
 
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Création en cours...' : "S'inscrire" }}
-      </button>
+      <button type="submit">S'inscrire</button>
 
       <p class="error" *ngIf="error">{{ error }}</p>
 
+      <!-- ⭐ Lien vers login -->
       <p class="switch-link">
         Déjà un compte ?
         <a routerLink="/login">Se connecter</a>

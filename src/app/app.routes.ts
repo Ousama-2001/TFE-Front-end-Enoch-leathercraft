@@ -6,10 +6,9 @@ import { ProductsComponent } from './pages/products/products';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'products', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'products', component: ProductsComponent },
-  { path: 'admin', component: AdminDashboardComponent }, // on sécurisera plus tard
-  { path: '**', redirectTo: 'products' },
+  { path: 'admin', component: AdminDashboardComponent },
+  { path: '', redirectTo: 'products', pathMatch: 'full' },
 ];
