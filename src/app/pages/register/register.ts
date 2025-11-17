@@ -1,9 +1,12 @@
-// src/app/pages/register/register.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { Router, RouterLink } from '@angular/router';
+import {
+  AuthService,
+  RegisterRequest,
+  LoginResponse,
+} from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -13,47 +16,39 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./register.scss'],
 })
 export class RegisterComponent {
-  email = '';
-  password = '';
   firstName = '';
   lastName = '';
   username = '';
-
+  email = '';
+  password = '';
   error = '';
-  loading = false;
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  onSubmit() {
-    this.loading = true;
+  onSubmit(): void {
     this.error = '';
 
-    this.auth
-      .register({
-        email: this.email,
-        password: this.password,
-        firstName: this.firstName,
-        lastName: this.lastName,
-        username: this.username,
-      })
-      .subscribe({
-        next: (res) => {
-          this.loading = false;
-          this.auth.setSession(res);
-          this.router.navigate(['/products']);
-        },
-        error: (err) => {
-          this.loading = false;
-          console.error('Register error', err);
+    const payload: RegisterRequest = {
+      firstName: this.firstName,
+      lastName: this.lastName,
+      username: this.username,
+      email: this.email,
+      password: this.password,
+    };
 
-          if (err.status === 409 && err.error?.message === 'EMAIL_ALREADY_USED') {
-            this.error = 'Cet email est déjà utilisé.';
-          } else if (err.status === 409 && err.error?.message === 'USERNAME_ALREADY_USED') {
-            this.error = 'Ce pseudo est déjà utilisé.';
-          } else {
-            this.error = "Inscription impossible.";
-          }
-        },
-      });
+    this.auth.register(payload).subscribe({
+      next: (res: LoginResponse) => {
+        console.log('REGISTER success', res);
+        if (res.role === 'ADMIN') {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/products']);
+        }
+      },
+      error: (err: any) => {
+        console.error('REGISTER error', err);
+        this.error = "Inscription impossible. Vérifie les données.";
+      },
+    });
   }
 }

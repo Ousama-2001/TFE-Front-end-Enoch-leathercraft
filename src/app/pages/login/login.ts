@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, LoginResponse } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -12,41 +12,38 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./login.scss'],
 })
 export class LoginComponent {
-  identifier = ''; // email OU pseudo
+  identifier = '';
   password = '';
   error = '';
-  loading = false;
+  loading = false;              // 👈 AJOUT
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  onSubmit() {
-    console.log('LOGIN submit', this.identifier, this.password); // debug
-
-    if (!this.identifier || !this.password) {
-      this.error = 'Veuillez remplir tous les champs.';
-      return;
-    }
-
-    this.loading = true;
+  onSubmit(): void {
     this.error = '';
+    this.loading = true;        // 👈 on bloque le bouton
 
-    this.auth.login(this.identifier, this.password).subscribe({
-      next: (res) => {
-        console.log('LOGIN success', res); // debug
-        this.loading = false;
-        this.auth.setSession(res);
+    this.auth
+      .login({
+        identifier: this.identifier,
+        password: this.password,
+      })
+      .subscribe({
+        next: (res: LoginResponse) => {
+          console.log('LOGIN success', res);
+          this.loading = false; // 👈 on réactive le bouton
 
-        if (this.auth.isAdmin()) {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/products']);
-        }
-      },
-      error: (err) => {
-        console.error('LOGIN error', err);
-        this.loading = false;
-        this.error = 'Identifiants incorrects.';
-      },
-    });
+          if (res.role === 'ADMIN') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/products']);
+          }
+        },
+        error: (err: any) => {
+          console.error('LOGIN error', err);
+          this.error = 'Identifiants incorrects.';
+          this.loading = false; // 👈 on réactive aussi en cas d’erreur
+        },
+      });
   }
 }

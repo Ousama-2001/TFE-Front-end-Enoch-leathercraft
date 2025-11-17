@@ -1,3 +1,5 @@
+/* ========= PAGE GENERALE ========= */
+
 .admin-page {
   min-height: 100vh;
   padding: 2rem 3rem;
@@ -5,6 +7,8 @@
   color: #e5e7eb;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* ========= HEADER ========= */
 
 .admin-header {
   display: flex;
@@ -25,40 +29,34 @@
   }
 }
 
+/* Boutons header */
+
 .admin-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: center;
+}
 
-  .primary {
-    padding: 0.55rem 1.1rem;
-    border-radius: 999px;
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: #f9fafb;
-    cursor: pointer;
-    box-shadow: 0 12px 30px rgba(236, 72, 153, 0.35);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+.admin-actions .primary {
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: #f9fafb;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(236, 72, 153, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 
-    &:hover {
-      transform: translateY(-1px);
-      opacity: 0.95;
-      box-shadow: 0 18px 45px rgba(236, 72, 153, 0.45);
-    }
-  }
-
-  .link-back {
-    font-size: 0.85rem;
-    color: #93c5fd;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
+  &:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+    box-shadow: 0 18px 45px rgba(236, 72, 153, 0.45);
   }
 }
+
+/* ========= PANELS ========= */
 
 .panel {
   background: rgba(15, 23, 42, 0.98);
@@ -76,107 +74,102 @@
   }
 }
 
-/* ---- Create product panel ---- */
+/* ========= FORMULAIRE CREATE / EDIT ========= */
 
-.create-panel {
-  .create-header {
-    margin-bottom: 1rem;
+.create-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
 
-    h2 {
-      margin: 0;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
+.create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-    p {
-      margin: 0.25rem 0 0;
-      font-size: 0.85rem;
-      color: #9ca3af;
-    }
-  }
+.form-row {
+  display: grid;
+  gap: 1rem;
 
-  .create-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-  }
-
-  .form-row.two-cols {
-    display: grid;
+  &.two-cols {
     grid-template-columns: 1.1fr 0.9fr;
-    gap: 0.9rem;
   }
 
-  .form-row.three-cols {
-    display: grid;
+  &.three-cols {
     grid-template-columns: 0.7fr 0.7fr 1.1fr;
-    gap: 0.9rem;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    font-size: 0.8rem;
+    color: #cbd5f5;
   }
 
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  input,
+  textarea {
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.7rem;
+    border: 1px solid #1f2937;
+    background: #020617;
+    color: #f9fafb;
+    font-size: 0.86rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
-    label {
-      font-size: 0.8rem;
-      color: #cbd5f5;
+    &::placeholder {
+      color: #6b7280;
     }
 
-    input,
-    textarea {
-      padding: 0.5rem 0.7rem;
-      border-radius: 0.7rem;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #f9fafb;
-      font-size: 0.86rem;
-      outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-      &::placeholder {
-        color: #6b7280;
-      }
-
-      &:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
-      }
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
+    &:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
     }
   }
 
-  .form-footer {
-    margin-top: 0.4rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
 
-    .checkbox-inline {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      color: #e5e7eb;
+.form-footer {
+  margin-top: 0.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 
-      input {
-        width: auto;
-      }
+  .primary {
+    padding: 10px 26px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    background: linear-gradient(90deg, #a855f7, #ec4899);
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(236, 72, 153, 0.5);
+      opacity: 0.95;
     }
 
-    .primary {
-      padding-inline: 1.4rem;
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 18px rgba(236, 72, 153, 0.35);
     }
   }
 }
 
-/* ---- Table ---- */
+/* ========= TABLEAU PRODUITS ========= */
 
 .section-title {
   margin: 0 0 0.75rem;
@@ -216,73 +209,11 @@
   }
 }
 
-.link-delete {
-  border: none;
-  background: transparent;
-  color: #f97373;
-  font-size: 0.8rem;
-  cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
-}
-/* ---------- Buttons ---------- */
-
-.btn-edit,
-.btn-delete {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
-  transition: 0.2s ease-in-out;
-  font-weight: 600;
-}
-
-/* EDIT BUTTON */
-.btn-edit {
-  background-color: #0d6efd; /* bleu bootstrap */
-  color: white;
-}
-
-.btn-edit:hover {
-  background-color: #0b5ed7;
-}
-
-/* DELETE BUTTON */
-.btn-delete {
-  background-color: #dc3545; /* rouge bootstrap */
-  color: white;
-  margin-left: 10px;
-}
-
-.btn-delete:hover {
-  background-color: #bb2d3b;
-}
-
-/* ACTIONS COLUMN */
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.actions-col {
-  width: 150px;
-}
-
-/* Table row hover */
-.product-table tbody tr:hover {
-  background: #f8f9fa;
-}
-/* ---------- Actions dans le tableau ---------- */
-
-.actions-col {
-  width: 180px;
-}
+/* ========= ACTION BUTTONS ========= */
 
 .actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-start;
 }
 
 .btn-edit,
@@ -294,42 +225,55 @@
   border: none;
   transition: 0.2s ease-in-out;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
-/* edit bleu */
+/* edit = bleu */
 .btn-edit {
   background-color: #0d6efd;
   color: #fff;
+
+  &:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-1px);
+  }
 }
 
-.btn-edit:hover {
-  background-color: #0b5ed7;
-  transform: translateY(-1px);
-}
-
-/* delete rouge */
+/* delete = rouge */
 .btn-delete {
   background-color: #dc3545;
   color: #fff;
+
+  &:hover {
+    background-color: #bb2d3b;
+    transform: translateY(-1px);
+  }
 }
 
-.btn-delete:hover {
-  background-color: #bb2d3b;
-  transform: translateY(-1px);
-}
-
-/* ---------- Ligne en édition ---------- */
+/* ========= LIGNE EN EDITION ========= */
 
 .editing-row {
-  background: rgba(59, 130, 246, 0.12) !important; // bleu très léger
-  box-shadow: inset 3px 0 0 #3b82f6;               // petit trait bleu à gauche
+  background: rgba(59, 130, 246, 0.15) !important;
+  box-shadow: inset 3px 0 0 #3b82f6;
 }
 
+/* ========= SUPPRESSION DE LA LIGNE BLANCHE AU CLIC ========= */
 
-/* ---------- Popup de confirmation ---------- */
+.product-table tr,
+.product-table tr * {
+  outline: none !important;
+}
+
+.product-table tr:focus,
+.product-table tr:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.product-table tr:focus-within td {
+  border-bottom-color: rgba(31, 41, 55, 0.9) !important;
+}
+
+/* ========= POPUP SUPPRESSION ========= */
 
 .modal-overlay {
   position: fixed;
@@ -347,9 +291,8 @@
   padding: 20px 24px;
   max-width: 380px;
   width: 90%;
-  box-shadow:
-    0 18px 45px rgba(15, 23, 42, 0.35),
-    0 0 0 1px rgba(148, 163, 184, 0.35);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35),
+  0 0 0 1px rgba(148, 163, 184, 0.35);
   animation: modal-in 0.18s ease-out;
 }
 
@@ -383,22 +326,21 @@
 .btn-cancel {
   background: #e5e7eb;
   color: #111827;
-}
 
-.btn-cancel:hover {
-  background: #d1d5db;
+  &:hover {
+    background: #d1d5db;
+  }
 }
 
 .btn-confirm-delete {
   background: #dc2626;
   color: white;
+
+  &:hover {
+    background: #b91c1c;
+  }
 }
 
-.btn-confirm-delete:hover {
-  background: #b91c1c;
-}
-
-/* petite anim d'apparition */
 @keyframes modal-in {
   from {
     opacity: 0;
@@ -409,28 +351,119 @@
     transform: translateY(0) scale(1);
   }
 }
-/* Bouton principal (Créer / Mettre à jour) dans le formulaire */
-.form-footer .primary {
+/* ====== BOUTON DECONNEXION ====== */
+button.logout {
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
   border: none;
-  padding: 10px 26px;
+  background: #ef4444;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+  transition: 0.15s ease-in-out;
+
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(239, 68, 68, 0.55);
+  }
+}
+.modal-overlay {
+  cursor: pointer;
+}
+
+.modal {
+  cursor: default;
+}
+
+/* ------ POPUP SUPPRESSION (DARK THEME) ------ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  cursor: pointer;
+}
+
+.modal {
+  cursor: default;
+  background: #0f172a; /* bleu nuit */
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 20px;
+  padding: 25px 28px;
+  width: 420px;
+  color: #e5e7eb;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  animation: modal-in 0.18s ease-out;
+}
+
+.modal h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.modal p {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.modal strong {
+  color: #f472b6;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancel {
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  padding: 8px 18px;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 14px;
   cursor: pointer;
-  background: linear-gradient(90deg, #a855f7, #ec4899);
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transition: 0.15s ease-out;
 }
 
-.form-footer .primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(236, 72, 153, 0.5);
-  opacity: 0.95;
+.btn-cancel:hover {
+  background: #475569;
 }
 
-.form-footer .primary:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.35);
+.btn-confirm-delete {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s ease-out;
 }
 
+.btn-confirm-delete:hover {
+  background: #b91c1c;
+}
+
+/* Animation */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

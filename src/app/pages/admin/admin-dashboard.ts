@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-
+import { AuthService } from '../../services/auth.service'; // <- ajoute ça
 import {
   ProductService,
   Product,
@@ -12,7 +12,7 @@ import {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -42,7 +42,11 @@ export class AdminDashboardComponent implements OnInit {
     slug: '',
   };
 
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private auth: AuthService // <- injecte ici
+  ) {}
+
 
   ngOnInit(): void {
     this.loadProducts();
@@ -66,7 +70,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   toggleCreateForm(): void {
-    if (this.showCreateForm && this.editingProductId !== null) {
+    if (this.editingProductId !== null) {
       this.resetForm();
     } else {
       this.showCreateForm = !this.showCreateForm;
@@ -174,6 +178,9 @@ export class AdminDashboardComponent implements OnInit {
       currency: 'EUR',
       slug: '',
     };
+  }
+  onLogout(): void {
+    this.auth.logout();
   }
 
   // ---------- suppression avec popup ----------

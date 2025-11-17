@@ -1,7 +1,27 @@
-body {
-  background: #111;
-  color: #eee;
-  font-family: system-ui, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: #050816;
+}
+
+.nav-left a {
+  margin-right: 1rem;
+}
+
+.nav-logout {
+  padding: 0.4rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid #ff4b5c;
+  background: transparent;
+  color: #ff4b5c;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #ff4b5c;
+    color: #fff;
+  }
 }

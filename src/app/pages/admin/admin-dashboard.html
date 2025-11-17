@@ -7,186 +7,125 @@
 
     <div class="admin-actions">
       <button class="primary" (click)="toggleCreateForm()">
-        {{ showCreateForm
-        ? 'Fermer le formulaire'
-        : (editingProductId === null ? '+ Ajouter un produit' : 'Annuler la modification')
-        }}
+        {{ editingProductId ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
       </button>
-      <a routerLink="/products" class="link-back">Retour à la boutique</a>
+      <button class="secondary logout" (click)="onLogout()">
+        🔓 Déconnexion
+      </button>
     </div>
   </div>
 
-  <!-- formulaire -->
+  <!-- Formulaire création / édition -->
   <div class="panel create-panel" *ngIf="showCreateForm">
-    <div class="create-header">
-      <h2>{{ editingProductId === null ? 'Nouveau produit' : 'Modifier le produit' }}</h2>
-      <p>Renseigne les informations principales du produit.</p>
-    </div>
+    <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
 
     <form (ngSubmit)="submitForm()" class="create-form">
       <div class="form-row two-cols">
         <div class="form-group">
           <label>Nom *</label>
-          <input
-            type="text"
-            [(ngModel)]="newProduct.name"
-            name="name"
-            required
-            placeholder="Sac en cuir vintage"
-          />
+          <input type="text" [(ngModel)]="newProduct.name" name="name" required />
         </div>
 
         <div class="form-group">
           <label>SKU *</label>
-          <input
-            type="text"
-            [(ngModel)]="newProduct.sku"
-            name="sku"
-            required
-            placeholder="SKU-ENCH-001"
-          />
+          <input type="text" [(ngModel)]="newProduct.sku" name="sku" required />
         </div>
       </div>
 
       <div class="form-row three-cols">
         <div class="form-group">
-          <label>Prix (€) *</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            [(ngModel)]="newProduct.price"
-            name="price"
-            required
-            placeholder="129.90"
-          />
+          <label>Prix (€)</label>
+          <input type="number" step="0.01" [(ngModel)]="newProduct.price" name="price" />
         </div>
 
         <div class="form-group">
           <label>Poids (g)</label>
-          <input
-            type="number"
-            min="0"
-            [(ngModel)]="newProduct.weightGrams"
-            name="weightGrams"
-            placeholder="750"
-          />
+          <input type="number" [(ngModel)]="newProduct.weightGrams" name="weightGrams" />
         </div>
 
         <div class="form-group">
           <label>Matériau</label>
-          <input
-            type="text"
-            [(ngModel)]="newProduct.material"
-            name="material"
-            placeholder="Cuir pleine fleur"
-          />
+          <input type="text" [(ngModel)]="newProduct.material" name="material" />
         </div>
       </div>
 
       <div class="form-group">
         <label>Description</label>
-        <textarea
-          rows="3"
-          [(ngModel)]="newProduct.description"
-          name="description"
-          placeholder="Décris brièvement le style, les poches, la finition..."
-        ></textarea>
+        <textarea rows="3" [(ngModel)]="newProduct.description" name="description"></textarea>
       </div>
 
       <div class="form-footer">
-        <label class="checkbox-inline">
-          <input
-            type="checkbox"
-            [(ngModel)]="newProduct.isActive"
-            name="isActive"
-          />
-          Produit actif (visible dans la boutique)
+        <label>
+          <input type="checkbox" [(ngModel)]="newProduct.isActive" name="isActive" />
+          Produit actif
         </label>
 
         <button type="submit" class="primary">
-          {{ editingProductId === null ? 'Créer le produit' : 'Mettre à jour le produit' }}
+          {{ editingProductId ? 'Mettre à jour le produit' : 'Créer le produit' }}
         </button>
       </div>
     </form>
   </div>
 
-  <!-- messages -->
-  <div *ngIf="loading" class="panel">
-    Chargement des produits...
-  </div>
-
-  <div *ngIf="error" class="panel error">
-    {{ error }}
-  </div>
-
-  <!-- tableau -->
-  <div *ngIf="!loading && !error" class="panel">
+  <!-- Tableau -->
+  <div class="panel">
     <h2 class="section-title">Produits existants</h2>
 
-    <table class="product-table" *ngIf="products && products.length > 0">
+    <table class="product-table" *ngIf="products.length > 0">
       <thead>
       <tr>
         <th>ID</th>
-        <th>Nom</th>
-        <th>Description</th>
-        <th>Prix</th>
+        <th>NOM</th>
+        <th>DESCRIPTION</th>
+        <th>PRIX</th>
         <th>SKU</th>
-        <th class="actions-col">Actions</th>
+        <th>ACTIONS</th>
       </tr>
       </thead>
 
       <tbody>
-      <tr
-        *ngFor="let p of products"
-        [class.editing-row]="editingProductId === p.id"
-      >
+      <tr *ngFor="let p of products" [class.editing-row]="editingProductId === p.id">
         <td>{{ p.id }}</td>
         <td>{{ p.name }}</td>
-        <td class="desc">{{ p.description }}</td>
-        <td>{{ p.price | currency: 'EUR' }}</td>
+        <td>{{ p.description }}</td>
+        <td>{{ p.price | currency:'EUR' }}</td>
         <td>{{ p.sku }}</td>
 
         <td class="actions">
-          <button class="btn-edit" (click)="startEdit(p)">
-            ✏️ Modifier
-          </button>
-          <button class="btn-delete" (click)="openDeleteConfirm(p)">
-            🗑️ Supprimer
-          </button>
+          <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
+          <button class="btn-delete" (click)="openDeleteConfirm(p)">🗑️ Supprimer</button>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <p *ngIf="products && products.length === 0">
-      Aucun produit trouvé pour le moment.
-    </p>
-
-
-
-    <p *ngIf="products && products.length === 0">
-      Aucun produit trouvé pour le moment.
+    <p *ngIf="products.length === 0">
+      Aucun produit trouvé.
     </p>
   </div>
-  <!-- Popup de confirmation de suppression -->
-  <div class="modal-overlay" *ngIf="showDeleteConfirm">
-    <div class="modal">
+
+  <!-- Popup suppression -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal" (click)=" $event.stopPropagation() ">
       <h3>Confirmer la suppression</h3>
-      <p>
-        Es-tu sûr de vouloir supprimer le produit
-        <strong>{{ deleteTargetName }}</strong> ?
-      </p>
+      <p>Supprimer <strong>{{ deleteTargetName }}</strong> ?</p>
 
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelDelete()">
-          Annuler
-        </button>
-        <button type="button" class="btn-confirm-delete" (click)="confirmDelete()">
-          Oui, supprimer
-        </button>
+        <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, supprimer</button>
       </div>
     </div>
   </div>
+  <!-- Popup suppression -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal" (click)=" $event.stopPropagation() ">
+      <h3>Confirmer la suppression</h3>
+      <p>Supprimer <strong>{{ deleteTargetName }}</strong> ?</p>
 
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+        <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, supprimer</button>
+      </div>
+    </div>
+  </div>
 </div>

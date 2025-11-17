@@ -1,67 +1,79 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { Observable, tap } from 'rxjs';
 
-export interface AuthResponse {
+export interface LoginRequest {
+  identifier: string; // email ou pseudo
+  password: string;
+}
+
+export interface RegisterRequest {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
   token: string;
-  role: string;
+  role: 'ADMIN' | 'CUSTOMER';
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
-  private tokenKey = 'auth_token';
-  private roleKey = 'auth_role';
+  private readonly tokenKey = 'auth_token';
+  private readonly roleKey = 'auth_role';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
-  register(data: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-  }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
+  // LOGIN
+  login(payload: LoginRequest): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>('http://localhost:8080/api/auth/login', payload)
+      .pipe(
+        tap((res) => {
+          this.setSession(res);
+        })
+      );
   }
 
-  login(identifier: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
-      identifier,
-      password,
-    });
+  // REGISTER
+  register(payload: RegisterRequest): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>('http://localhost:8080/api/auth/register', payload)
+      .pipe(
+        tap((res) => {
+          this.setSession(res);
+        })
+      );
   }
 
-  setSession(res: AuthResponse) {
+  // stocke token + role
+  private setSession(res: LoginResponse): void {
     localStorage.setItem(this.tokenKey, res.token);
     localStorage.setItem(this.roleKey, res.role);
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
+  logout(): void {
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
+    this.router.navigate(['/login']);
   }
 
-  getRole(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
 
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload['role'] || null; // "ADMIN" ou "CUSTOMER"
-    } catch {
-      return null;
-    }
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 
   isAdmin(): boolean {
-    return this.getRole() === 'ADMIN';
+    return localStorage.getItem(this.roleKey) === 'ADMIN';
   }
 
-  logout() {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.roleKey);
-  }
 }

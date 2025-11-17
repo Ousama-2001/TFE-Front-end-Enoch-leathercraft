@@ -1,1 +1,16 @@
+<nav class="main-nav" *ngIf="!isAdminRoute()">
+  <div class="nav-left">
+    <a routerLink="/register" routerLinkActive="active">Register</a>
+    <a routerLink="/products" routerLinkActive="active">Products</a>
+  </div>
+
+  <button
+    class="nav-logout"
+    *ngIf="auth.isAuthenticated()"
+    (click)="onLogout()"
+  >
+    Déconnexion
+  </button>
+</nav>
+
 <router-outlet></router-outlet>
