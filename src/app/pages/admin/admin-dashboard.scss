@@ -225,3 +225,212 @@
   padding: 0;
   text-decoration: underline;
 }
+/* ---------- Buttons ---------- */
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease-in-out;
+  font-weight: 600;
+}
+
+/* EDIT BUTTON */
+.btn-edit {
+  background-color: #0d6efd; /* bleu bootstrap */
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #0b5ed7;
+}
+
+/* DELETE BUTTON */
+.btn-delete {
+  background-color: #dc3545; /* rouge bootstrap */
+  color: white;
+  margin-left: 10px;
+}
+
+.btn-delete:hover {
+  background-color: #bb2d3b;
+}
+
+/* ACTIONS COLUMN */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions-col {
+  width: 150px;
+}
+
+/* Table row hover */
+.product-table tbody tr:hover {
+  background: #f8f9fa;
+}
+/* ---------- Actions dans le tableau ---------- */
+
+.actions-col {
+  width: 180px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s ease-in-out;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* edit bleu */
+.btn-edit {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-edit:hover {
+  background-color: #0b5ed7;
+  transform: translateY(-1px);
+}
+
+/* delete rouge */
+.btn-delete {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #bb2d3b;
+  transform: translateY(-1px);
+}
+
+/* ---------- Ligne en édition ---------- */
+
+.editing-row {
+  background: rgba(59, 130, 246, 0.12) !important; // bleu très léger
+  box-shadow: inset 3px 0 0 #3b82f6;               // petit trait bleu à gauche
+}
+
+
+/* ---------- Popup de confirmation ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(148, 163, 184, 0.35);
+  animation: modal-in 0.18s ease-out;
+}
+
+.modal h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.modal p {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancel,
+.btn-confirm-delete {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+.btn-confirm-delete {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-confirm-delete:hover {
+  background: #b91c1c;
+}
+
+/* petite anim d'apparition */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* Bouton principal (Créer / Mettre à jour) dans le formulaire */
+.form-footer .primary {
+  border: none;
+  padding: 10px 26px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  background: linear-gradient(90deg, #a855f7, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.form-footer .primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(236, 72, 153, 0.5);
+  opacity: 0.95;
+}
+
+.form-footer .primary:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.35);
+}
+

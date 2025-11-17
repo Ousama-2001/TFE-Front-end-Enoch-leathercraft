@@ -1,24 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { ProductService, Product } from '../../services/products.service';
-
-export interface NewProduct {
-  sku: string;
-  name: string;
-  description: string;
-  material: string;
-  price: number;
-  weightGrams: number;
-  isActive: boolean;
-}
+import {
+  ProductService,
+  Product,
+  ProductCreateRequest,
+} from '../../services/products.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, CurrencyPipe],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -28,7 +22,15 @@ export class AdminDashboardComponent implements OnInit {
   error = '';
   showCreateForm = false;
 
-  newProduct: NewProduct = {
+  // null = création / non-null = édition
+  editingProductId: number | null = null;
+
+  // popup de confirmation de suppression
+  showDeleteConfirm = false;
+  deleteTargetId: number | null = null;
+  deleteTargetName = '';
+
+  newProduct: ProductCreateRequest = {
     sku: '',
     name: '',
     description: '',
@@ -36,6 +38,8 @@ export class AdminDashboardComponent implements OnInit {
     price: 0,
     weightGrams: 0,
     isActive: true,
+    currency: 'EUR',
+    slug: '',
   };
 
   constructor(private productService: ProductService) {}
@@ -53,7 +57,7 @@ export class AdminDashboardComponent implements OnInit {
         this.products = list;
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err) => {
         console.error('Erreur chargement produits', err);
         this.error = 'Impossible de charger les produits.';
         this.loading = false;
@@ -62,8 +66,12 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   toggleCreateForm(): void {
-    this.showCreateForm = !this.showCreateForm;
-    this.error = '';
+    if (this.showCreateForm && this.editingProductId !== null) {
+      this.resetForm();
+    } else {
+      this.showCreateForm = !this.showCreateForm;
+      this.error = '';
+    }
   }
 
   private slugify(name: string): string {
@@ -75,7 +83,7 @@ export class AdminDashboardComponent implements OnInit {
       .replace(/^-+|-+$/g, '');
   }
 
-  createProduct(): void {
+  submitForm(): void {
     this.error = '';
 
     if (!this.newProduct.name || !this.newProduct.sku || !this.newProduct.price) {
@@ -85,47 +93,117 @@ export class AdminDashboardComponent implements OnInit {
 
     const slug = this.slugify(this.newProduct.name);
 
-    const payload = {
+    const payload: ProductCreateRequest = {
       ...this.newProduct,
       slug,
-      currency: 'EUR',
+      currency: this.newProduct.currency ?? 'EUR',
     };
 
+    if (this.editingProductId === null) {
+      this.createProduct(payload);
+    } else {
+      this.updateProduct(this.editingProductId, payload);
+    }
+  }
+
+  private createProduct(payload: ProductCreateRequest): void {
     this.productService.create(payload).subscribe({
       next: (created: Product) => {
         this.products = [created, ...this.products];
-        this.showCreateForm = false;
-        this.newProduct = {
-          sku: '',
-          name: '',
-          description: '',
-          material: '',
-          price: 0,
-          weightGrams: 0,
-          isActive: true,
-        };
+        this.resetForm();
       },
-      error: (err: any) => {
+      error: (err) => {
         console.error('Erreur création produit', err);
-        this.error = 'Impossible de créer le produit.';
+        if (err.status === 400 || err.status === 409) {
+          this.error = 'Ce SKU existe déjà ou les données sont invalides.';
+        } else {
+          this.error = 'Impossible de créer le produit.';
+        }
       },
     });
   }
 
-  onDelete(id: number): void {
-    if (!confirm('Supprimer ce produit ?')) {
-      return;
-    }
+  private updateProduct(id: number, payload: ProductCreateRequest): void {
+    this.productService.update(id, payload).subscribe({
+      next: (updated: Product) => {
+        this.products = this.products.map((p) => (p.id === id ? updated : p));
+        this.resetForm();
+      },
+      error: (err) => {
+        console.error('Erreur mise à jour produit', err);
+        if (err.status === 404) {
+          this.error = 'Produit introuvable.';
+        } else if (err.status === 400 || err.status === 409) {
+          this.error = 'Ce SKU existe déjà ou les données sont invalides.';
+        } else {
+          this.error = 'Impossible de mettre à jour le produit.';
+        }
+      },
+    });
+  }
 
+  startEdit(p: Product): void {
+    this.showCreateForm = true;
+    this.editingProductId = p.id;
     this.error = '';
+
+    this.newProduct = {
+      sku: p.sku,
+      name: p.name,
+      description: p.description ?? '',
+      material: p.material ?? '',
+      price: p.price,
+      weightGrams: p.weightGrams ?? 0,
+      isActive: p.isActive ?? true,
+      currency: p.currency ?? 'EUR',
+      slug: p.slug ?? '',
+    };
+  }
+
+  private resetForm(): void {
+    this.showCreateForm = false;
+    this.editingProductId = null;
+    this.newProduct = {
+      sku: '',
+      name: '',
+      description: '',
+      material: '',
+      price: 0,
+      weightGrams: 0,
+      isActive: true,
+      currency: 'EUR',
+      slug: '',
+    };
+  }
+
+  // ---------- suppression avec popup ----------
+
+  openDeleteConfirm(p: Product): void {
+    this.deleteTargetId = p.id;
+    this.deleteTargetName = p.name;
+    this.showDeleteConfirm = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm = false;
+    this.deleteTargetId = null;
+    this.deleteTargetName = '';
+  }
+
+  confirmDelete(): void {
+    if (this.deleteTargetId == null) return;
+
+    const id = this.deleteTargetId;
 
     this.productService.delete(id).subscribe({
       next: () => {
-        this.products = this.products.filter((p: Product) => p.id !== id);
+        this.products = this.products.filter((p) => p.id !== id);
+        this.cancelDelete();
       },
-      error: (err: any) => {
+      error: (err) => {
         console.error('Erreur suppression produit', err);
         this.error = 'Impossible de supprimer ce produit.';
+        this.cancelDelete();
       },
     });
   }

@@ -2,63 +2,57 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// ---- Interface produit utilisée partout ----
 export interface Product {
   id: number;
   sku: string;
   name: string;
   description: string;
+  material: string;
   price: number;
+  weightGrams: number;
+  currency: string;
+  slug: string;
+  isActive: boolean;
+}
+
+export interface ProductCreateRequest {
+  sku: string;
+  name: string;
+  description: string;
+  material: string;
+  price: number;
+  weightGrams: number;
+  isActive: boolean;
   currency?: string;
-  material?: string;
-  weightGrams?: number;
   slug?: string;
-  isActive?: boolean;
-  imageUrl?: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductService {
-
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = 'http://localhost:8080/api/products';
+  private adminUrl = 'http://localhost:8080/api/admin/products';
 
   constructor(private http: HttpClient) {}
 
-  // --- Récupération des produits publics (page boutique) ---
+  /** Récupération publique */
   getAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.baseUrl}/products`);
+    return this.http.get<Product[]>(this.baseUrl);
   }
 
-  // --- Création d’un produit (admin) ---
-  create(data: {
-    sku: string;
-    name: string;
-    description: string;
-    material?: string;
-    price: number;
-    weightGrams?: number;
-    isActive?: boolean;
-    slug?: string;
-    currency?: string;
-  }): Observable<Product> {
-
-    const body = {
-      ...data,
-      currency: data.currency ?? 'EUR'
-    };
-
-    return this.http.post<Product>(
-      `${this.baseUrl}/admin/products`,
-      body
-    );
+  /** Création côté admin */
+  create(data: ProductCreateRequest): Observable<Product> {
+    return this.http.post<Product>(this.adminUrl, data);
   }
 
-  // --- Suppression d’un produit (admin) ---
+  /** Mise à jour */
+  update(id: number, data: ProductCreateRequest): Observable<Product> {
+    return this.http.put<Product>(`${this.adminUrl}/${id}`, data);
+  }
+
+  /** Suppression */
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/admin/products/${id}`
-    );
+    return this.http.delete<void>(`${this.adminUrl}/${id}`);
   }
 }

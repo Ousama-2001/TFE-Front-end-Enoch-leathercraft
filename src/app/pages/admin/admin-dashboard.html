@@ -2,27 +2,28 @@
   <div class="admin-header">
     <div>
       <h1>Dashboard administrateur</h1>
-      <p class="subtitle">
-        Gestion des produits Enoch Leathercraft
-      </p>
+      <p class="subtitle">Gestion des produits Enoch Leathercraft</p>
     </div>
 
     <div class="admin-actions">
       <button class="primary" (click)="toggleCreateForm()">
-        {{ showCreateForm ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
+        {{ showCreateForm
+        ? 'Fermer le formulaire'
+        : (editingProductId === null ? '+ Ajouter un produit' : 'Annuler la modification')
+        }}
       </button>
       <a routerLink="/products" class="link-back">Retour à la boutique</a>
     </div>
   </div>
 
-  <!-- formulaire de création -->
+  <!-- formulaire -->
   <div class="panel create-panel" *ngIf="showCreateForm">
     <div class="create-header">
-      <h2>Nouveau produit</h2>
+      <h2>{{ editingProductId === null ? 'Nouveau produit' : 'Modifier le produit' }}</h2>
       <p>Renseigne les informations principales du produit.</p>
     </div>
 
-    <form (ngSubmit)="createProduct()" class="create-form">
+    <form (ngSubmit)="submitForm()" class="create-form">
       <div class="form-row two-cols">
         <div class="form-group">
           <label>Nom *</label>
@@ -104,7 +105,7 @@
         </label>
 
         <button type="submit" class="primary">
-          Créer le produit
+          {{ editingProductId === null ? 'Créer le produit' : 'Mettre à jour le produit' }}
         </button>
       </div>
     </form>
@@ -119,14 +120,11 @@
     {{ error }}
   </div>
 
-  <!-- tableau des produits -->
+  <!-- tableau -->
   <div *ngIf="!loading && !error" class="panel">
     <h2 class="section-title">Produits existants</h2>
 
-    <table
-      class="product-table"
-      *ngIf="products && products.length > 0"
-    >
+    <table class="product-table" *ngIf="products && products.length > 0">
       <thead>
       <tr>
         <th>ID</th>
@@ -134,21 +132,27 @@
         <th>Description</th>
         <th>Prix</th>
         <th>SKU</th>
-        <th>Actions</th>
+        <th class="actions-col">Actions</th>
       </tr>
       </thead>
+
       <tbody>
-      <tr *ngFor="let p of products">
+      <tr
+        *ngFor="let p of products"
+        [class.editing-row]="editingProductId === p.id"
+      >
         <td>{{ p.id }}</td>
         <td>{{ p.name }}</td>
-        <td class="desc">
-          {{ p.description }}
-        </td>
+        <td class="desc">{{ p.description }}</td>
         <td>{{ p.price | currency: 'EUR' }}</td>
         <td>{{ p.sku }}</td>
-        <td>
-          <button class="link-delete" (click)="onDelete(p.id)">
-            Supprimer
+
+        <td class="actions">
+          <button class="btn-edit" (click)="startEdit(p)">
+            ✏️ Modifier
+          </button>
+          <button class="btn-delete" (click)="openDeleteConfirm(p)">
+            🗑️ Supprimer
           </button>
         </td>
       </tr>
@@ -158,5 +162,31 @@
     <p *ngIf="products && products.length === 0">
       Aucun produit trouvé pour le moment.
     </p>
+
+
+
+    <p *ngIf="products && products.length === 0">
+      Aucun produit trouvé pour le moment.
+    </p>
   </div>
+  <!-- Popup de confirmation de suppression -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm">
+    <div class="modal">
+      <h3>Confirmer la suppression</h3>
+      <p>
+        Es-tu sûr de vouloir supprimer le produit
+        <strong>{{ deleteTargetName }}</strong> ?
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelDelete()">
+          Annuler
+        </button>
+        <button type="button" class="btn-confirm-delete" (click)="confirmDelete()">
+          Oui, supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
