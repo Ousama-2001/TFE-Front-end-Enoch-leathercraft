@@ -12,9 +12,7 @@ export interface Product {
   imageUrl?: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ProductService {
   private apiUrl = 'http://localhost:8080/api/products';
 
@@ -22,5 +20,9 @@ export class ProductService {
 
   getAll(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
+  }
+
+  delete(id: number) {
+    return this.http.delete<void>(`http://localhost:8080/api/admin/products/${id}`);
   }
 }
