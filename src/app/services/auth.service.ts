@@ -30,6 +30,11 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+  isAuthPage(): boolean {
+    const url = this.router.url;
+    return url.startsWith('/login') || url.startsWith('/register');
+  }
+
   // LOGIN
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http
