@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
 import { RegisterComponent } from './pages/register/register';
 import { ProductsComponent } from './pages/products/products';
-import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard';
+import { AdminDashboardComponent } from './pages/admin/admin-dashboard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },

@@ -1,0 +1,162 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <div>
+      <h1>Dashboard administrateur</h1>
+      <p class="subtitle">
+        Gestion des produits Enoch Leathercraft
+      </p>
+    </div>
+
+    <div class="admin-actions">
+      <button class="primary" (click)="toggleCreateForm()">
+        {{ showCreateForm ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
+      </button>
+      <a routerLink="/products" class="link-back">Retour à la boutique</a>
+    </div>
+  </div>
+
+  <!-- formulaire de création -->
+  <div class="panel create-panel" *ngIf="showCreateForm">
+    <div class="create-header">
+      <h2>Nouveau produit</h2>
+      <p>Renseigne les informations principales du produit.</p>
+    </div>
+
+    <form (ngSubmit)="createProduct()" class="create-form">
+      <div class="form-row two-cols">
+        <div class="form-group">
+          <label>Nom *</label>
+          <input
+            type="text"
+            [(ngModel)]="newProduct.name"
+            name="name"
+            required
+            placeholder="Sac en cuir vintage"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>SKU *</label>
+          <input
+            type="text"
+            [(ngModel)]="newProduct.sku"
+            name="sku"
+            required
+            placeholder="SKU-ENCH-001"
+          />
+        </div>
+      </div>
+
+      <div class="form-row three-cols">
+        <div class="form-group">
+          <label>Prix (€) *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            [(ngModel)]="newProduct.price"
+            name="price"
+            required
+            placeholder="129.90"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Poids (g)</label>
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="newProduct.weightGrams"
+            name="weightGrams"
+            placeholder="750"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Matériau</label>
+          <input
+            type="text"
+            [(ngModel)]="newProduct.material"
+            name="material"
+            placeholder="Cuir pleine fleur"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea
+          rows="3"
+          [(ngModel)]="newProduct.description"
+          name="description"
+          placeholder="Décris brièvement le style, les poches, la finition..."
+        ></textarea>
+      </div>
+
+      <div class="form-footer">
+        <label class="checkbox-inline">
+          <input
+            type="checkbox"
+            [(ngModel)]="newProduct.isActive"
+            name="isActive"
+          />
+          Produit actif (visible dans la boutique)
+        </label>
+
+        <button type="submit" class="primary">
+          Créer le produit
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- messages -->
+  <div *ngIf="loading" class="panel">
+    Chargement des produits...
+  </div>
+
+  <div *ngIf="error" class="panel error">
+    {{ error }}
+  </div>
+
+  <!-- tableau des produits -->
+  <div *ngIf="!loading && !error" class="panel">
+    <h2 class="section-title">Produits existants</h2>
+
+    <table
+      class="product-table"
+      *ngIf="products && products.length > 0"
+    >
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Description</th>
+        <th>Prix</th>
+        <th>SKU</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let p of products">
+        <td>{{ p.id }}</td>
+        <td>{{ p.name }}</td>
+        <td class="desc">
+          {{ p.description }}
+        </td>
+        <td>{{ p.price | currency: 'EUR' }}</td>
+        <td>{{ p.sku }}</td>
+        <td>
+          <button class="link-delete" (click)="onDelete(p.id)">
+            Supprimer
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="products && products.length === 0">
+      Aucun produit trouvé pour le moment.
+    </p>
+  </div>
+</div>
