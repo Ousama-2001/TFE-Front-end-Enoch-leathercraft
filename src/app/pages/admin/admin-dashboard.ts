@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service'; // <- ajoute ça
+import { AuthService } from '../../services/auth.service';
 import {
   ProductService,
   Product,
@@ -44,9 +43,8 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private auth: AuthService // <- injecte ici
+    private auth: AuthService
   ) {}
-
 
   ngOnInit(): void {
     this.loadProducts();
@@ -179,6 +177,7 @@ export class AdminDashboardComponent implements OnInit {
       slug: '',
     };
   }
+
   onLogout(): void {
     this.auth.logout();
   }
@@ -213,5 +212,11 @@ export class AdminDashboardComponent implements OnInit {
         this.cancelDelete();
       },
     });
+  }
+
+  // ---------- bouton "Retour à la liste" ----------
+
+  backToList(): void {
+    this.resetForm();
   }
 }

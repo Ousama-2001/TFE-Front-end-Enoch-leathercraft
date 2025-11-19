@@ -1,7 +1,4 @@
-<div *ngIf="loading">Chargement...</div>
-<p class="error" *ngIf="error">{{ error }}</p>
-
-<ul *ngIf="!loading && !error">
+<ul>
   <li *ngFor="let p of products">
     {{ p.name }} - {{ p.price | currency:'EUR' }}
   </li>
