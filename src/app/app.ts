@@ -2,25 +2,27 @@ import { Component } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
+import { CartService } from './services/cart.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule],   // 🔥 NgIf vient d'ici
+  imports: [RouterOutlet, CommonModule, RouterLink],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
 export class AppComponent {
   showNavbar = true;
+  showMiniCart = false;
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    public cart: CartService
   ) {
-    // état initial au démarrage
     this.updateNavbarVisibility(this.router.url);
 
-    // mise à jour à chaque changement de route
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.updateNavbarVisibility(event.urlAfterRedirects);
@@ -37,5 +39,13 @@ export class AppComponent {
 
   onLogout(): void {
     this.auth.logout();
+  }
+
+  onCartEnter(): void {
+    this.showMiniCart = true;
+  }
+
+  onCartLeave(): void {
+    this.showMiniCart = false;
   }
 }

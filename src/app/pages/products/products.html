@@ -5,14 +5,23 @@
     <p>Découvrez nos sacs, sacoches, ceintures et portefeuilles faits main.</p>
   </section>
 
-  <!-- Liste des produits -->
-  <section class="products-section" *ngIf="products && products.length; else noProducts">
+  <!-- SECTION PRODUITS -->
+  <section
+    class="products-section"
+    *ngIf="products && products.length; else noProducts"
+  >
     <h2 class="section-title">Nos produits</h2>
 
+    <!-- lien panier -->
+    <div class="cart-link-container">
+      <a routerLink="/cart" class="link-to-cart">
+        🛒 Voir le panier ({{ cart.totalQuantity }} article(s))
+      </a>
+    </div>
+
     <div class="products-grid">
-      <article class="product-card" *ngFor="let p of products">
+      <article class="product-card" *ngFor="let p of paginatedProducts">
         <div class="product-image">
-          <!-- Pour l'instant : image placeholder statique -->
           <img src="assets/img/products/placeholder-bag.jpg" [alt]="p.name" />
         </div>
 
@@ -33,20 +42,53 @@
               {{ p.price | currency:'EUR' }}
             </span>
 
-            <button
-              type="button"
-              class="btn-primary"
-              [routerLink]="['/products', p.id]"
-            >
-              Voir le produit
-            </button>
+            <div class="product-actions">
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="addToCart(p)"
+              >
+                + Panier
+              </button>
 
+              <button
+                type="button"
+                class="btn-primary"
+                [routerLink]="['/products', p.id]"
+              >
+                Voir le produit
+              </button>
+            </div>
           </div>
         </div>
       </article>
     </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button
+        class="page-btn"
+        [disabled]="page === 1"
+        (click)="changePage(page - 1)"
+      >
+        ← Précédent
+      </button>
+
+      <span class="page-info">
+        Page {{ page }} / {{ totalPages }}
+      </span>
+
+      <button
+        class="page-btn"
+        [disabled]="page === totalPages"
+        (click)="changePage(page + 1)"
+      >
+        Suivant →
+      </button>
+    </div>
   </section>
 
+  <!-- 🔹 TEMPLATE utilisé par "else noProducts" -->
   <ng-template #noProducts>
     <p class="empty-message">Aucun produit disponible pour le moment.</p>
   </ng-template>

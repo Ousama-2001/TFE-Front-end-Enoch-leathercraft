@@ -27,10 +27,15 @@
       </p>
 
       <div class="actions">
-        <button class="btn-primary" type="button">
+        <button class="btn-primary" type="button" (click)="addToCart()">
           Ajouter au panier
         </button>
+
+        <span class="added-msg" *ngIf="addedMessage">
+    {{ addedMessage }}
+  </span>
       </div>
+
     </div>
   </div>
 </div>

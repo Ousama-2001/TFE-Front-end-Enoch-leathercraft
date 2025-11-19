@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService, Product } from '../../services/products.service';
+import { CartService } from '../../services/cart.service';   // 🔹 ICI
 
 @Component({
   selector: 'app-product-detail',
@@ -14,11 +15,13 @@ export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   loading = false;
   error = '';
+  addedMessage = ''; // petit feedback
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
+    private cartService: CartService,   // 🔹 ICI
   ) {}
 
   ngOnInit(): void {
@@ -46,5 +49,13 @@ export class ProductDetailComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/products']);
+  }
+
+  addToCart(): void {
+    if (!this.product) return;
+    this.cartService.addProduct(this.product, 1);
+    this.addedMessage = 'Produit ajouté au panier ✔';
+
+    setTimeout(() => (this.addedMessage = ''), 2000);
   }
 }

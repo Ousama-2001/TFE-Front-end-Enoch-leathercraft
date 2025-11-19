@@ -1,0 +1,99 @@
+.cart-page {
+  min-height: 100vh;
+  padding: 40px 60px;
+  background: radial-gradient(circle at top, #12254b 0, #050811 55%, #02030a 100%);
+  color: #f5f7ff;
+  box-sizing: border-box;
+}
+
+.cart-page h1 {
+  margin-bottom: 20px;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(7, 12, 26, 0.96);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.cart-table th,
+.cart-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cart-table th {
+  text-align: left;
+  font-weight: 600;
+}
+
+.qty-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qty-cell button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #1f2a4d;
+  color: #f5f5ff;
+  cursor: pointer;
+}
+
+.link-btn {
+  background: transparent;
+  border: none;
+  color: #ff7b8f;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.cart-summary {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 14px;
+  color: #f5f5ff;
+  cursor: pointer;
+}
+
+/* même style que bouton principal */
+.btn-primary {
+  background: linear-gradient(90deg, #7b42ff, #ff4b8b);
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 75, 139, 0.45);
+  transition: 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(255, 75, 139, 0.6);
+}
+
+.empty-msg {
+  margin-top: 40px;
+}

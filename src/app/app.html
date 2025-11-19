@@ -1,5 +1,38 @@
 <nav class="navbar" *ngIf="showNavbar">
-  <button class="btn-logout" (click)="onLogout()">🔓 Déconnexion</button>
+  <div class="nav-left">
+    <a routerLink="/products" class="logo">Enoch Leathercraft</a>
+  </div>
+
+  <div class="nav-right">
+    <div
+      class="cart-wrapper"
+      (mouseenter)="onCartEnter()"
+      (mouseleave)="onCartLeave()"
+    >
+      <button class="cart-btn" type="button" routerLink="/cart">
+        🛒
+        <span class="cart-count" *ngIf="cart.totalQuantity > 0">
+          {{ cart.totalQuantity }}
+        </span>
+      </button>
+
+      <div class="mini-cart" *ngIf="showMiniCart && cart.items.length">
+        <div class="mini-item" *ngFor="let item of cart.items | slice:0:3">
+          <div class="mi-name">{{ item.name }}</div>
+          <div class="mi-info">
+            {{ item.quantity }} × {{ item.price | currency:'EUR' }}
+          </div>
+        </div>
+
+        <div class="mini-footer">
+          <span>Total : {{ cart.totalAmount | currency:'EUR' }}</span>
+          <a routerLink="/cart">Voir le panier</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-logout" (click)="onLogout()">🔓 Déconnexion</button>
+  </div>
 </nav>
 
 <router-outlet></router-outlet>
