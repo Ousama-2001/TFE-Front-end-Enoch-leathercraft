@@ -6,53 +6,68 @@ export interface Product {
   id: number;
   sku: string;
   name: string;
-  description: string;
-  material: string;
+  slug?: string;
+  description?: string;
+  material?: string;
   price: number;
-  weightGrams: number;
   currency: string;
-  slug: string;
-  isActive: boolean;
+  weightGrams?: number;
+  isActive?: boolean;
+  imagePath?: string;
 }
 
 export interface ProductCreateRequest {
   sku: string;
   name: string;
-  description: string;
-  material: string;
-  price: number;
-  weightGrams: number;
-  isActive: boolean;
-  currency?: string;
   slug?: string;
+  description?: string;
+  material?: string;
+  price: number;
+  currency?: string;
+  weightGrams?: number;
+  isActive?: boolean;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ProductService {
-  private baseUrl = 'http://localhost:8080/api/products';
-  private adminUrl = 'http://localhost:8080/api/admin/products';
+  private baseUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
-  /** Récupération publique */
+  // 🔹 PUBLIC CATALOGUE
   getAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.baseUrl);
+    return this.http.get<Product[]>(`${this.baseUrl}/products`);
   }
 
-  /** Création côté admin */
-  create(data: ProductCreateRequest): Observable<Product> {
-    return this.http.post<Product>(this.adminUrl, data);
+  // 🔹 DETAIL PRODUIT PUBLIC (doit passer par /api/products/**, PAS /admin)
+  getOne(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.baseUrl}/products/${id}`);
   }
 
-  /** Mise à jour */
-  update(id: number, data: ProductCreateRequest): Observable<Product> {
-    return this.http.put<Product>(`${this.adminUrl}/${id}`, data);
+  // 🔹 ADMIN
+  create(body: ProductCreateRequest): Observable<Product> {
+    return this.http.post<Product>(`${this.baseUrl}/admin/products`, body);
   }
 
-  /** Suppression */
+  update(id: number, body: ProductCreateRequest): Observable<Product> {
+    return this.http.put<Product>(
+      `${this.baseUrl}/admin/products/${id}`,
+      body,
+    );
+  }
+
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.adminUrl}/${id}`);
+    return this.http.delete<void>(
+      `${this.baseUrl}/admin/products/${id}`,
+    );
+  }
+
+  uploadImage(id: number, file: File): Observable<Product> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Product>(
+      `${this.baseUrl}/admin/products/${id}/image`,
+      formData,
+    );
   }
 }

@@ -1,5 +1,53 @@
-<ul>
-  <li *ngFor="let p of products">
-    {{ p.name }} - {{ p.price | currency:'EUR' }}
-  </li>
-</ul>
+<div class="products-page">
+  <!-- Bandeau titre -->
+  <section class="hero">
+    <h1>Enoch Leathercraft</h1>
+    <p>Découvrez nos sacs, sacoches, ceintures et portefeuilles faits main.</p>
+  </section>
+
+  <!-- Liste des produits -->
+  <section class="products-section" *ngIf="products && products.length; else noProducts">
+    <h2 class="section-title">Nos produits</h2>
+
+    <div class="products-grid">
+      <article class="product-card" *ngFor="let p of products">
+        <div class="product-image">
+          <!-- Pour l'instant : image placeholder statique -->
+          <img src="assets/img/products/placeholder-bag.jpg" [alt]="p.name" />
+        </div>
+
+        <div class="product-body">
+          <h3 class="product-name">{{ p.name }}</h3>
+
+          <p class="product-description" *ngIf="p.description; else noDesc">
+            {{ p.description }}
+          </p>
+          <ng-template #noDesc>
+            <p class="product-description muted">
+              Description à venir.
+            </p>
+          </ng-template>
+
+          <div class="product-footer">
+            <span class="price">
+              {{ p.price | currency:'EUR' }}
+            </span>
+
+            <button
+              type="button"
+              class="btn-primary"
+              [routerLink]="['/products', p.id]"
+            >
+              Voir le produit
+            </button>
+
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <ng-template #noProducts>
+    <p class="empty-message">Aucun produit disponible pour le moment.</p>
+  </ng-template>
+</div>

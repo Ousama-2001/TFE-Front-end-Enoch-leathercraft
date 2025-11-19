@@ -16,6 +16,12 @@ export const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [AdminGuard],
   },
+  {
+    path: 'products/:id',
+    loadComponent: () =>
+      import('./pages/product-detail/product-detail').then(m => m.ProductDetailComponent),
+  },
 
   { path: '', redirectTo: 'products', pathMatch: 'full' },
 ];
+

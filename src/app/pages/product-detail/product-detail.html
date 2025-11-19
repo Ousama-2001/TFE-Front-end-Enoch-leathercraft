@@ -1,0 +1,43 @@
+<div class="product-detail-page" *ngIf="product; else loadingOrError">
+  <button class="btn-back" type="button" (click)="goBack()">
+    ← Retour aux produits
+  </button>
+
+  <div class="product-detail-card">
+    <div class="left">
+      <div class="image-wrapper">
+        <!-- pour l'instant : placeholder -->
+        <img src="assets/img/products/placeholder-bag.jpg" [alt]="product?.name" />
+      </div>
+    </div>
+
+    <div class="right">
+      <h1 class="title">{{ product.name }}</h1>
+
+      <p class="price">
+        {{ product.price | currency:'EUR' }}
+      </p>
+
+      <p class="material" *ngIf="product.material">
+        Matériau : <strong>{{ product.material }}</strong>
+      </p>
+
+      <p class="description" *ngIf="product.description">
+        {{ product.description }}
+      </p>
+
+      <div class="actions">
+        <button class="btn-primary" type="button">
+          Ajouter au panier
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingOrError>
+  <div class="product-detail-page center">
+    <p *ngIf="loading">Chargement du produit...</p>
+    <p *ngIf="!loading && error">{{ error }}</p>
+  </div>
+</ng-template>
