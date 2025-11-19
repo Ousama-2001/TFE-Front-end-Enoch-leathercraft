@@ -7,7 +7,7 @@
   align-items: center;
 }
 
-/* 🔥 Bouton style ADMIN identique */
+/* même style que le bouton admin */
 .btn-logout {
   background: linear-gradient(90deg, #ff416c, #ff4b2b);
   border: none;
@@ -18,7 +18,7 @@
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
   transition: 0.2s ease;
-  margin-right: 20px; /* espace depuis le bord */
+  margin-right: 20px; /* petit espace du bord */
 }
 
 .btn-logout:hover {
