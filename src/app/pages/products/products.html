@@ -12,13 +12,6 @@
   >
     <h2 class="section-title">Nos produits</h2>
 
-    <!-- lien panier -->
-    <div class="cart-link-container">
-      <a routerLink="/cart" class="link-to-cart">
-        🛒 Voir le panier ({{ cart.totalQuantity }} article(s))
-      </a>
-    </div>
-
     <div class="products-grid">
       <article class="product-card" *ngFor="let p of paginatedProducts">
         <div class="product-image">
@@ -37,19 +30,32 @@
             </p>
           </ng-template>
 
+          <!-- ✅ Footer propre : prix + actions -->
           <div class="product-footer">
-            <span class="price">
+            <div class="price">
               {{ p.price | currency:'EUR' }}
-            </span>
+            </div>
 
             <div class="product-actions">
-              <button
-                type="button"
-                class="btn-secondary"
-                (click)="addToCart(p)"
-              >
-                + Panier
-              </button>
+              <!-- Si le produit n'est pas encore dans le panier -->
+              <ng-container *ngIf="getQuantity(p) === 0; else qtyControls">
+                <button
+                  type="button"
+                  class="btn-add-cart"
+                  (click)="increase(p)"
+                >
+                  Ajouter au panier
+                </button>
+              </ng-container>
+
+              <!-- Si le produit est déjà dans le panier -->
+              <ng-template #qtyControls>
+                <div class="qty-pill">
+                  <button type="button" (click)="decrease(p)">−</button>
+                  <span>{{ getQuantity(p) }}</span>
+                  <button type="button" (click)="increase(p)">+</button>
+                </div>
+              </ng-template>
 
               <button
                 type="button"
@@ -88,7 +94,6 @@
     </div>
   </section>
 
-  <!-- 🔹 TEMPLATE utilisé par "else noProducts" -->
   <ng-template #noProducts>
     <p class="empty-message">Aucun produit disponible pour le moment.</p>
   </ng-template>

@@ -14,9 +14,9 @@ import { CartService } from '../../services/cart.service';
 export class ProductsComponent implements OnInit {
   products: Product[] = [];
 
-  // pagination (on s’en sert au point 3)
+  // 🔹 pagination
   page = 1;
-  pageSize = 8;
+  pageSize = 4; // 4 produits par page → tu verras la pagination
 
   constructor(
     private productService: ProductService,
@@ -30,7 +30,7 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  // produits de la page courante
+  // produits visibles sur la page courante
   get paginatedProducts(): Product[] {
     const start = (this.page - 1) * this.pageSize;
     return this.products.slice(start, start + this.pageSize);
@@ -45,7 +45,24 @@ export class ProductsComponent implements OnInit {
     this.page = newPage;
   }
 
-  addToCart(p: Product): void {
+  // 🔹 quantité actuelle d'un produit dans le panier
+  getQuantity(p: Product): number {
+    const item = this.cart.items.find((i) => i.productId === p.id);
+    return item ? item.quantity : 0;
+  }
+
+  // +1
+  increase(p: Product): void {
     this.cart.addProduct(p, 1);
+  }
+
+  // -1 / retirer
+  decrease(p: Product): void {
+    const current = this.getQuantity(p);
+    if (current <= 1) {
+      this.cart.removeItem(p.id);
+    } else {
+      this.cart.updateQuantity(p.id, current - 1);
+    }
   }
 }

@@ -172,11 +172,7 @@
   text-decoration: underline;
 }
 
-.product-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+
 
 .btn-secondary {
   background: transparent;
@@ -214,4 +210,144 @@
 .page-info {
   font-size: 0.9rem;
   color: rgba(230, 236, 255, 0.85);
+}
+.product-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 6px 14px;
+  color: #f5f7ff;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+
+
+/* pagination */
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.page-btn {
+  background: #151c33;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 6px 14px;
+  color: #f5f7ff;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: rgba(230, 236, 255, 0.85);
+}
+
+/* --- footer carte produit --- */
+.product-footer {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* conteneur boutons */
+.product-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- bouton "Ajouter au panier" style e-commerce --- */
+.btn-add-cart {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 255, 0.9);
+  background: rgba(15, 23, 42, 0.85);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.18s ease;
+}
+
+.btn-add-cart::before {
+  content: "🛒";
+  font-size: 0.9rem;
+}
+
+.btn-add-cart:hover {
+  background: rgba(30, 64, 175, 0.95);
+  border-color: rgba(191, 219, 254, 1);
+  color: #f9fafb;
+  transform: translateY(-1px);
+}
+
+.btn-add-cart:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
+}
+
+/* --- contrôleur quantité [- qte +] --- */
+.qty-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(75, 85, 99, 0.9);
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.qty-pill span {
+  min-width: 14px;
+  text-align: center;
+  color: #e5e7eb;
+  font-weight: 600;
+}
+
+.qty-pill button {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(31, 41, 55, 1);
+  color: #e5e7eb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.16s ease;
+}
+
+.qty-pill button:hover {
+  background: rgba(55, 65, 81, 1);
+}
+
+.qty-pill button:active {
+  transform: scale(0.9);
 }

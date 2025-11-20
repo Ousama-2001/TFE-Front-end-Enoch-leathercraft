@@ -7,35 +7,52 @@
     <div class="left">
       <div class="image-wrapper">
         <!-- pour l'instant : placeholder -->
-        <img src="assets/img/products/placeholder-bag.jpg" [alt]="product?.name" />
+        <img
+          src="assets/img/products/placeholder-bag.jpg"
+          [alt]="product?.name"
+        />
       </div>
     </div>
 
     <div class="right">
-      <h1 class="title">{{ product.name }}</h1>
+      <h1 class="title">{{ product!.name }}</h1>
 
       <p class="price">
-        {{ product.price | currency:'EUR' }}
+        {{ product!.price | currency:'EUR' }}
       </p>
 
-      <p class="material" *ngIf="product.material">
-        Matériau : <strong>{{ product.material }}</strong>
+      <p class="material" *ngIf="product!.material">
+        Matériau : <strong>{{ product!.material }}</strong>
       </p>
 
-      <p class="description" *ngIf="product.description">
-        {{ product.description }}
+      <p class="description">
+        {{ product!.description || 'Description à venir.' }}
       </p>
 
       <div class="actions">
-        <button class="btn-primary" type="button" (click)="addToCart()">
-          Ajouter au panier
-        </button>
+        <!-- 🔹 Si le produit n'est pas encore dans le panier -->
+        <ng-container *ngIf="quantity === 0; else qtyControls">
+          <button class="btn-cart-animated" type="button" (click)="addToCart()">
+            <span class="icon">🛒</span>
+            <span class="text">Ajouter au panier</span>
+            <span class="check">✔</span>
+          </button>
 
-        <span class="added-msg" *ngIf="addedMessage">
-    {{ addedMessage }}
-  </span>
+        </ng-container>
+
+        <!-- 🔹 Si le produit est déjà dans le panier -->
+        <ng-template #qtyControls>
+          <div class="qty-pill">
+            <button type="button" (click)="decrease()">−</button>
+            <span>{{ quantity }}</span>
+            <button type="button" (click)="addToCart()">+</button>
+          </div>
+
+          <span class="added-msg" *ngIf="addedMessage">
+            {{ addedMessage }}
+          </span>
+        </ng-template>
       </div>
-
     </div>
   </div>
 </div>

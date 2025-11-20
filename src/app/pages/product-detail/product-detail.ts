@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService, Product } from '../../services/products.service';
-import { CartService } from '../../services/cart.service';   // 🔹 ICI
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -21,7 +21,7 @@ export class ProductDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
-    private cartService: CartService,   // 🔹 ICI
+    private cartService: CartService, // ✅ on garde
   ) {}
 
   ngOnInit(): void {
@@ -34,6 +34,7 @@ export class ProductDetailComponent implements OnInit {
     }
 
     this.loading = true;
+
     this.productService.getOne(id).subscribe({
       next: (p) => {
         this.product = p;
@@ -51,11 +52,44 @@ export class ProductDetailComponent implements OnInit {
     this.router.navigate(['/products']);
   }
 
-  addToCart(): void {
+  // 🔹 quantité actuelle de CE produit dans le panier
+  get quantity(): number {
+    if (!this.product) return 0;
+    const item = this.cartService.items.find(
+      (i) => i.productId === this.product!.id,
+    );
+    return item ? item.quantity : 0;
+  }
+
+  // 🔹 +1 dans le panier
+  increase(): void {
     if (!this.product) return;
     this.cartService.addProduct(this.product, 1);
-    this.addedMessage = 'Produit ajouté au panier ✔';
-
-    setTimeout(() => (this.addedMessage = ''), 2000);
   }
+
+  // 🔹 -1 (ou suppression si on arrive à 0/1)
+  decrease(): void {
+    if (!this.product) return;
+
+    if (this.quantity <= 1) {
+      this.cartService.removeItem(this.product.id);
+    } else {
+      this.cartService.updateQuantity(this.product.id, this.quantity - 1);
+    }
+  }
+
+  addToCart(): void {
+    if (!this.product) return;
+
+    this.cartService.addProduct(this.product, 1);
+
+    // Animation bouton
+    const btn = document.querySelector('.btn-cart-animated');
+    btn?.classList.add('added');
+
+    setTimeout(() => {
+      btn?.classList.remove('added');
+    }, 1500);
+  }
+
 }
