@@ -14,13 +14,12 @@ import { CartService } from '../../services/cart.service';
 export class ProductsComponent implements OnInit {
   products: Product[] = [];
 
-  // 🔹 pagination
   page = 1;
-  pageSize = 4; // 4 produits par page → tu verras la pagination
+  pageSize = 4;
 
   constructor(
     private productService: ProductService,
-    public cart: CartService
+    public cartService: CartService
   ) {}
 
   ngOnInit(): void {
@@ -28,9 +27,12 @@ export class ProductsComponent implements OnInit {
       next: (list) => (this.products = list),
       error: (err) => console.error('Erreur chargement produits', err),
     });
+
+    // très important : récupérer les quantités du back
+    this.cartService.loadCart().subscribe();
   }
 
-  // produits visibles sur la page courante
+  // Pagination
   get paginatedProducts(): Product[] {
     const start = (this.page - 1) * this.pageSize;
     return this.products.slice(start, start + this.pageSize);
@@ -45,24 +47,26 @@ export class ProductsComponent implements OnInit {
     this.page = newPage;
   }
 
-  // 🔹 quantité actuelle d'un produit dans le panier
+  // Quantité du produit dans le panier
   getQuantity(p: Product): number {
-    const item = this.cart.items.find((i) => i.productId === p.id);
-    return item ? item.quantity : 0;
+    return p.id ? this.cartService.getQuantity(p.id) : 0;
   }
 
   // +1
   increase(p: Product): void {
-    this.cart.addProduct(p, 1);
+    if (!p.id) return;
+    this.cartService.addProduct(p.id, 1).subscribe();
   }
 
-  // -1 / retirer
+  // -1
   decrease(p: Product): void {
-    const current = this.getQuantity(p);
-    if (current <= 1) {
-      this.cart.removeItem(p.id);
+    if (!p.id) return;
+
+    const q = this.cartService.getQuantity(p.id);
+    if (q <= 1) {
+      this.cartService.removeItem(p.id).subscribe();
     } else {
-      this.cart.updateQuantity(p.id, current - 1);
+      this.cartService.updateQuantity(p.id, q - 1).subscribe();
     }
   }
 }

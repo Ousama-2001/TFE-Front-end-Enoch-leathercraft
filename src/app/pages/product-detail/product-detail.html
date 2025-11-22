@@ -6,52 +6,48 @@
   <div class="product-detail-card">
     <div class="left">
       <div class="image-wrapper">
-        <!-- pour l'instant : placeholder -->
+        <!-- placeholder pour l'instant -->
         <img
           src="assets/img/products/placeholder-bag.jpg"
-          [alt]="product?.name"
+          [alt]="product.name"
         />
       </div>
     </div>
 
     <div class="right">
-      <h1 class="title">{{ product!.name }}</h1>
+      <h1 class="title">{{ product.name }}</h1>
 
       <p class="price">
-        {{ product!.price | currency:'EUR' }}
+        {{ product.price | currency: 'EUR' }}
       </p>
 
-      <p class="material" *ngIf="product!.material">
-        Matériau : <strong>{{ product!.material }}</strong>
+      <p class="material" *ngIf="product.material">
+        Matériau : <strong>{{ product.material }}</strong>
       </p>
 
-      <p class="description">
-        {{ product!.description || 'Description à venir.' }}
+      <p class="description" *ngIf="product.description">
+        {{ product.description }}
       </p>
+
+      <!-- contrôles quantité -->
+      <div class="qty-actions">
+        <button type="button" class="qty-btn" (click)="decrease()">−</button>
+        <span class="qty">{{ quantity }}</span>
+        <button type="button" class="qty-btn" (click)="increase()">+</button>
+      </div>
 
       <div class="actions">
-        <!-- 🔹 Si le produit n'est pas encore dans le panier -->
-        <ng-container *ngIf="quantity === 0; else qtyControls">
-          <button class="btn-cart-animated" type="button" (click)="addToCart()">
-            <span class="icon">🛒</span>
-            <span class="text">Ajouter au panier</span>
-            <span class="check">✔</span>
-          </button>
+        <button
+          class="btn-cart-animated"
+          type="button"
+          (click)="addToCart()"
+        >
+          Ajouter au panier
+        </button>
 
-        </ng-container>
-
-        <!-- 🔹 Si le produit est déjà dans le panier -->
-        <ng-template #qtyControls>
-          <div class="qty-pill">
-            <button type="button" (click)="decrease()">−</button>
-            <span>{{ quantity }}</span>
-            <button type="button" (click)="addToCart()">+</button>
-          </div>
-
-          <span class="added-msg" *ngIf="addedMessage">
-            {{ addedMessage }}
-          </span>
-        </ng-template>
+        <span class="added-msg" *ngIf="addedMessage">
+          {{ addedMessage }}
+        </span>
       </div>
     </div>
   </div>

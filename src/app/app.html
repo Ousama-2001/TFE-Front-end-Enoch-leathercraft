@@ -1,38 +1,41 @@
+<!-- NAVBAR visible sauf sur /login et /register -->
 <nav class="navbar" *ngIf="showNavbar">
-  <div class="nav-left">
-    <a routerLink="/products" class="logo">Enoch Leathercraft</a>
+  <div class="left">
+    <a routerLink="/" class="brand">Enoch Leathercraft</a>
   </div>
 
-  <div class="nav-right">
-    <div
-      class="cart-wrapper"
+  <div class="right">
+    <!-- Lien vers le panier avec nombre d'articles -->
+    <a
+      routerLink="/cart"
+      class="cart-link"
       (mouseenter)="onCartEnter()"
       (mouseleave)="onCartLeave()"
     >
-      <button class="cart-btn" type="button" routerLink="/cart">
-        🛒
-        <span class="cart-count" *ngIf="cart.totalQuantity > 0">
-          {{ cart.totalQuantity }}
-        </span>
-      </button>
+      🧺 Panier ({{ cart.totalQuantity }})
+    </a>
 
-      <div class="mini-cart" *ngIf="showMiniCart && cart.items.length">
-        <div class="mini-item" *ngFor="let item of cart.items | slice:0:3">
-          <div class="mi-name">{{ item.name }}</div>
-          <div class="mi-info">
-            {{ item.quantity }} × {{ item.price | currency:'EUR' }}
-          </div>
-        </div>
-
-        <div class="mini-footer">
-          <span>Total : {{ cart.totalAmount | currency:'EUR' }}</span>
-          <a routerLink="/cart">Voir le panier</a>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-logout" (click)="onLogout()">🔓 Déconnexion</button>
+    <!-- Bouton déconnexion seulement si connecté -->
+    <button
+      class="logout-btn"
+      *ngIf="isLoggedIn"
+      (click)="onLogout()"
+    >
+      Déconnexion
+    </button>
   </div>
 </nav>
 
+<!-- Mini-cart (optionnel, pour plus tard) -->
+<div
+  class="mini-cart"
+  *ngIf="showMiniCart"
+  (mouseenter)="onCartEnter()"
+  (mouseleave)="onCartLeave()"
+>
+  <!-- Tu pourras afficher un résumé ici plus tard -->
+  <p>Mini aperçu du panier à venir…</p>
+</div>
+
+<!-- Le reste de l'appli -->
 <router-outlet></router-outlet>

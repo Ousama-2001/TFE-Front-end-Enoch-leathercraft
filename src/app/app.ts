@@ -1,9 +1,8 @@
-import { Component } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { CartService } from './services/cart.service';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +11,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   showNavbar = true;
   showMiniCart = false;
 
@@ -30,11 +29,26 @@ export class AppComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.cart.loadCart().subscribe();
+  }
+
   private updateNavbarVisibility(url: string): void {
     this.showNavbar = !(
       url.startsWith('/login') ||
       url.startsWith('/register')
     );
+  }
+
+  // 🔥 Correction : méthode compatible 100% avec ton AuthService actuel
+  get isLoggedIn(): boolean {
+    // si ton AuthService a déjà une méthode → on l'utilise
+    if (typeof (this.auth as any).isAuthenticated === 'function') {
+      return this.auth.isAuthenticated();
+    }
+
+    // sinon → fallback sur token localStorage
+    return !!localStorage.getItem('token');
   }
 
   onLogout(): void {

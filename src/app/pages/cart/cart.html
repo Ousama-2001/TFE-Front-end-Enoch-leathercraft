@@ -1,48 +1,63 @@
 <div class="cart-page">
-  <h1>Votre panier</h1>
+  <h1>Mon panier</h1>
 
-  <div *ngIf="cart.items.length; else empty">
+  <ng-container *ngIf="cart.items.length; else empty">
     <table class="cart-table">
       <thead>
       <tr>
         <th>Produit</th>
-        <th>Prix</th>
+        <th>Prix unitaire</th>
         <th>Quantité</th>
-        <th>Sous-total</th>
+        <th>Total ligne</th>
         <th></th>
       </tr>
       </thead>
 
       <tbody>
-      <tr *ngFor="let item of cart.items; trackBy: trackByProductId">
+      <tr
+        *ngFor="let item of cart.items; trackBy: trackByProductId"
+      >
         <td>{{ item.name }}</td>
-        <td>{{ item.price | currency:'EUR' }}</td>
-        <td class="qty-cell">
-          <button (click)="decrease(item)">−</button>
-          <span>{{ item.quantity }}</span>
-          <button (click)="increase(item)">+</button>
-        </td>
-        <td>{{ item.price * item.quantity | currency:'EUR' }}</td>
+
+        <td>{{ item.unitPrice | currency: 'EUR' }}</td>
+
         <td>
-          <button class="link-btn" (click)="remove(item)">Supprimer</button>
+          <button type="button" (click)="decrease(item)">−</button>
+          <span class="qty">{{ item.quantity }}</span>
+          <button type="button" (click)="increase(item)">+</button>
+        </td>
+
+        <td>{{ item.lineTotal | currency: 'EUR' }}</td>
+
+        <td>
+          <button type="button" (click)="remove(item)">
+            Supprimer
+          </button>
         </td>
       </tr>
       </tbody>
     </table>
 
     <div class="cart-summary">
-      <div>
-        Total : <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
-      </div>
+      <p>
+        Total ({{ cart.totalQuantity }} article(s)) :
+        <strong>{{ cart.totalAmount | currency: 'EUR' }}</strong>
+      </p>
 
-      <div class="summary-actions">
-        <button class="btn-secondary" (click)="clear()">Vider le panier</button>
-        <button class="btn-primary" (click)="checkout()">Passer commande</button>
+      <div class="cart-actions">
+        <button type="button" (click)="clearCart()">
+          Vider le panier
+        </button>
+
+        <a routerLink="/products">
+          ← Continuer mes achats
+        </a>
       </div>
     </div>
-  </div>
+  </ng-container>
 
   <ng-template #empty>
-    <p class="empty-msg">Votre panier est vide.</p>
+    <p>Votre panier est vide.</p>
+    <a routerLink="/products">← Retour à la boutique</a>
   </ng-template>
 </div>

@@ -1,87 +1,126 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Product } from './products.service';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, tap } from 'rxjs';
 
 export interface CartItem {
   productId: number;
   name: string;
-  price: number;
+  sku: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface CartResponse {
+  cartId: number;
+  items: CartItem[];
+  totalQuantity: number;
+  totalAmount: number;
+}
+
+export interface CartAddRequest {
+  productId: number;
+  quantity: number;
+}
+
+export interface CartUpdateRequest {
   quantity: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private readonly STORAGE_KEY = 'enoch_cart';
+  private baseUrl = 'http://localhost:8080/api/cart';
 
-  private itemsSubject = new BehaviorSubject<CartItem[]>(this.loadFromStorage());
-  items$ = this.itemsSubject.asObservable();
+  // 🔹 état "simple" utilisé par tes templates existants (cart.html, product-detail, etc.)
+  items: CartItem[] = [];
+  totalQuantity = 0;
+  totalAmount = 0;
 
-  get items(): CartItem[] {
-    return this.itemsSubject.value;
+  // 🔹 état observable (si tu veux utiliser async pipe plus tard)
+  private cartSubject = new BehaviorSubject<CartResponse | null>(null);
+  cart$ = this.cartSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
+
+  // --- interne : synchronise tout l'état à partir de la réponse du back ---
+  private syncState(cart: CartResponse) {
+    this.cartSubject.next(cart);
+    this.items = cart.items;
+    this.totalQuantity = cart.totalQuantity;
+    this.totalAmount = cart.totalAmount;
   }
 
-  get totalQuantity(): number {
-    return this.items.reduce((sum, i) => sum + i.quantity, 0);
+  /** Charger le panier depuis le back */
+  loadCart() {
+    return this.http.get<CartResponse>(this.baseUrl).pipe(
+      tap((cart) => this.syncState(cart))
+    );
   }
 
-  get totalAmount(): number {
-    return this.items.reduce((sum, i) => sum + i.quantity * i.price, 0);
-  }
+  /** Ajouter un produit (compatible id OU Product) */
+  addProduct(
+    productOrId: number | { id?: number },
+    quantity: number = 1
+  ) {
+    let productId: number;
 
-  addProduct(product: Product, quantity: number = 1): void {
-    const items = [...this.items];
-    const existing = items.find(i => i.productId === product.id);
-
-    if (existing) {
-      existing.quantity += quantity;
+    if (typeof productOrId === 'number') {
+      productId = productOrId;
     } else {
-      items.push({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        quantity,
-      });
+      if (!productOrId.id) {
+        throw new Error('Product sans id passé à addProduct');
+      }
+      productId = productOrId.id;
     }
 
-    this.update(items);
+    const body: CartAddRequest = { productId, quantity };
+
+    return this.http
+      .post<CartResponse>(`${this.baseUrl}/items`, body)
+      .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  updateQuantity(productId: number, quantity: number): void {
-    let items = [...this.items];
+  /** Mettre à jour la quantité d'un produit (nouvelle API) */
+  updateProduct(productId: number, quantity: number) {
+    const body: CartUpdateRequest = { quantity };
 
-    items = items
-      .map(i => (i.productId === productId ? { ...i, quantity } : i))
-      .filter(i => i.quantity > 0);
-
-    this.update(items);
+    return this.http
+      .patch<CartResponse>(`${this.baseUrl}/items/${productId}`, body)
+      .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  removeItem(productId: number): void {
-    const items = this.items.filter(i => i.productId !== productId);
-    this.update(items);
+  /** Alias pour l'ancienne méthode utilisée dans tes composants */
+  updateQuantity(productId: number, quantity: number) {
+    return this.updateProduct(productId, quantity);
   }
 
-  clear(): void {
-    this.update([]);
+  /** Supprimer un produit (nouvelle API) */
+  removeProduct(productId: number) {
+    return this.http
+      .delete<CartResponse>(`${this.baseUrl}/items/${productId}`)
+      .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  // ------- interne -------
-
-  private update(items: CartItem[]): void {
-    this.itemsSubject.next(items);
-    this.saveToStorage(items);
+  /** Alias pour l’ancienne méthode utilisée dans tes composants */
+  removeItem(productId: number) {
+    return this.removeProduct(productId);
   }
 
-  private loadFromStorage(): CartItem[] {
-    try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+  /** Vider le panier (nouvelle API) */
+  clearCart() {
+    return this.http
+      .delete<CartResponse>(this.baseUrl)
+      .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  private saveToStorage(items: CartItem[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+  /** Alias pour l’ancienne méthode utilisée dans tes composants */
+  clear() {
+    return this.clearCart();
+  }
+
+  /** Quantité d’un produit dans le panier */
+  getQuantity(productId: number): number {
+    const item = this.items.find((i) => i.productId === productId);
+    return item ? item.quantity : 0;
   }
 }
