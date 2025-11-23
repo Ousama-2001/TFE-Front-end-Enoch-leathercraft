@@ -24,10 +24,16 @@ export class AdminDashboardComponent implements OnInit {
   // null = création / non-null = édition
   editingProductId: number | null = null;
 
-  // NOUVEAUTÉ : Propriété pour stocker le fichier sélectionné
+  // Fichier sélectionné par l'utilisateur (Nouvelle image)
   selectedFile: File | null = null;
 
-  // popup de confirmation de suppression
+  // URL de l'image actuelle (pour prévisualisation en mode édition)
+  currentImagePreview: string | null = null;
+
+  // État de chargement du bouton (pour la latence)
+  isSubmitting = false;
+
+  // Popup de confirmation de suppression
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
   deleteTargetName = '';
@@ -70,7 +76,7 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // NOUVEAUTÉ : Gestion de la sélection de fichier
+  // Gestion de la sélection de fichier
   onFileSelected(event: any): void {
     if (event.target.files && event.target.files.length) {
       this.selectedFile = event.target.files[0];
@@ -103,7 +109,7 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    // NOUVEAUTÉ : Vérification du fichier image lors de la création
+    // Validation Image : Requise seulement en création
     if (this.editingProductId === null && !this.selectedFile) {
       this.error = 'Veuillez sélectionner une image pour créer un nouveau produit.';
       return;
@@ -117,60 +123,56 @@ export class AdminDashboardComponent implements OnInit {
       currency: this.newProduct.currency ?? 'EUR',
     };
 
+    // ACTIVE LE LOADING (Latence)
+    this.isSubmitting = true;
+
     if (this.editingProductId === null) {
-      // MODIFICATION : Appel de la méthode de création avec le fichier
+      // --- MODE CRÉATION ---
       if (this.selectedFile) {
-        this.createProduct(payload, this.selectedFile);
+        this.productService.create(payload, this.selectedFile).subscribe({
+          next: (created: Product) => {
+            this.products = [created, ...this.products];
+            this.resetForm();
+            // Le loading est désactivé dans resetForm()
+          },
+          error: (err) => {
+            this.handleError(err);
+            this.isSubmitting = false; // Stop loading en cas d'erreur
+          },
+        });
       }
     } else {
-      this.updateProduct(this.editingProductId, payload);
+      // --- MODE ÉDITION ---
+      this.productService.update(this.editingProductId, payload, this.selectedFile).subscribe({
+        next: (updated: Product) => {
+          this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
+          this.resetForm();
+          // Le loading est désactivé dans resetForm()
+        },
+        error: (err) => {
+          this.handleError(err);
+          this.isSubmitting = false; // Stop loading en cas d'erreur
+        },
+      });
     }
   }
 
-  // MODIFICATION : La méthode createProduct prend maintenant le fichier
-  private createProduct(payload: ProductCreateRequest, file: File): void {
-    this.productService.create(payload, file).subscribe({
-      next: (created: Product) => {
-        this.products = [created, ...this.products];
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error('Erreur création produit', err);
-        if (err.status === 400 || err.status === 409) {
-          this.error = 'Ce SKU existe déjà ou les données sont invalides.';
-        } else {
-          // Afficher l'erreur du serveur si possible
-          this.error = err.error?.message || 'Impossible de créer le produit. Vérifiez les logs du serveur.';
-        }
-      },
-    });
-  }
-
-  private updateProduct(id: number, payload: ProductCreateRequest): void {
-    this.productService.update(id, payload).subscribe({
-      next: (updated: Product) => {
-        this.products = this.products.map((p) => (p.id === id ? updated : p));
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error('Erreur mise à jour produit', err);
-        if (err.status === 404) {
-          this.error = 'Produit introuvable.';
-        } else if (err.status === 400 || err.status === 409) {
-          this.error = 'Ce SKU existe déjà ou les données sont invalides.';
-        } else {
-          this.error = 'Impossible de mettre à jour le produit.';
-        }
-      },
-    });
-  }
-
+  // Initialiser le formulaire pour l'édition
   startEdit(p: Product): void {
     this.showCreateForm = true;
     this.editingProductId = p.id;
     this.error = '';
-    // IMPORTANT : Ne pas charger le fichier lors de l'édition.
+
+    // Réinitialiser le fichier sélectionné (on part de zéro)
     this.selectedFile = null;
+
+    // Prévisualiser l'image existante si elle existe
+    if (p.imageUrls && p.imageUrls.length > 0) {
+      // AJOUTEZ BIEN LE http://localhost:8080 ici
+      this.currentImagePreview = 'http://localhost:8080' + p.imageUrls[0];
+    } else {
+      this.currentImagePreview = null;
+    }
 
     this.newProduct = {
       sku: p.sku,
@@ -185,10 +187,18 @@ export class AdminDashboardComponent implements OnInit {
     };
   }
 
+  handleError(err: any): void {
+    console.error('Erreur backend:', err);
+    this.error = err.error?.message || 'Une erreur est survenue. Vérifiez le serveur.';
+  }
+
   private resetForm(): void {
     this.showCreateForm = false;
     this.editingProductId = null;
-    this.selectedFile = null; // NOUVEAUTÉ : Réinitialiser le fichier
+    this.selectedFile = null;
+    this.currentImagePreview = null; // Reset prévisualisation
+    this.isSubmitting = false;       // Reset loading
+
     this.newProduct = {
       sku: '',
       name: '',
@@ -236,11 +246,5 @@ export class AdminDashboardComponent implements OnInit {
         this.cancelDelete();
       },
     });
-  }
-
-  // ---------- bouton "Retour à la liste" ----------
-
-  backToList(): void {
-    this.resetForm();
   }
 }

@@ -21,6 +21,7 @@
       ⚠️ Erreur : {{ error }}
     </p>
   </div>
+
   <div class="panel create-panel" *ngIf="showCreateForm">
 
     <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
@@ -39,7 +40,13 @@
       </div>
 
       <div class="form-group">
-        <label>Image principale {{ editingProductId ? '' : '*' }}</label>
+        <label>Image principale {{ editingProductId ? '(Laisser vide pour garder l\'actuelle)' : '*' }}</label>
+
+        <div class="current-img-preview" *ngIf="currentImagePreview && !selectedFile">
+          <p class="preview-label">Image actuelle :</p>
+          <img [src]="currentImagePreview" alt="Aperçu produit">
+        </div>
+
         <input
           type="file"
           name="image"
@@ -49,14 +56,9 @@
         />
 
         <p class="file-info" *ngIf="selectedFile">
-          Fichier sélectionné : <strong>{{ selectedFile.name }}</strong>
-        </p>
-
-        <p class="file-info muted" *ngIf="editingProductId !== null">
-          * L'édition d'image n'est pas supportée ici. Vous modifiez seulement les champs texte.
+          Fichier sélectionné (remplacera l'actuelle) : <strong>{{ selectedFile.name }}</strong>
         </p>
       </div>
-
       <div class="form-row three-cols">
         <div class="form-group">
           <label>Prix (€)</label>
@@ -85,8 +87,11 @@
           Produit actif
         </label>
 
-        <button type="submit" class="primary">
-          {{ editingProductId ? 'Mettre à jour le produit' : 'Créer le produit' }}
+        <button type="submit" class="primary" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting">⏳ Traitement en cours...</span>
+          <span *ngIf="!isSubmitting">
+            {{ editingProductId ? 'Mettre à jour le produit' : 'Créer le produit' }}
+          </span>
         </button>
       </div>
     </form>
@@ -98,7 +103,6 @@
     <p *ngIf="!loading && products.length === 0 && !error" class="empty-message">
       Aucun produit trouvé. Utilisez le bouton "+ Ajouter un produit" pour commencer.
     </p>
-
 
     <table class="product-table" *ngIf="products.length > 0">
       <thead>
@@ -138,7 +142,6 @@
       </tr>
       </tbody>
     </table>
-
   </div>
 
   <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">

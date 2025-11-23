@@ -34,41 +34,38 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  // 🔹 PUBLIC CATALOGUE
   getAll(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.baseUrl}/products`);
   }
 
-  // 🔹 DETAIL PRODUIT PUBLIC (doit passer par /api/products/**, PAS /admin)
   getOne(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.baseUrl}/products/${id}`);
   }
 
-  // 🔹 ADMIN
-
+  // CREATE (Reste inchangé)
   create(body: ProductCreateRequest, file: File): Observable<Product> {
     const formData = new FormData();
-
-    // 1. Ajouter le fichier image.
     formData.append('file', file, file.name);
-
-    // 2. Ajouter le DTO du produit, converti en chaîne JSON.
     formData.append('product', JSON.stringify(body));
-
     return this.http.post<Product>(`${this.baseUrl}/admin/products`, formData);
   }
 
+  // UPDATE (MODIFIÉ : Accepte maintenant un fichier optionnel)
+  update(id: number, body: ProductCreateRequest, file?: File | null): Observable<Product> {
+    const formData = new FormData();
 
-  update(id: number, body: ProductCreateRequest): Observable<Product> {
-    return this.http.put<Product>(
-      `${this.baseUrl}/admin/products/${id}`,
-      body,
-    );
+    // Ajoute le produit en JSON
+    formData.append('product', JSON.stringify(body));
+
+    // Ajoute le fichier SEULEMENT s'il est fourni (nouveau ou modifié)
+    if (file) {
+      formData.append('file', file, file.name);
+    }
+
+    return this.http.put<Product>(`${this.baseUrl}/admin/products/${id}`, formData);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/admin/products/${id}`,
-    );
+    return this.http.delete<void>(`${this.baseUrl}/admin/products/${id}`);
   }
 }

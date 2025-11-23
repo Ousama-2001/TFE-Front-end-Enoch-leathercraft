@@ -29,8 +29,6 @@
   }
 }
 
-/* Boutons header */
-
 .admin-actions {
   display: flex;
   gap: 1rem;
@@ -138,6 +136,38 @@
   }
 }
 
+/* --- STYLES PREVIEW IMAGE --- */
+.current-img-preview {
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 8px;
+  display: inline-block;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+
+  .preview-label {
+    margin: 0 0 5px 0;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  img {
+    height: 100px;
+    width: auto;
+    border-radius: 4px;
+    display: block;
+    object-fit: contain;
+  }
+}
+
+.file-info {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
 .form-footer {
   margin-top: 0.4rem;
   display: flex;
@@ -154,7 +184,8 @@
     background: linear-gradient(90deg, #a855f7, #ec4899);
     color: #ffffff;
     box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    border: none;
+    transition: all 0.15s ease;
 
     &:hover {
       transform: translateY(-1px);
@@ -162,9 +193,13 @@
       opacity: 0.95;
     }
 
-    &:active {
-      transform: translateY(0);
-      box-shadow: 0 6px 18px rgba(236, 72, 153, 0.35);
+    /* Style bouton désactivé (loading) */
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+      transform: none;
+      box-shadow: none;
     }
   }
 }
@@ -201,30 +236,21 @@
     background: rgba(30, 64, 175, 0.25);
   }
 
-  .desc {
-    max-width: 320px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  // NOUVEAUTÉ : Styles pour la vignette image
+  /* VIGNETTE IMAGE TABLEAU */
   .product-thumb {
-    width: 60px; /* Taille fixe pour la colonne */
-    padding: 0.4rem;
+    width: 70px;
+    padding: 5px;
+
     img {
-      max-width: 100%;
-      height: 40px; /* Hauteur fixe pour les vignettes */
-      width: auto;
-      display: block;
-      border-radius: 4px;
+      width: 60px;
+      height: 45px;
       object-fit: cover;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: block;
     }
   }
 }
-
-/* ... Le reste des styles (actions, modals, etc.) ... */
 
 /* ========= ACTION BUTTONS ========= */
 
@@ -244,54 +270,25 @@
   font-weight: 600;
 }
 
-/* edit = bleu */
 .btn-edit {
   background-color: #0d6efd;
   color: #fff;
-
-  &:hover {
-    background-color: #0b5ed7;
-    transform: translateY(-1px);
-  }
+  &:hover { background-color: #0b5ed7; transform: translateY(-1px); }
 }
 
-/* delete = rouge */
 .btn-delete {
   background-color: #dc3545;
   color: #fff;
-
-  &:hover {
-    background-color: #bb2d3b;
-    transform: translateY(-1px);
-  }
+  &:hover { background-color: #bb2d3b; transform: translateY(-1px); }
 }
 
 /* ========= LIGNE EN EDITION ========= */
-
 .editing-row {
   background: rgba(59, 130, 246, 0.15) !important;
   box-shadow: inset 3px 0 0 #3b82f6;
 }
 
-/* ========= SUPPRESSION DE LA LIGNE BLANCHE AU CLIC ========= */
-
-.product-table tr,
-.product-table tr * {
-  outline: none !important;
-}
-
-.product-table tr:focus,
-.product-table tr:focus-within {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.product-table tr:focus-within td {
-  border-bottom-color: rgba(31, 41, 55, 0.9) !important;
-}
-
 /* ========= POPUP SUPPRESSION ========= */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -306,7 +303,7 @@
 
 .modal {
   cursor: default;
-  background: #0f172a; /* bleu nuit */
+  background: #0f172a;
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 20px;
   padding: 25px 28px;
@@ -323,15 +320,8 @@
   color: #f1f5f9;
 }
 
-.modal p {
-  margin: 0 0 20px;
-  font-size: 0.95rem;
-  color: #cbd5e1;
-}
-
-.modal strong {
-  color: #f472b6;
-}
+.modal p { margin: 0 0 20px; font-size: 0.95rem; color: #cbd5e1; }
+.modal strong { color: #f472b6; }
 
 .modal-actions {
   display: flex;
@@ -348,10 +338,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.15s ease-out;
-}
-
-.btn-cancel:hover {
-  background: #475569;
+  &:hover { background: #475569; }
 }
 
 .btn-confirm-delete {
@@ -363,136 +350,20 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.15s ease-out;
+  &:hover { background: #b91c1c; }
 }
 
-.btn-confirm-delete:hover {
-  background: #b91c1c;
-}
-
-/* Animation */
 @keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-/* ====== BOUTON DECONNEXION ====== */
-button.logout {
-  padding: 0.55rem 1.3rem;
-  border-radius: 999px;
-  border: none;
-  background: #ef4444;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
-  transition: 0.15s ease-in-out;
-
-  &:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 28px rgba(239, 68, 68, 0.55);
-  }
-}
-.modal-overlay {
-  cursor: pointer;
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.modal {
-  cursor: default;
-}
-
-/* ------ POPUP SUPPRESSION (DARK THEME) ------ */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  cursor: pointer;
-}
-
-.modal {
-  cursor: default;
-  background: #0f172a; /* bleu nuit */
+.empty-message {
+  padding: 20px;
+  text-align: center;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 20px;
-  padding: 25px 28px;
-  width: 420px;
-  color: #e5e7eb;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
-  animation: modal-in 0.18s ease-out;
-}
-
-.modal h3 {
-  margin: 0 0 10px;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #f1f5f9;
-}
-
-.modal p {
-  margin: 0 0 20px;
-  font-size: 0.95rem;
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: 8px;
+  margin-top: 1rem;
   color: #cbd5e1;
-}
-
-.modal strong {
-  color: #f472b6;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.btn-cancel {
-  background: #334155;
-  color: #e2e8f0;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.15s ease-out;
-}
-
-.btn-cancel:hover {
-  background: #475569;
-}
-
-.btn-confirm-delete {
-  background: #dc2626;
-  color: #fff;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.15s ease-out;
-}
-
-.btn-confirm-delete:hover {
-  background: #b91c1c;
-}
-
-/* Animation */
-@keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
