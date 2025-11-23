@@ -39,8 +39,7 @@ export class ProductDetailComponent implements OnInit {
       next: (p) => {
         this.product = p;
         this.loading = false;
-
-        // recharge l’état du panier
+        // recharge l’état du panier pour avoir les quantités à jour
         this.cartService.loadCart().subscribe();
       },
       error: (err) => {
@@ -55,27 +54,22 @@ export class ProductDetailComponent implements OnInit {
     this.router.navigate(['/products']);
   }
 
-  // quantité actuelle du produit dans le panier
+  // Quantité actuelle du produit dans le panier
   get quantity(): number {
     if (!this.product) return 0;
-
     const item = this.cartService.items.find(
       (i: CartItem) => i.productId === this.product!.id,
     );
-
     return item ? item.quantity : 0;
   }
 
-  // +1
   increase(): void {
-    if (!this.product?.id) return;
+    if (!this.product || !this.product.id) return;
     this.cartService.addProduct(this.product.id, 1).subscribe();
   }
 
-  // -1 ou suppression
   decrease(): void {
-    if (!this.product?.id) return;
-
+    if (!this.product || !this.product.id) return;
     if (this.quantity <= 1) {
       this.cartService.removeItem(this.product.id).subscribe();
     } else {
@@ -85,14 +79,12 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  // bouton principal
   addToCart(): void {
-    if (!this.product?.id) return;
+    if (!this.product || !this.product.id) return;
 
     this.cartService.addProduct(this.product.id, 1).subscribe({
       next: () => {
         this.addedMessage = 'Produit ajouté au panier ✔';
-
         const btn = document.querySelector('.btn-cart-animated');
         btn?.classList.add('added');
 

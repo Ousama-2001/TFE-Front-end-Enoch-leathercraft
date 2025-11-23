@@ -1,111 +1,235 @@
-/* Barre de navigation */
+/* ====== Layout global ====== */
+:host {
+  display: block;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #101935 0, #050816 55%, #02010a 100%);
+  color: #f9f9ff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ====== NAVBAR ====== */
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 20;
-  height: 60px;
-  padding: 0 32px;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(90deg, #050814 0%, #060719 60%, #050814 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.75rem 2.5rem;
+  background: linear-gradient(90deg, rgba(5, 8, 22, 0.92), rgba(7, 11, 30, 0.92));
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.nav-left,
-.nav-right {
+.navbar-left .brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+}
+
+.navbar-left .brand:hover {
+  color: #f973ff;
+}
+
+/* ====== Navbar right zone ====== */
+.navbar-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 1rem;
 }
 
-.brand {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #f9fafb;
-  text-decoration: none;
-}
-
-/* Cart dans la navbar */
-.nav-cart {
+/* ---- Cart link ---- */
+.cart-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
   border-radius: 999px;
-  background: rgba(10, 16, 38, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #e5e7eb;
+  background: radial-gradient(circle at 0 0, #f973ff 0, #4f46e5 45%, #18181b 100%);
+  color: #f9f9ff;
   text-decoration: none;
   font-size: 0.9rem;
+  box-shadow: 0 0 18px rgba(249, 115, 255, 0.45);
   cursor: pointer;
-  transition: 0.18s ease-in-out;
 }
 
-.nav-cart-icon {
-  font-size: 1.05rem;
+.cart-link i {
+  font-size: 0.9rem;
 }
 
-.nav-cart-badge {
-  min-width: 20px;
-  padding: 2px 6px;
+.cart-link span {
+  font-weight: 500;
+}
+
+/* pastille de quantité */
+.cart-badge {
+  min-width: 1.4rem;
+  height: 1.4rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ff4db8, #9945fa);
-  color: white;
-  font-size: 0.8rem;
-  text-align: center;
-  font-weight: 600;
-}
-
-.nav-cart:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 14px rgba(153, 69, 250, 0.55);
-}
-
-/* Bouton logout */
-.nav-logout {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #ff4b8b, #ff6a4b);
-  color: white;
-  font-size: 22px;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: 0.18s ease-in-out;
-  box-shadow: 0 0 12px rgba(255, 75, 139, 0.6);
+  font-size: 0.75rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #fbbf24;
 }
 
-.nav-logout:hover {
-  transform: translateY(-1px) scale(1.06);
-  box-shadow: 0 0 20px rgba(255, 75, 139, 0.85);
+.cart-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(249, 115, 255, 0.6);
 }
 
-/* Mini-cart (placeholder) */
+/* ---- Logout button ---- */
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: radial-gradient(circle at 0 0, #f97373 0, #ef4444 40%, #7f1d1d 100%);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(248, 113, 113, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.logout-btn i {
+  font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 0 22px rgba(248, 113, 113, 0.75);
+}
+
+/* ====== MINI CART ====== */
 .mini-cart {
   position: fixed;
-  top: 60px;
-  right: 32px;
+  top: 3.1rem; /* juste sous la navbar */
+  right: 1.8rem;
   width: 260px;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(9, 13, 30, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  z-index: 15;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(10, 16, 35, 0.97);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+  z-index: 40;
+  animation: miniCartFadeIn 0.18s ease-out;
 }
 
-/* Responsive navbar */
+@keyframes miniCartFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-cart h3 {
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.mini-cart-empty {
+  font-size: 0.8rem;
+  margin: 0.3rem 0 0;
+  color: #9ca3af;
+}
+
+/* Liste des items */
+.mini-cart-list {
+  list-style: none;
+  margin: 0.25rem 0 0.75rem;
+  padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.mini-cart-list li {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+}
+
+.mini-cart-list li:last-child {
+  border-bottom: none;
+}
+
+.mini-cart-item-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.mini-cart-item-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+.mini-cart-item-info .line-total {
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* Footer du mini-panier */
+.mini-cart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.mini-cart-total strong {
+  color: #fbbf24;
+}
+
+.mini-cart-button {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1, #f973ff);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mini-cart-button:hover {
+  filter: brightness(1.05);
+}
+
+/* ====== Responsive ====== */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 14px;
+    padding: 0.6rem 1.1rem;
   }
 
-  .nav-cart-label {
-    display: none;
+  .navbar-right {
+    gap: 0.6rem;
+  }
+
+  .cart-link span:nth-child(2) {
+    display: none; /* on cache le texte 'Panier' sur petit écran */
+  }
+
+  .logout-btn span {
+    display: none; /* on garde que l'icône */
+  }
+
+  .mini-cart {
+    right: 0.8rem;
+    width: 230px;
   }
 }

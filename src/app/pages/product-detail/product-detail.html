@@ -4,41 +4,39 @@
   </button>
 
   <div class="product-detail-card">
-    <!-- COLONNE IMAGE -->
     <div class="left">
       <div class="image-wrapper">
         <img
-          [src]="product?.imagePath || 'assets/img/products/placeholder-bag.jpg'"
-          [alt]="product?.name"
+          [src]="product.imageUrls && product.imageUrls.length > 0
+                  ? ('http://localhost:8080' + product.imageUrls[0])
+                  : 'assets/img/products/placeholder-bag.jpg'"
+          [alt]="product.name"
         />
       </div>
     </div>
 
-    <!-- COLONNE TEXTE -->
     <div class="right">
-      <h1>{{ product?.name }}</h1>
+      <h1>{{ product.name }}</h1>
 
       <p class="price">
-        {{ product?.price | currency : 'EUR' }}
+        {{ product.price | currency : 'EUR' }}
       </p>
 
       <div class="meta">
-        <p *ngIf="product?.material">
-          <strong>Matériau :</strong> {{ product?.material }}
+        <p *ngIf="product.material">
+          <strong>Matériau :</strong> {{ product.material }}
         </p>
-        <p *ngIf="product?.description">
-          {{ product?.description }}
+        <p *ngIf="product.description">
+          {{ product.description }}
         </p>
       </div>
 
-      <!-- Ligne quantité + / - -->
       <div class="qty-row">
         <button type="button" class="round-btn" (click)="decrease()">−</button>
         <span class="qty-label">{{ quantity }}</span>
         <button type="button" class="round-btn" (click)="increase()">+</button>
       </div>
 
-      <!-- Bouton principal + message -->
       <div class="actions">
         <button
           class="btn-cart-animated"

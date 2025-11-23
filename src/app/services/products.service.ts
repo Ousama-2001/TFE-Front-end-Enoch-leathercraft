@@ -13,7 +13,7 @@ export interface Product {
   currency: string;
   weightGrams?: number;
   isActive?: boolean;
-  imagePath?: string;
+  imageUrls?: string[];
 }
 
 export interface ProductCreateRequest {
@@ -45,9 +45,19 @@ export class ProductService {
   }
 
   // 🔹 ADMIN
-  create(body: ProductCreateRequest): Observable<Product> {
-    return this.http.post<Product>(`${this.baseUrl}/admin/products`, body);
+
+  create(body: ProductCreateRequest, file: File): Observable<Product> {
+    const formData = new FormData();
+
+    // 1. Ajouter le fichier image.
+    formData.append('file', file, file.name);
+
+    // 2. Ajouter le DTO du produit, converti en chaîne JSON.
+    formData.append('product', JSON.stringify(body));
+
+    return this.http.post<Product>(`${this.baseUrl}/admin/products`, formData);
   }
+
 
   update(id: number, body: ProductCreateRequest): Observable<Product> {
     return this.http.put<Product>(
@@ -59,15 +69,6 @@ export class ProductService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(
       `${this.baseUrl}/admin/products/${id}`,
-    );
-  }
-
-  uploadImage(id: number, file: File): Observable<Product> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<Product>(
-      `${this.baseUrl}/admin/products/${id}/image`,
-      formData,
     );
   }
 }

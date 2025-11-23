@@ -24,6 +24,9 @@ export class AdminDashboardComponent implements OnInit {
   // null = création / non-null = édition
   editingProductId: number | null = null;
 
+  // NOUVEAUTÉ : Propriété pour stocker le fichier sélectionné
+  selectedFile: File | null = null;
+
   // popup de confirmation de suppression
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
@@ -67,6 +70,13 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // NOUVEAUTÉ : Gestion de la sélection de fichier
+  onFileSelected(event: any): void {
+    if (event.target.files && event.target.files.length) {
+      this.selectedFile = event.target.files[0];
+    }
+  }
+
   toggleCreateForm(): void {
     if (this.editingProductId !== null) {
       this.resetForm();
@@ -93,6 +103,12 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // NOUVEAUTÉ : Vérification du fichier image lors de la création
+    if (this.editingProductId === null && !this.selectedFile) {
+      this.error = 'Veuillez sélectionner une image pour créer un nouveau produit.';
+      return;
+    }
+
     const slug = this.slugify(this.newProduct.name);
 
     const payload: ProductCreateRequest = {
@@ -102,14 +118,18 @@ export class AdminDashboardComponent implements OnInit {
     };
 
     if (this.editingProductId === null) {
-      this.createProduct(payload);
+      // MODIFICATION : Appel de la méthode de création avec le fichier
+      if (this.selectedFile) {
+        this.createProduct(payload, this.selectedFile);
+      }
     } else {
       this.updateProduct(this.editingProductId, payload);
     }
   }
 
-  private createProduct(payload: ProductCreateRequest): void {
-    this.productService.create(payload).subscribe({
+  // MODIFICATION : La méthode createProduct prend maintenant le fichier
+  private createProduct(payload: ProductCreateRequest, file: File): void {
+    this.productService.create(payload, file).subscribe({
       next: (created: Product) => {
         this.products = [created, ...this.products];
         this.resetForm();
@@ -119,7 +139,8 @@ export class AdminDashboardComponent implements OnInit {
         if (err.status === 400 || err.status === 409) {
           this.error = 'Ce SKU existe déjà ou les données sont invalides.';
         } else {
-          this.error = 'Impossible de créer le produit.';
+          // Afficher l'erreur du serveur si possible
+          this.error = err.error?.message || 'Impossible de créer le produit. Vérifiez les logs du serveur.';
         }
       },
     });
@@ -148,6 +169,8 @@ export class AdminDashboardComponent implements OnInit {
     this.showCreateForm = true;
     this.editingProductId = p.id;
     this.error = '';
+    // IMPORTANT : Ne pas charger le fichier lors de l'édition.
+    this.selectedFile = null;
 
     this.newProduct = {
       sku: p.sku,
@@ -165,6 +188,7 @@ export class AdminDashboardComponent implements OnInit {
   private resetForm(): void {
     this.showCreateForm = false;
     this.editingProductId = null;
+    this.selectedFile = null; // NOUVEAUTÉ : Réinitialiser le fichier
     this.newProduct = {
       sku: '',
       name: '',

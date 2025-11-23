@@ -12,8 +12,17 @@
     </div>
   </div>
 
-  <!-- Formulaire création / édition -->
+  <div class="state-messages">
+    <p *ngIf="loading" class="loading-message">
+      <span class="spinner">⏳</span> Chargement des produits...
+    </p>
+
+    <p *ngIf="error" class="error-message panel error">
+      ⚠️ Erreur : {{ error }}
+    </p>
+  </div>
   <div class="panel create-panel" *ngIf="showCreateForm">
+
     <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
 
     <form (ngSubmit)="submitForm()" class="create-form">
@@ -27,6 +36,25 @@
           <label>SKU *</label>
           <input type="text" [(ngModel)]="newProduct.sku" name="sku" required />
         </div>
+      </div>
+
+      <div class="form-group">
+        <label>Image principale {{ editingProductId ? '' : '*' }}</label>
+        <input
+          type="file"
+          name="image"
+          (change)="onFileSelected($event)"
+          [required]="editingProductId === null"
+          accept="image/jpeg, image/png"
+        />
+
+        <p class="file-info" *ngIf="selectedFile">
+          Fichier sélectionné : <strong>{{ selectedFile.name }}</strong>
+        </p>
+
+        <p class="file-info muted" *ngIf="editingProductId !== null">
+          * L'édition d'image n'est pas supportée ici. Vous modifiez seulement les champs texte.
+        </p>
       </div>
 
       <div class="form-row three-cols">
@@ -64,18 +92,23 @@
     </form>
   </div>
 
-  <!-- Tableau -->
   <div class="panel">
     <h2 class="section-title">Produits existants</h2>
+
+    <p *ngIf="!loading && products.length === 0 && !error" class="empty-message">
+      Aucun produit trouvé. Utilisez le bouton "+ Ajouter un produit" pour commencer.
+    </p>
+
 
     <table class="product-table" *ngIf="products.length > 0">
       <thead>
       <tr>
         <th>ID</th>
+        <th>IMAGE</th>
         <th>NOM</th>
-        <th>DESCRIPTION</th>
         <th>PRIX</th>
         <th>SKU</th>
+        <th>ACTIF</th>
         <th>ACTIONS</th>
       </tr>
       </thead>
@@ -83,10 +116,20 @@
       <tbody>
       <tr *ngFor="let p of products" [class.editing-row]="editingProductId === p.id">
         <td>{{ p.id }}</td>
+
+        <td class="product-thumb">
+          <img
+            [src]="p.imageUrls && p.imageUrls.length > 0
+                     ? ('http://localhost:8080' + p.imageUrls[0])
+                     : 'assets/img/products/placeholder-thumb.jpg'"
+            [alt]="p.name"
+          />
+        </td>
+
         <td>{{ p.name }}</td>
-        <td>{{ p.description }}</td>
         <td>{{ p.price | currency:'EUR' }}</td>
         <td>{{ p.sku }}</td>
+        <td>{{ p.isActive ? 'Oui' : 'Non' }}</td>
 
         <td class="actions">
           <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
@@ -96,12 +139,8 @@
       </tbody>
     </table>
 
-    <p *ngIf="products.length === 0">
-      Aucun produit trouvé.
-    </p>
   </div>
 
-  <!-- Popup suppression -->
   <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
     <div class="modal" (click)="$event.stopPropagation()">
       <h3>Confirmer la suppression</h3>

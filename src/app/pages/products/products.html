@@ -1,11 +1,9 @@
 <div class="products-page">
-  <!-- Bandeau titre -->
   <section class="hero">
     <h1>Enoch Leathercraft</h1>
     <p>Découvrez nos sacs, sacoches, ceintures et portefeuilles faits main.</p>
   </section>
 
-  <!-- SECTION PRODUITS -->
   <section
     class="products-section"
     *ngIf="products && products.length; else noProducts"
@@ -14,15 +12,16 @@
 
     <div class="products-grid">
       <article class="product-card" *ngFor="let p of paginatedProducts">
-        <!-- Image produit -->
+
         <div class="product-image">
           <img
-            src="assets/img/products/placeholder-bag.jpg"
+            [src]="p.imageUrls && p.imageUrls.length > 0
+                  ? ('http://localhost:8080' + p.imageUrls[0])
+                  : 'assets/img/products/placeholder-bag.jpg'"
             [alt]="p.name"
           />
         </div>
 
-        <!-- Corps carte -->
         <div class="product-body">
           <h3 class="product-name">{{ p.name }}</h3>
 
@@ -36,14 +35,12 @@
           </ng-template>
         </div>
 
-        <!-- Footer : prix + actions -->
         <div class="card-footer">
           <div class="price">
             {{ p.price | currency : 'EUR' }}
           </div>
 
           <div class="card-actions">
-            <!-- Si produit pas encore dans le panier -->
             <ng-container *ngIf="getQuantity(p) === 0; else qtyControls">
               <button
                 type="button"
@@ -55,28 +52,14 @@
               </button>
             </ng-container>
 
-            <!-- Si produit déjà dans le panier -->
             <ng-template #qtyControls>
               <div class="qty-pill">
-                <button
-                  type="button"
-                  (click)="decrease(p)"
-                  aria-label="Diminuer la quantité"
-                >
-                  −
-                </button>
+                <button type="button" (click)="decrease(p)">−</button>
                 <span>{{ getQuantity(p) }}</span>
-                <button
-                  type="button"
-                  (click)="increase(p)"
-                  aria-label="Augmenter la quantité"
-                >
-                  +
-                </button>
+                <button type="button" (click)="increase(p)">+</button>
               </div>
             </ng-template>
 
-            <!-- Voir le produit -->
             <a
               class="btn-icon btn-eye"
               [routerLink]="['/products', p.id]"
@@ -89,7 +72,6 @@
       </article>
     </div>
 
-    <!-- PAGINATION -->
     <div class="pagination" *ngIf="totalPages > 1">
       <button
         class="page-btn"

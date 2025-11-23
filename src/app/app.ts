@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd, RouterLink } from '@angular/router';
+import {
+  Router,
+  RouterOutlet,
+  NavigationEnd,
+  RouterLink,
+} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './services/auth.service';
 import { CartService } from './services/cart.service';
@@ -20,8 +25,10 @@ export class AppComponent implements OnInit {
     private router: Router,
     public cart: CartService
   ) {
+    // au démarrage : savoir si on est sur /login ou /register
     this.updateNavbarVisibility(this.router.url);
 
+    // mettre à jour la navbar à chaque navigation
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.updateNavbarVisibility(event.urlAfterRedirects);
@@ -30,7 +37,12 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cart.loadCart().subscribe();
+    // on récupère le panier dès que l'app démarre (si token présent)
+    this.cart.loadCart().subscribe({
+      error: () => {
+        // silencieux : si pas connecté, pas grave
+      },
+    });
   }
 
   private updateNavbarVisibility(url: string): void {
@@ -40,14 +52,14 @@ export class AppComponent implements OnInit {
     );
   }
 
-  // 🔥 Correction : méthode compatible 100% avec ton AuthService actuel
+  // Utilisé dans le template pour afficher / cacher le bouton Déconnexion
   get isLoggedIn(): boolean {
-    // si ton AuthService a déjà une méthode → on l'utilise
+    // si ton AuthService expose déjà isAuthenticated(), on l’utilise
     if (typeof (this.auth as any).isAuthenticated === 'function') {
       return this.auth.isAuthenticated();
     }
 
-    // sinon → fallback sur token localStorage
+    // sinon on se base sur la présence du token
     return !!localStorage.getItem('token');
   }
 
