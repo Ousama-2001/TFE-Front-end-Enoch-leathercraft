@@ -1,6 +1,6 @@
 .products-page {
   min-height: 100vh;
-  padding: 40px 60px;
+  padding: 40px 60px 60px;
   background: radial-gradient(circle at top, #12254b 0, #050811 55%, #02030a 100%);
   color: #f5f7ff;
   box-sizing: border-box;
@@ -10,13 +10,13 @@
 .hero {
   max-width: 900px;
   margin: 0 auto 30px auto;
-  text-align: left;
+  text-align: center;
 }
 
 .hero h1 {
-  font-size: 2.4rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .hero p {
@@ -26,25 +26,25 @@
 
 /* Section produits */
 .products-section {
-  max-width: 1100px;
+  max-width: 1150px;
   margin: 0 auto;
 }
 
 .section-title {
-  font-size: 1.4rem;
-  margin-bottom: 18px;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
 }
 
 /* Grille de cartes */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 22px;
 }
 
 /* Carte produit */
 .product-card {
-  background: rgba(7, 12, 26, 0.95);
+  background: rgba(7, 12, 26, 0.96);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
@@ -53,6 +53,7 @@
   flex-direction: column;
 }
 
+/* Image */
 .product-image {
   width: 100%;
   height: 190px;
@@ -68,8 +69,9 @@
   object-fit: contain;
 }
 
+/* Corps */
 .product-body {
-  padding: 16px 18px 16px 18px;
+  padding: 16px 18px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -91,12 +93,13 @@
   font-style: italic;
 }
 
-/* Prix + bouton */
-.product-footer {
-  margin-top: 6px;
+/* Footer : prix + actions */
+.card-footer {
+  padding: 10px 18px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .price {
@@ -104,23 +107,102 @@
   font-size: 1rem;
 }
 
-/* Bouton principal */
-.btn-primary {
-  background: linear-gradient(90deg, #7b42ff, #ff4b8b);
-  border: none;
-  padding: 8px 14px;
-  color: white;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 999px;
-  cursor: pointer;
-  box-shadow: 0 4px 18px rgba(255, 75, 139, 0.45);
-  transition: 0.2s ease;
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(255, 75, 139, 0.6);
+/* Bouton icône (cart + eye) */
+.btn-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #ff4db8, #9945fa);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.18s ease-in-out;
+  box-shadow: 0 0 14px rgba(255, 77, 184, 0.4);
+}
+
+.btn-icon:hover {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: 0 0 20px rgba(255, 77, 184, 0.7);
+}
+
+.btn-eye {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+}
+
+/* Pill quantité */
+.qty-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(13, 21, 46, 0.95);
+  padding: 6px 10px;
+  border-radius: 999px;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+  font-size: 0.85rem;
+}
+
+.qty-pill button {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #f5f7ff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.15s ease;
+}
+
+.qty-pill button:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: scale(1.08);
+}
+
+.qty-pill span {
+  min-width: 16px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.page-btn {
+  background: #151c33;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 6px 14px;
+  color: #f5f7ff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: rgba(230, 236, 255, 0.85);
 }
 
 /* Message vide */
@@ -133,221 +215,20 @@
 /* Responsive */
 @media (max-width: 768px) {
   .products-page {
-    padding: 20px 16px;
+    padding: 20px 16px 40px;
   }
 
   .hero {
     text-align: center;
   }
-}
-.cart-link-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-}
 
-.link-to-cart {
-  color: #ff4b8b;
-  font-weight: 600;
-  text-decoration: none;
-  font-size: 1.1rem;
-}
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.link-to-cart:hover {
-  text-decoration: underline;
-}
-.cart-link-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
-.link-to-cart {
-  color: #ff4b8b;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.link-to-cart:hover {
-  text-decoration: underline;
-}
-
-
-
-.btn-secondary {
-  background: transparent;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 6px 12px;
-  color: #f5f7ff;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-/* pagination */
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.page-btn {
-  background: #151c33;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  padding: 6px 14px;
-  color: #f5f7ff;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.page-info {
-  font-size: 0.9rem;
-  color: rgba(230, 236, 255, 0.85);
-}
-.product-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.btn-secondary {
-  background: transparent;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 6px 14px;
-  color: #f5f7ff;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-
-
-/* pagination */
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-
-.page-btn {
-  background: #151c33;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  padding: 6px 14px;
-  color: #f5f7ff;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.page-info {
-  font-size: 0.9rem;
-  color: rgba(230, 236, 255, 0.85);
-}
-
-/* --- footer carte produit --- */
-.product-footer {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.price {
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-/* conteneur boutons */
-.product-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* --- bouton "Ajouter au panier" style e-commerce --- */
-.btn-add-cart {
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 255, 0.9);
-  background: rgba(15, 23, 42, 0.85);
-  color: #e5e7eb;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: 0.18s ease;
-}
-
-.btn-add-cart::before {
-  content: "🛒";
-  font-size: 0.9rem;
-}
-
-.btn-add-cart:hover {
-  background: rgba(30, 64, 175, 0.95);
-  border-color: rgba(191, 219, 254, 1);
-  color: #f9fafb;
-  transform: translateY(-1px);
-}
-
-.btn-add-cart:active {
-  transform: translateY(0);
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 1);
-}
-
-/* --- contrôleur quantité [- qte +] --- */
-.qty-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(75, 85, 99, 0.9);
-  gap: 10px;
-  font-size: 0.85rem;
-}
-
-.qty-pill span {
-  min-width: 14px;
-  text-align: center;
-  color: #e5e7eb;
-  font-weight: 600;
-}
-
-.qty-pill button {
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: none;
-  background: rgba(31, 41, 55, 1);
-  color: #e5e7eb;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: 0.16s ease;
-}
-
-.qty-pill button:hover {
-  background: rgba(55, 65, 81, 1);
-}
-
-.qty-pill button:active {
-  transform: scale(0.9);
+  .card-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }

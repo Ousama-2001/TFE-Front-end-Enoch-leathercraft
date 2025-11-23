@@ -15,7 +15,7 @@ export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   loading = false;
   error = '';
-  addedMessage = '';   // pour le texte "Produit ajouté au panier ✔"
+  addedMessage = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -40,7 +40,7 @@ export class ProductDetailComponent implements OnInit {
         this.product = p;
         this.loading = false;
 
-        // on récupère l'état du panier pour les quantités
+        // recharge l’état du panier
         this.cartService.loadCart().subscribe();
       },
       error: (err) => {
@@ -60,7 +60,7 @@ export class ProductDetailComponent implements OnInit {
     if (!this.product) return 0;
 
     const item = this.cartService.items.find(
-      (i: CartItem) => i.productId === this.product!.id
+      (i: CartItem) => i.productId === this.product!.id,
     );
 
     return item ? item.quantity : 0;
@@ -69,22 +69,23 @@ export class ProductDetailComponent implements OnInit {
   // +1
   increase(): void {
     if (!this.product?.id) return;
-
     this.cartService.addProduct(this.product.id, 1).subscribe();
   }
 
-  // -1 ou suppression si on arrive à 0
+  // -1 ou suppression
   decrease(): void {
     if (!this.product?.id) return;
 
     if (this.quantity <= 1) {
       this.cartService.removeItem(this.product.id).subscribe();
     } else {
-      this.cartService.updateQuantity(this.product.id, this.quantity - 1).subscribe();
+      this.cartService
+        .updateQuantity(this.product.id, this.quantity - 1)
+        .subscribe();
     }
   }
 
-  // bouton principal "Ajouter au panier"
+  // bouton principal
   addToCart(): void {
     if (!this.product?.id) return;
 

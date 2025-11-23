@@ -1,41 +1,45 @@
 <!-- NAVBAR visible sauf sur /login et /register -->
 <nav class="navbar" *ngIf="showNavbar">
-  <div class="left">
+  <div class="nav-left">
     <a routerLink="/" class="brand">Enoch Leathercraft</a>
   </div>
 
-  <div class="right">
-    <!-- Lien vers le panier avec nombre d'articles -->
+  <div class="nav-right">
+    <!-- Lien vers le panier -->
     <a
       routerLink="/cart"
-      class="cart-link"
-      (mouseenter)="onCartEnter()"
+      class="nav-cart"
+      (mouseenter)="onCartEnter()
+      "
       (mouseleave)="onCartLeave()"
     >
-      🧺 Panier ({{ cart.totalQuantity }})
+      <span class="nav-cart-icon">👜</span>
+      <span class="nav-cart-label">Panier</span>
+      <span class="nav-cart-badge">{{ cart.totalQuantity }}</span>
     </a>
 
-    <!-- Bouton déconnexion seulement si connecté -->
+    <!-- Bouton déconnexion -->
     <button
-      class="logout-btn"
+      class="nav-logout"
       *ngIf="isLoggedIn"
+      type="button"
       (click)="onLogout()"
+      aria-label="Se déconnecter"
     >
-      Déconnexion
+      🔓
     </button>
   </div>
 </nav>
 
-<!-- Mini-cart (optionnel, pour plus tard) -->
+<!-- Mini-cart (placeholder pour plus tard) -->
 <div
   class="mini-cart"
   *ngIf="showMiniCart"
   (mouseenter)="onCartEnter()"
   (mouseleave)="onCartLeave()"
 >
-  <!-- Tu pourras afficher un résumé ici plus tard -->
   <p>Mini aperçu du panier à venir…</p>
 </div>
 
-<!-- Le reste de l'appli -->
+<!-- Le reste de l'application -->
 <router-outlet></router-outlet>
