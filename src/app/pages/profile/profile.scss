@@ -1,0 +1,136 @@
+.profile-page {
+  min-height: 100vh;
+  padding: 40px 60px;
+  background: radial-gradient(circle at top, #12254b 0, #050811 55%, #02030a 100%);
+  color: #f5f7ff;
+  font-family: system-ui, sans-serif;
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 20px;
+
+  h1 { margin: 0; font-size: 2rem; font-weight: 700; }
+  .subtitle { margin: 5px 0 0; color: #94a3b8; }
+}
+
+.btn-logout {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fff;
+  }
+}
+
+/* Section Commandes */
+.orders-section {
+  max-width: 800px;
+  margin: 0 auto;
+
+  h2 { margin-bottom: 20px; font-size: 1.4rem; }
+}
+
+/* Liste Cartes */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.order-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  transition: transform 0.2s;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.8);
+    transform: translateX(5px);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+
+  .ref {
+    font-family: monospace;
+    color: #a855f7;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amount {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Badges Statut */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  /* Status par défaut ou PENDING */
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+
+  &.PAID {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+
+  &.CANCELLED {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+
+  .btn-link {
+    color: #a855f7;
+    margin-top: 10px;
+    display: inline-block;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-page { padding: 20px; }
+  .profile-header { flex-direction: column; gap: 15px; text-align: center; align-items: stretch; }
+}

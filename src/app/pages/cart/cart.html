@@ -21,16 +21,16 @@
 
         <td>{{ item.unitPrice | currency: 'EUR' }}</td>
 
-        <td>
-          <button type="button" (click)="decrease(item)">−</button>
+        <td class="qty-buttons">
+          <button type="button" class="btn-qty" (click)="decrease(item)">−</button>
           <span class="qty">{{ item.quantity }}</span>
-          <button type="button" (click)="increase(item)">+</button>
+          <button type="button" class="btn-qty" (click)="increase(item)">+</button>
         </td>
 
         <td>{{ item.lineTotal | currency: 'EUR' }}</td>
 
         <td>
-          <button type="button" (click)="remove(item)">
+          <button type="button" class="btn-remove" (click)="remove(item)">
             Supprimer
           </button>
         </td>
@@ -41,12 +41,20 @@
     <div class="cart-summary">
       <p>
         Total ({{ cart.totalQuantity }} article(s)) :
-        <strong>{{ cart.totalAmount | currency: 'EUR' }}</strong>
+        <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
       </p>
 
       <div class="cart-actions">
-        <button type="button" (click)="clearCart()">
+        <button type="button" class="btn-clear" (click)="clearCart()">
           Vider le panier
+        </button>
+
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="checkout()"
+        >
+          Valider ma commande
         </button>
 
         <a routerLink="/products">
