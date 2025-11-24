@@ -1,54 +1,54 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-import {
-  ProductService,
-  Product,
-  ProductCreateRequest,
-} from '../../services/products.service';
+import { ProductService, Product, ProductCreateRequest } from '../../services/products.service';
+import { Observable } from 'rxjs';
+
+// Interfaces pour les commandes dans le dashboard
+interface OrderItem { productName: string; quantity: number; unitPrice: number; }
+interface AdminOrder {
+  id: number;
+  reference: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  items: OrderItem[];
+}
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboardComponent implements OnInit {
+
+  activeTab: 'products' | 'orders' = 'products';
+
+  // --- Produits ---
   products: Product[] = [];
-  loading = false;
-  error = '';
+  loadingProducts = false;
+  error: string = ''; // Ajout de la propriété error manquante
   showCreateForm = false;
-
-  // null = création / non-null = édition
   editingProductId: number | null = null;
-
-  // Fichier sélectionné par l'utilisateur (Nouvelle image)
   selectedFile: File | null = null;
-
-  // URL de l'image actuelle (pour prévisualisation en mode édition)
   currentImagePreview: string | null = null;
-
-  // État de chargement du bouton (pour la latence)
   isSubmitting = false;
-
-  // Popup de confirmation de suppression
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
   deleteTargetName = '';
-
   newProduct: ProductCreateRequest = {
-    sku: '',
-    name: '',
-    description: '',
-    material: '',
-    price: 0,
-    weightGrams: 0,
-    isActive: true,
-    currency: 'EUR',
-    slug: '',
+    sku: '', name: '', description: '', material: '', price: 0,
+    weightGrams: 0, isActive: true, currency: 'EUR', slug: '',
   };
+
+  // --- Commandes ---
+  orders: AdminOrder[] = [];
+  loadingOrders = false;
+  private http = inject(HttpClient);
 
   constructor(
     private productService: ProductService,
@@ -59,36 +59,29 @@ export class AdminDashboardComponent implements OnInit {
     this.loadProducts();
   }
 
-  loadProducts(): void {
-    this.loading = true;
-    this.error = '';
+  // --- NAVIGATION ONGLETS ---
+  switchTab(tab: 'products' | 'orders'): void {
+    this.activeTab = tab;
+    if (tab === 'products') this.loadProducts();
+    else this.loadOrders();
+  }
 
+  // --- LOGIQUE PRODUITS ---
+  loadProducts(): void {
+    this.loadingProducts = true;
+    this.error = '';
     this.productService.getAll().subscribe({
-      next: (list: Product[]) => {
-        this.products = list;
-        this.loading = false;
-      },
+      next: (list) => { this.products = list; this.loadingProducts = false; },
       error: (err) => {
-        console.error('Erreur chargement produits', err);
-        this.error = 'Impossible de charger les produits.';
-        this.loading = false;
-      },
+        this.handleError(err);
+        this.loadingProducts = false;
+      }
     });
   }
 
-  // Gestion de la sélection de fichier
   onFileSelected(event: any): void {
     if (event.target.files && event.target.files.length) {
       this.selectedFile = event.target.files[0];
-    }
-  }
-
-  toggleCreateForm(): void {
-    if (this.editingProductId !== null) {
-      this.resetForm();
-    } else {
-      this.showCreateForm = !this.showCreateForm;
-      this.error = '';
     }
   }
 
@@ -109,82 +102,46 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    // Validation Image : Requise seulement en création
     if (this.editingProductId === null && !this.selectedFile) {
       this.error = 'Veuillez sélectionner une image pour créer un nouveau produit.';
       return;
     }
 
-    const slug = this.slugify(this.newProduct.name);
-
     const payload: ProductCreateRequest = {
       ...this.newProduct,
-      slug,
+      slug: this.slugify(this.newProduct.name),
       currency: this.newProduct.currency ?? 'EUR',
     };
 
-    // ACTIVE LE LOADING (Latence)
     this.isSubmitting = true;
+    let productObservable: Observable<Product>;
 
     if (this.editingProductId === null) {
-      // --- MODE CRÉATION ---
-      if (this.selectedFile) {
-        this.productService.create(payload, this.selectedFile).subscribe({
-          next: (created: Product) => {
-            this.products = [created, ...this.products];
-            this.resetForm();
-            // Le loading est désactivé dans resetForm()
-          },
-          error: (err) => {
-            this.handleError(err);
-            this.isSubmitting = false; // Stop loading en cas d'erreur
-          },
-        });
-      }
+      // On utilise ! car on a vérifié selectedFile juste au-dessus
+      productObservable = this.productService.create(payload, this.selectedFile!);
     } else {
-      // --- MODE ÉDITION ---
-      this.productService.update(this.editingProductId, payload, this.selectedFile).subscribe({
-        next: (updated: Product) => {
-          this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
-          this.resetForm();
-          // Le loading est désactivé dans resetForm()
-        },
-        error: (err) => {
-          this.handleError(err);
-          this.isSubmitting = false; // Stop loading en cas d'erreur
-        },
-      });
+      productObservable = this.productService.update(this.editingProductId, payload, this.selectedFile);
     }
+
+    productObservable.subscribe({
+      next: (result) => {
+        this.loadProducts();
+        this.resetForm();
+      },
+      error: (err) => {
+        this.handleError(err);
+        this.isSubmitting = false;
+      },
+    });
   }
 
-  // Initialiser le formulaire pour l'édition
   startEdit(p: Product): void {
     this.showCreateForm = true;
     this.editingProductId = p.id;
-    this.error = '';
-
-    // Réinitialiser le fichier sélectionné (on part de zéro)
     this.selectedFile = null;
-
-    // Prévisualiser l'image existante si elle existe
-    if (p.imageUrls && p.imageUrls.length > 0) {
-      // AJOUTEZ BIEN LE http://localhost:8080 ici
-      this.currentImagePreview = 'http://localhost:8080' + p.imageUrls[0];
-    } else {
-      this.currentImagePreview = null;
-    }
-
-    this.newProduct = {
-      sku: p.sku,
-      name: p.name,
-      description: p.description ?? '',
-      material: p.material ?? '',
-      price: p.price,
-      weightGrams: p.weightGrams ?? 0,
-      isActive: p.isActive ?? true,
-      currency: p.currency ?? 'EUR',
-      slug: p.slug ?? '',
-    };
+    this.error = '';
+    this.currentImagePreview = p.imageUrls && p.imageUrls.length > 0 ? 'http://localhost:8080' + p.imageUrls[0] : null;
+    this.newProduct = { ...p, description: p.description ?? '', material: p.material ?? '', weightGrams: p.weightGrams ?? 0, slug: p.slug ?? '' };
   }
 
   handleError(err: any): void {
@@ -193,58 +150,73 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private resetForm(): void {
-    this.showCreateForm = false;
-    this.editingProductId = null;
-    this.selectedFile = null;
-    this.currentImagePreview = null; // Reset prévisualisation
-    this.isSubmitting = false;       // Reset loading
-
-    this.newProduct = {
-      sku: '',
-      name: '',
-      description: '',
-      material: '',
-      price: 0,
-      weightGrams: 0,
-      isActive: true,
-      currency: 'EUR',
-      slug: '',
-    };
+    this.showCreateForm = false; this.editingProductId = null; this.selectedFile = null; this.currentImagePreview = null; this.isSubmitting = false;
+    this.newProduct = { sku: '', name: '', description: '', material: '', price: 0, weightGrams: 0, isActive: true, currency: 'EUR', slug: '' };
+    this.error = '';
   }
 
-  onLogout(): void {
-    this.auth.logout();
+  toggleCreateForm(): void {
+    if (this.editingProductId !== null) this.resetForm();
+    else this.showCreateForm = !this.showCreateForm;
   }
-
-  // ---------- suppression avec popup ----------
-
-  openDeleteConfirm(p: Product): void {
-    this.deleteTargetId = p.id;
-    this.deleteTargetName = p.name;
-    this.showDeleteConfirm = true;
-  }
-
-  cancelDelete(): void {
-    this.showDeleteConfirm = false;
-    this.deleteTargetId = null;
-    this.deleteTargetName = '';
-  }
-
+  openDeleteConfirm(p: Product): void { this.deleteTargetId = p.id; this.deleteTargetName = p.name; this.showDeleteConfirm = true; }
+  cancelDelete(): void { this.showDeleteConfirm = false; this.deleteTargetId = null; }
   confirmDelete(): void {
     if (this.deleteTargetId == null) return;
-
-    const id = this.deleteTargetId;
-
-    this.productService.delete(id).subscribe({
-      next: () => {
-        this.products = this.products.filter((p) => p.id !== id);
-        this.cancelDelete();
-      },
-      error: (err) => {
-        console.error('Erreur suppression produit', err);
-        this.error = 'Impossible de supprimer ce produit.';
-        this.cancelDelete();
-      },
+    this.productService.delete(this.deleteTargetId).subscribe({
+      next: () => { this.loadProducts(); this.cancelDelete(); },
+      error: (err) => { this.handleError(err); this.cancelDelete(); }
     });
   }
+
+
+  // --- LOGIQUE COMMANDES ---
+
+  loadOrders() {
+    this.loadingOrders = true;
+    this.error = '';
+    this.http.get<AdminOrder[]>('http://localhost:8080/api/admin/orders')
+      .subscribe({
+        next: (data) => { this.orders = data; this.loadingOrders = false; },
+        error: (err) => {
+          this.handleError(err);
+          this.loadingOrders = false;
+        }
+      });
+  }
+
+  updateOrderStatus(id: number, status: string) {
+    let message = '';
+    if (status === 'PAID') message = "Confirmer que le paiement a été reçu ?";
+    else if (status === 'SHIPPED') message = "Confirmer l'expédition de la commande ?";
+    else if (status === 'DELIVERED') message = "Confirmer la livraison finale ?";
+    else message = `Passer la commande en statut : ${status} ?`;
+
+    if(!confirm(message)) return;
+    this.error = '';
+
+    this.http.patch(`http://localhost:8080/api/admin/orders/${id}/status?status=${status}`, {})
+      .subscribe({
+        next: () => {
+          this.loadOrders();
+        },
+        error: (err) => {
+          console.error("Erreur mise à jour statut :", err);
+          this.error = `Échec de la mise à jour: ${err.error?.message || 'Erreur serveur.'}`;
+        }
+      });
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'PENDING': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'PAID': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'SHIPPED': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'DELIVERED': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'CANCELLED': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-400';
+    }
+  }
+
+  onLogout(): void { this.auth.logout(); }
 }
