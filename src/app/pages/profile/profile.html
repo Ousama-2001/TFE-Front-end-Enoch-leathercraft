@@ -1,52 +1,64 @@
 <div class="profile-page">
 
-  <h1>Mon Profil</h1>
+  <h1>Mon profil</h1>
 
-  <!-- SECTION HISTORIQUE DES COMMANDES -->
-  <div class="orders-section">
+  <section class="orders-section">
     <h2>Mes commandes</h2>
 
-    <ng-container *ngIf="orders.length; else noOrders">
+    <div *ngIf="loading" class="info">
+      Chargement de vos commandes...
+    </div>
 
-      <div *ngFor="let order of orders" class="order-card">
+    <div *ngIf="error" class="error">
+      {{ error }}
+    </div>
 
-        <div class="order-header">
-          <h3>{{ order.reference }}</h3>
-          <span class="status {{ order.status | lowercase }}">
-            {{ order.status }}
-          </span>
+    <ng-container *ngIf="!loading && !error">
+
+      <ng-container *ngIf="orders.length; else noOrders">
+        <div *ngFor="let order of orders" class="order-card">
+
+          <div class="order-header">
+            <div>
+              <h3>{{ order.reference }}</h3>
+              <span class="status {{ order.status | lowercase }}">
+                {{ order.status }}
+              </span>
+            </div>
+            <div class="order-total">
+              {{ order.totalAmount | currency:'EUR' }}
+            </div>
+          </div>
+
+          <div class="order-meta">
+            <p>Passée le {{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+
+          <table class="order-items">
+            <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Prix</th>
+              <th>Qté</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of order.items">
+              <td>{{ item.productName }}</td>
+              <td>{{ item.unitPrice | currency:'EUR' }}</td>
+              <td>{{ item.quantity }}</td>
+            </tr>
+            </tbody>
+          </table>
+
         </div>
+      </ng-container>
 
-        <div class="order-info">
-          <p>Total : <strong>{{ order.totalAmount | currency:'EUR' }}</strong></p>
-          <p>Date : {{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
-        </div>
-
-        <table class="order-items">
-          <thead>
-          <tr>
-            <th>Produit</th>
-            <th>Prix</th>
-            <th>Qté</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr *ngFor="let item of order.items">
-            <td>{{ item.productName }}</td>
-            <td>{{ item.unitPrice | currency:'EUR' }}</td>
-            <td>{{ item.quantity }}</td>
-          </tr>
-          </tbody>
-        </table>
-
-      </div>
+      <ng-template #noOrders>
+        <p class="empty">Vous n'avez pas encore passé de commande.</p>
+      </ng-template>
 
     </ng-container>
 
-    <ng-template #noOrders>
-      <p class="empty">Vous n'avez pas encore passé de commande.</p>
-    </ng-template>
-
-  </div>
-
+  </section>
 </div>

@@ -1,136 +1,119 @@
 .profile-page {
+  padding: 3rem 6vw;
   min-height: 100vh;
-  padding: 40px 60px;
-  background: radial-gradient(circle at top, #12254b 0, #050811 55%, #02030a 100%);
-  color: #f5f7ff;
-  font-family: system-ui, sans-serif;
-}
+  color: #f1f5f9;
 
-/* Header */
-.profile-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  padding-bottom: 20px;
-
-  h1 { margin: 0; font-size: 2rem; font-weight: 700; }
-  .subtitle { margin: 5px 0 0; color: #94a3b8; }
-}
-
-.btn-logout {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  color: #fca5a5;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.2);
-    color: #fff;
+  h1 {
+    font-size: 2.4rem;
+    margin-bottom: 2rem;
   }
 }
 
-/* Section Commandes */
 .orders-section {
-  max-width: 800px;
-  margin: 0 auto;
+  margin-top: 1rem;
 
-  h2 { margin-bottom: 20px; font-size: 1.4rem; }
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
 }
 
-/* Liste Cartes */
-.orders-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.info {
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.error {
+  color: #fecaca;
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .order-card {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.9);
   border-radius: 16px;
-  padding: 20px;
-  transition: transform 0.2s;
-
-  &:hover {
-    background: rgba(15, 23, 42, 0.8);
-    transform: translateX(5px);
-  }
+  padding: 1.8rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-  color: #94a3b8;
-
-  .ref {
-    font-family: monospace;
-    color: #a855f7;
-    font-weight: bold;
-    font-size: 1rem;
-  }
-}
-
-.card-body {
+.order-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
 }
 
-.amount {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-/* Badges Statut */
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 99px;
-  font-size: 0.85rem;
+.order-total {
+  font-size: 1.1rem;
   font-weight: 600;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+}
 
-  /* Status par défaut ou PENDING */
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
+.status.pending {
+  background: rgba(234,179,8,0.2);
+  color: #facc15;
+}
 
-  &.PAID {
-    background: rgba(74, 222, 128, 0.15);
-    color: #4ade80;
-    border: 1px solid rgba(74, 222, 128, 0.3);
-  }
+.status.paid {
+  background: rgba(74,222,128,0.2);
+  color: #4ade80;
+}
 
-  &.CANCELLED {
-    background: rgba(248, 113, 113, 0.15);
-    color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.3);
+.status.shipped {
+  background: rgba(59,130,246,0.2);
+  color: #3b82f6;
+}
+
+.status.cancelled {
+  background: rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+
+.order-meta {
+  margin: 0.7rem 0 1.4rem 0;
+  opacity: 0.8;
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
   }
 }
 
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #94a3b8;
+.order-items {
+  width: 100%;
+  border-collapse: collapse;
 
-  .btn-link {
-    color: #a855f7;
-    margin-top: 10px;
-    display: inline-block;
+  th, td {
+    padding: 8px 0;
+    text-align: left;
+  }
+
+  th {
+    opacity: 0.7;
+    font-size: 0.9rem;
   }
 }
 
-@media (max-width: 600px) {
-  .profile-page { padding: 20px; }
-  .profile-header { flex-direction: column; gap: 15px; text-align: center; align-items: stretch; }
+.empty {
+  margin-top: 1.5rem;
+  opacity: 0.8;
+  font-size: 1rem;
 }

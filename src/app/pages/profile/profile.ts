@@ -12,6 +12,8 @@ import { OrderService, OrderResponse } from '../../services/order.service';
 export class ProfileComponent implements OnInit {
 
   orders: OrderResponse[] = [];
+  loading = false;
+  error: string | null = null;
 
   constructor(
     private orderService: OrderService
@@ -21,10 +23,21 @@ export class ProfileComponent implements OnInit {
     this.loadOrders();
   }
 
-  loadOrders() {
+  loadOrders(): void {
+    this.loading = true;
+    this.error = null;
+
     this.orderService.getMyOrders().subscribe({
-      next: (orders) => this.orders = orders,
-      error: (err) => console.error(err)
+      next: (orders) => {
+        console.log('Orders from backend:', orders); // DEBUG
+        this.orders = orders;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading orders:', err);
+        this.error = 'Impossible de charger vos commandes.';
+        this.loading = false;
+      }
     });
   }
 }
