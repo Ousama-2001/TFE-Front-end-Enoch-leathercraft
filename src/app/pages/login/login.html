@@ -1,17 +1,16 @@
 <div class="auth-page">
   <div class="auth-card">
     <h1>Connexion</h1>
-    <p class="subtitle">Ravi de te revoir 😊</p>
 
-    <!-- LE POINT IMPORTANT -->
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="submit()" #f="ngForm">
+
       <div class="form-group">
         <label for="identifier">Email ou pseudo</label>
         <input
           id="identifier"
-          name="identifier"
           type="text"
-          [(ngModel)]="identifier"
+          name="identifier"
+          [(ngModel)]="emailOrUsername"
           required
         />
       </div>
@@ -20,24 +19,23 @@
         <label for="password">Mot de passe</label>
         <input
           id="password"
-          name="password"
           type="password"
+          name="password"
           [(ngModel)]="password"
           required
         />
       </div>
 
-      <!-- IMPORTANT : type="submit" -->
-      <button type="submit" [disabled]="loading">
+      <p *ngIf="error" class="error-message">{{ error }}</p>
+
+      <button class="btn" type="submit" [disabled]="loading">
         {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
-
-      <p class="error" *ngIf="error">{{ error }}</p>
-
-      <p class="switch-link">
-        Pas encore de compte ?
-        <a routerLink="/register">Créer un compte</a>
-      </p>
     </form>
+
+    <div class="auth-footer">
+      <a routerLink="/register">Créer un compte</a>
+      <a routerLink="/forgot-password">Mot de passe oublié ?</a>
+    </div>
   </div>
 </div>

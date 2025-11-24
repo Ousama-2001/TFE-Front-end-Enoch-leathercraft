@@ -1,8 +1,9 @@
+// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, LoginResponse } from '../../services/auth.service';
+import { AuthService, LoginRequest } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -12,38 +13,40 @@ import { AuthService, LoginResponse } from '../../services/auth.service';
   styleUrls: ['./login.scss'],
 })
 export class LoginComponent {
-  identifier = '';
+  emailOrUsername = '';
   password = '';
+  loading = false;
   error = '';
-  loading = false;              // 👈 AJOUT
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  onSubmit(): void {
+  submit(): void {
     this.error = '';
-    this.loading = true;        // 👈 on bloque le bouton
 
-    this.auth
-      .login({
-        identifier: this.identifier,
-        password: this.password,
-      })
-      .subscribe({
-        next: (res: LoginResponse) => {
-          console.log('LOGIN success', res);
-          this.loading = false; // 👈 on réactive le bouton
+    if (!this.emailOrUsername || !this.password) {
+      this.error = 'Veuillez remplir tous les champs.';
+      return;
+    }
 
-          if (res.role === 'ADMIN') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/products']);
-          }
-        },
-        error: (err: any) => {
-          console.error('LOGIN error', err);
-          this.error = 'Identifiants incorrects.';
-          this.loading = false; // 👈 on réactive aussi en cas d’erreur
-        },
-      });
+    const payload: LoginRequest = {
+      identifier: this.emailOrUsername.trim(), // 👈 correspond AU BACK
+      password: this.password,
+    };
+
+    this.loading = true;
+
+    this.auth.login(payload).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/products']);
+      },
+      error: (err) => {
+        this.error =
+          err.error?.message ||
+          err.error ||
+          'Identifiants invalides. Veuillez réessayer.';
+        this.loading = false;
+      },
+    });
   }
 }

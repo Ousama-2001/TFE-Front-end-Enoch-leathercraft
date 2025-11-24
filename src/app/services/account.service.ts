@@ -1,3 +1,4 @@
+// src/app/services/account.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -16,23 +17,21 @@ export interface Profile {
 export interface UserOrder {
   id: number;
   reference: string;
+  createdAt: string;
   totalAmount: number;
   status: string;
-  createdAt: string;
 }
 
-export interface ChangePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
-}
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AccountService {
 
-  private api = 'http://localhost:8080/api';
+  private readonly api = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
+  // -------- PROFIL --------
   getProfile(): Observable<Profile> {
     return this.http.get<Profile>(`${this.api}/me`);
   }
@@ -41,11 +40,16 @@ export class AccountService {
     return this.http.put<Profile>(`${this.api}/me`, profile);
   }
 
+  // -------- COMMANDES --------
   getMyOrders(): Observable<UserOrder[]> {
     return this.http.get<UserOrder[]>(`${this.api}/me/orders`);
   }
 
-  changePassword(payload: ChangePasswordRequest): Observable<void> {
-    return this.http.post<void>(`${this.api}/me/change-password`, payload);
+  // -------- SÉCURITÉ : CHANGEMENT DE MOT DE PASSE --------
+  changePassword(payload: { oldPassword: string; newPassword: string }): Observable<string> {
+    // ⚠️ ici on précise bien que la réponse est du TEXTE
+    return this.http.post(`${this.api}/me/change-password`, payload, {
+      responseType: 'text'
+    });
   }
 }

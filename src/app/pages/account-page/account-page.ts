@@ -1,7 +1,9 @@
+// src/app/pages/account-page/account-page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AccountService, Profile, UserOrder } from '../../services/account.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 type AccountTab = 'profile' | 'address' | 'orders' | 'security';
 
@@ -54,6 +56,7 @@ export class AccountPageComponent implements OnInit {
     this.success = '';
   }
 
+  // -------- PROFIL --------
   loadProfile(): void {
     this.loadingProfile = true;
     this.accountService.getProfile().subscribe({
@@ -86,6 +89,7 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
+  // -------- COMMANDES --------
   loadOrders(): void {
     this.loadingOrders = true;
     this.accountService.getMyOrders().subscribe({
@@ -100,11 +104,12 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
+  // -------- SÉCURITÉ : CHANGEMENT DE MOT DE PASSE --------
   submitPasswordChange(): void {
     this.error = '';
     this.success = '';
 
-    if (!this.oldPassword || !this.newPassword) {
+    if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
       this.error = 'Tous les champs sont obligatoires.';
       return;
     }
@@ -120,15 +125,21 @@ export class AccountPageComponent implements OnInit {
       oldPassword: this.oldPassword,
       newPassword: this.newPassword
     }).subscribe({
-      next: () => {
-        this.success = 'Mot de passe mis à jour.';
+      next: (msg: string) => {
+        // msg = "" ou "OK" ou ce que renvoie le back
+        this.success = msg && msg.trim().length ? msg : 'Mot de passe mis à jour.';
         this.oldPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
         this.changingPassword = false;
       },
-      error: (err) => {
-        this.error = err.error || 'Erreur lors du changement de mot de passe.';
+      error: (err: HttpErrorResponse) => {
+        // ici on évite d’afficher le SyntaxError
+        if (typeof err.error === 'string') {
+          this.error = err.error;              // ex : "Ancien mot de passe incorrect"
+        } else {
+          this.error = 'Erreur lors du changement de mot de passe.';
+        }
         this.changingPassword = false;
       }
     });
