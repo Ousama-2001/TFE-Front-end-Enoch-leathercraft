@@ -6,13 +6,13 @@ import { AccountService, Profile, UserOrder } from '../../services/account.servi
 type AccountTab = 'profile' | 'address' | 'orders' | 'security';
 
 @Component({
-  selector: 'app-profile',
+  selector: 'app-account-page',
   standalone: true,
   imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
-  templateUrl: './profile.html',
-  styleUrls: ['./profile.scss']
+  templateUrl: './account-page.html',
+  styleUrls: ['./account-page.scss']
 })
-export class ProfileComponent implements OnInit {
+export class AccountPageComponent implements OnInit {
 
   activeTab: AccountTab = 'profile';
 

@@ -2,7 +2,7 @@
 
   <h1>Mon compte</h1>
 
-  <!-- Onglets -->
+  <!-- TABS -->
   <div class="tabs">
     <button [class.active]="activeTab === 'profile'" (click)="switchTab('profile')">👤 Profil</button>
     <button [class.active]="activeTab === 'address'" (click)="switchTab('address')">📍 Adresse</button>
@@ -10,26 +10,26 @@
     <button [class.active]="activeTab === 'security'" (click)="switchTab('security')">🔒 Sécurité</button>
   </div>
 
-  <!-- Messages -->
+  <!-- ALERTS -->
   <p *ngIf="error" class="alert error">{{ error }}</p>
   <p *ngIf="success" class="alert success">{{ success }}</p>
 
-  <!-- Profil -->
+  <!-- PROFIL -->
   <div *ngIf="activeTab === 'profile'" class="card">
+
     <h2>Informations personnelles</h2>
 
-    <div *ngIf="loadingProfile">Chargement du profil...</div>
-
-    <form *ngIf="!loadingProfile" (ngSubmit)="saveProfile()">
+    <form (ngSubmit)="saveProfile()">
       <div class="grid">
+
         <label>
           Prénom :
-          <input [(ngModel)]="profile.firstName" name="firstName" />
+          <input [(ngModel)]="profile.firstName" name="first" />
         </label>
 
         <label>
           Nom :
-          <input [(ngModel)]="profile.lastName" name="lastName" />
+          <input [(ngModel)]="profile.lastName" name="last" />
         </label>
 
         <label>
@@ -41,23 +41,27 @@
           Téléphone :
           <input [(ngModel)]="profile.phone" name="phone" />
         </label>
+
       </div>
 
       <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
+        {{ savingProfile ? '...Enregistrement' : 'Mettre à jour' }}
       </button>
     </form>
+
   </div>
 
-  <!-- Adresse -->
+  <!-- ADRESSE -->
   <div *ngIf="activeTab === 'address'" class="card">
+
     <h2>Adresse de livraison</h2>
 
     <form (ngSubmit)="saveProfile()">
       <div class="grid">
+
         <label>
           Adresse :
-          <input [(ngModel)]="profile.addressLine1" name="addressLine1" />
+          <input [(ngModel)]="profile.addressLine1" name="address" />
         </label>
 
         <label>
@@ -74,19 +78,21 @@
           Pays :
           <input [(ngModel)]="profile.country" name="country" />
         </label>
+
       </div>
 
       <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
+        {{ savingProfile ? '...Enregistrement' : 'Mettre à jour' }}
       </button>
     </form>
+
   </div>
 
-  <!-- Commandes -->
+  <!-- COMMANDES -->
   <div *ngIf="activeTab === 'orders'" class="card">
     <h2>Mes commandes</h2>
 
-    <p *ngIf="loadingOrders">Chargement de vos commandes...</p>
+    <p *ngIf="loadingOrders">Chargement...</p>
 
     <table *ngIf="!loadingOrders && myOrders.length" class="orders">
       <thead>
@@ -107,34 +113,36 @@
       </tbody>
     </table>
 
-    <p *ngIf="!loadingOrders && !myOrders.length">
-      Vous n'avez pas encore de commande.
-    </p>
+    <p *ngIf="!loadingOrders && !myOrders.length">Aucune commande.</p>
   </div>
 
-  <!-- Sécurité -->
-  <div *ngIf="activeTab === 'security'" class="card">
-    <h2>Changer mon mot de passe</h2>
 
-    <form (ngSubmit)="submitPasswordChange()">
+  <!-- SÉCURITÉ -->
+  <div *ngIf="activeTab === 'security'" class="card">
+    <h2>Changer le mot de passe</h2>
+
+    <form (submit)="submitPasswordChange()">
+
       <label>
         Ancien mot de passe :
-        <input type="password" [(ngModel)]="oldPassword" name="oldPassword" />
+        <input type="password" [(ngModel)]="oldPassword" name="old" />
       </label>
 
       <label>
         Nouveau mot de passe :
-        <input type="password" [(ngModel)]="newPassword" name="newPassword" />
+        <input type="password" [(ngModel)]="newPassword" name="new" />
       </label>
 
       <label>
-        Confirmer le nouveau mot de passe :
-        <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" />
+        Confirmer :
+        <input type="password" [(ngModel)]="confirmPassword" name="confirm" />
       </label>
 
       <button class="btn" [disabled]="changingPassword">
-        {{ changingPassword ? 'Modification...' : 'Changer le mot de passe' }}
+        {{ changingPassword ? '...' : 'Changer le mot de passe' }}
       </button>
+
     </form>
   </div>
+
 </div>

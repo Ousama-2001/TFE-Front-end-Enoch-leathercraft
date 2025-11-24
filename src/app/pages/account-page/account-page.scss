@@ -37,7 +37,7 @@
   }
 }
 
-/* Card */
+/* Cards */
 .card {
   background: #1e293b;
   padding: 1.5rem;
@@ -50,14 +50,14 @@
   }
 }
 
-/* Grille des champs */
+/* Grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 1rem;
 }
 
-/* Champs */
+/* Fields */
 label {
   display: flex;
   flex-direction: column;
@@ -72,7 +72,6 @@ label {
 
     &:focus {
       border-color: #6366f1;
-      outline: none;
     }
 
     &:disabled {
@@ -81,7 +80,7 @@ label {
   }
 }
 
-/* Bouton principal */
+/* Buttons */
 .btn {
   background: #6366f1;
   color: white;
@@ -101,7 +100,7 @@ label {
   }
 }
 
-/* Messages */
+/* Alerts */
 .alert {
   padding: 0.75rem;
   border-radius: 6px;
@@ -120,7 +119,7 @@ label {
   }
 }
 
-/* Tableau commandes */
+/* Orders table */
 .orders {
   width: 100%;
   border-collapse: collapse;

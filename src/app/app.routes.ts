@@ -33,8 +33,9 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () =>
-      import('./pages/profile/profile').then(m => m.ProfileComponent)
+      import('./pages/account-page/account-page').then(m => m.AccountPageComponent),
   },
+
 
   // --- Route de Succès de Commande ---
   {

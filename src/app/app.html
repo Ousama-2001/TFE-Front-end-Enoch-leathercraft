@@ -17,6 +17,16 @@
       <span class="cart-badge">{{ cart.totalQuantity || 0 }}</span>
     </a>
 
+    <!-- Lien profil (visible seulement connecté) -->
+    <a
+      *ngIf="isLoggedIn"
+      routerLink="/profile"
+      class="profile-link"
+    >
+      <i class="fa-solid fa-user"></i>
+      <span>Mon compte</span>
+    </a>
+
     <!-- Bouton déconnexion -->
     <button
       class="logout-btn"
