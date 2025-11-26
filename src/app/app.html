@@ -1,47 +1,67 @@
-<!-- src/app/app.html -->
 <div class="app-shell">
-  <!-- HEADER + NAVBAR (cachée sur /login et /register) -->
-  <header class="topbar" *ngIf="!isAuthPage()">
-    <div class="logo">
-      <img
-        src="http://localhost:8080/uploads/products/logo.jpg"
-        alt="Enoch Leather Craft"
-        class="logo-img"
-      />
-      <span class="logo-title">Enoch Leathercraft</span>
-    </div>
-    <div class="topbar-right">
-      <!-- Mini panier -->
-      <div class="cart-wrapper"
-           (mouseenter)="miniCartOpen = true"
-           (mouseleave)="miniCartOpen = false">
 
+  <!-- ======================= NAVBAR ======================= -->
+  <header class="topbar" *ngIf="!isAuthPage()">
+
+    <!-- LOGO + NAVIGATION -->
+    <div class="topbar-left">
+      <a routerLink="/home" class="brand">
+        <img
+          src="http://localhost:8080/uploads/products/logo.jpg"
+          alt="Logo"
+          class="brand-logo"
+        />
+        <span class="brand-title">EN0CH LEATHERCRAFT</span>
+      </a>
+
+      <!-- NAVIGATION PRINCIPALE -->
+      <nav class="main-nav">
+        <a routerLink="/home" routerLinkActive="active">Accueil</a>
+        <a routerLink="/products" routerLinkActive="active">Tous les produits</a>
+        <a routerLink="/products" [queryParams]="{ category: 'sacs' }">Sacs</a>
+        <a routerLink="/products" [queryParams]="{ category: 'portefeuilles' }">Portefeuilles</a>
+        <a routerLink="/products" [queryParams]="{ category: 'ceintures' }">Ceintures</a>
+        <a routerLink="/products" [queryParams]="{ category: 'accessoires' }">Accessoires</a>
+      </nav>
+    </div>
+
+    <!-- BOUTONS À DROITE -->
+    <div class="topbar-right">
+
+      <!-- MINI PANIER -->
+      <div
+        class="cart-wrapper"
+        (mouseenter)="miniCartOpen = true"
+        (mouseleave)="miniCartOpen = false"
+      >
+
+        <!-- BOUTON PANIER -->
         <button class="cart-button" (click)="goToCart()">
           <span class="cart-icon">🛒</span>
           <span class="cart-label">Panier</span>
-          <span class="cart-badge" *ngIf="cartQuantity > 0">{{ cartQuantity }}</span>
+          <span class="cart-badge" *ngIf="cartQuantity > 0">
+            {{ cartQuantity }}
+          </span>
         </button>
 
-        <!-- POPUP PANIER -->
-        <div class="cart-popover"
-             *ngIf="miniCartOpen && (cart$ | async) as cart">
+        <!-- POPOVER DU PANIER -->
+        <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
 
           <h3 class="cart-popover-title">Votre panier</h3>
 
-          <ng-container *ngIf="cart.items.length; else emptyCart">
+          <ng-container *ngIf="cart.items.length > 0; else emptyCart">
             <div class="cart-items">
+
               <div class="cart-item" *ngFor="let item of cart.items">
-                <div class="cart-item-main">
-                  <!-- Image affichée uniquement si imageUrl existe -->
-                  <div class="cart-item-thumb" *ngIf="item.imageUrl">
+                <div class="cart-item-left">
+                  <div class="cart-thumb" *ngIf="item.imageUrl">
                     <img [src]="item.imageUrl" [alt]="item.name" />
                   </div>
 
-                  <div class="cart-item-info">
+                  <div class="cart-info">
                     <div class="name">{{ item.name }}</div>
                     <div class="meta">
-                      x{{ item.quantity }} •
-                      {{ item.unitPrice | currency:'EUR' }}
+                      x{{ item.quantity }} • {{ item.unitPrice | currency:'EUR' }}
                     </div>
                   </div>
                 </div>
@@ -55,12 +75,11 @@
             <div class="cart-popover-footer">
               <div class="summary">
                 <span>{{ cart.totalQuantity }} article(s)</span>
-                <span class="total">
-                  {{ cart.totalAmount | currency:'EUR' }}
-                </span>
+                <span class="total">{{ cart.totalAmount | currency:'EUR' }}</span>
               </div>
+
               <button class="view-cart-btn" (click)="goToCart()">
-                Voir le panier
+                Voir le panier →
               </button>
             </div>
           </ng-container>
@@ -70,21 +89,23 @@
           </ng-template>
 
         </div>
+
       </div>
 
-      <!-- Compte / Déconnexion -->
+      <!-- MON COMPTE -->
       <button class="account-button" routerLink="/profile">
-        <span class="icon">👤</span>
-        <span>Mon compte</span>
+        👤 Mon compte
       </button>
 
+      <!-- DECONNEXION -->
       <button class="logout-button" (click)="logout()">
         Déconnexion
       </button>
+
     </div>
   </header>
 
-  <!-- CONTENU DES PAGES -->
+  <!-- ======================= CONTENU DES PAGES ======================= -->
   <main class="page">
     <router-outlet></router-outlet>
   </main>

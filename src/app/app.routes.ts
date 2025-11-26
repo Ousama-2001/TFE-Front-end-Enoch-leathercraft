@@ -68,5 +68,6 @@ export const routes: Routes = [
 
   // --- Redirections ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
+
   { path: '**', redirectTo: 'home' }
 ];

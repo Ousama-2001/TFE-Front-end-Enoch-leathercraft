@@ -16,7 +16,6 @@ export class HomeComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  // Logo servi par ton backend
   readonly logoUrl = 'http://localhost:8080/uploads/products/logo.jpg';
 
   constructor(
@@ -34,8 +33,7 @@ export class HomeComponent implements OnInit {
 
     this.productService.getAll().subscribe({
       next: (data: Product[]) => {
-        // On ne montre que quelques produits sur la home (style concurrents)
-        this.products = data.slice(0, 4);
+        this.products = data.slice(0, 4); // 4 produits sur la home
         this.loading = false;
       },
       error: (err: any) => {
@@ -50,7 +48,6 @@ export class HomeComponent implements OnInit {
     if (!product.imageUrls || product.imageUrls.length === 0) {
       return 'assets/images/placeholder-product.jpg';
     }
-
     return 'http://localhost:8080' + product.imageUrls[0];
   }
 
@@ -64,10 +61,6 @@ export class HomeComponent implements OnInit {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
-  }
-
-  goToRegister(): void {
-    this.router.navigate(['/register']);
   }
 
   goToProductDetail(product: Product): void {

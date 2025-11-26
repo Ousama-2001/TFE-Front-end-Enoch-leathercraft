@@ -267,4 +267,26 @@
   width: auto;
   display: block;
 }
+/* LOGO DANS LA NAVBAR */
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.topbar .brand-logo {
+  height: 38px;      /* Taille maîtrisée */
+  width: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px; /* léger arrondi pour faire propre */
+}
+
+.topbar .brand-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
 
