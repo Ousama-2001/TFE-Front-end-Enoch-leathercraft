@@ -3,9 +3,13 @@
   <!-- HEADER + NAVBAR (cachée sur /login et /register) -->
   <header class="topbar" *ngIf="!isAuthPage()">
     <div class="logo">
+      <img
+        src="http://localhost:8080/uploads/products/logo.jpg"
+        alt="Enoch Leather Craft"
+        class="logo-img"
+      />
       <span class="logo-title">Enoch Leathercraft</span>
     </div>
-
     <div class="topbar-right">
       <!-- Mini panier -->
       <div class="cart-wrapper"

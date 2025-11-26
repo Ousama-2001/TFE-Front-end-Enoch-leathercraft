@@ -1,0 +1,162 @@
+<div class="home">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+
+      <div class="hero-left">
+        <div class="hero-brand">
+          <img
+            [src]="logoUrl"
+            alt="Enoch Leather Craft"
+            class="hero-logo"
+          />
+          <span class="brand-text">Enoch Leathercraft</span>
+        </div>
+
+        <h1>Pièces artisanales en cuir, pensées pour durer.</h1>
+
+        <p class="hero-subtitle">
+          Sacs, ceintures et portefeuilles fabriqués à la main, en petites séries,
+          avec une attention particulière aux détails et au confort d’utilisation.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" (click)="goToProducts()">
+            Découvrir la boutique
+          </button>
+        </div>
+
+        <div class="hero-badges">
+          <span>Artisanat</span>
+          <span>Petites séries</span>
+          <span>Qualité durable</span>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-highlight" *ngIf="products && products.length > 0">
+          <span class="hero-highlight-label">Mise en avant</span>
+          <h3>{{ products[0].name }}</h3>
+          <p *ngIf="products[0].description" class="hero-highlight-text">
+            {{ products[0].description }}
+          </p>
+          <p class="hero-highlight-price">
+            {{ products[0].price | currency: products[0].currency : 'symbol' : '1.2-2' }}
+          </p>
+          <button class="btn btn-small" (click)="goToProductDetail(products[0])">
+            Voir le détail
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ACCÈS RAPIDE -->
+  <section class="sections">
+    <h2>Accès rapide</h2>
+    <div class="section-grid">
+
+      <article class="section-card" (click)="goToProducts()">
+        <div class="section-icon">👜</div>
+        <h3>Catalogue</h3>
+        <p>
+          Parcours l’ensemble des sacs, ceintures et portefeuilles disponibles.
+        </p>
+        <span class="section-link">Voir les produits →</span>
+      </article>
+
+      <!-- On remplace le "Panier" par "Nouveautés" -->
+      <article class="section-card" (click)="goToProducts()">
+        <div class="section-icon">✨</div>
+        <h3>Nouveautés</h3>
+        <p>
+          Découvre les dernières pièces ajoutées à la boutique et les séries limitées.
+        </p>
+        <span class="section-link">Voir les nouveautés →</span>
+      </article>
+
+      <article class="section-card" (click)="goToLogin()">
+        <div class="section-icon">👤</div>
+        <h3>Espace client</h3>
+        <p>
+          Connecte-toi pour gérer ton compte et tes futures commandes.
+        </p>
+        <span class="section-link">Me connecter →</span>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- APERÇU PRODUITS -->
+  <section class="products-section">
+    <div class="products-header">
+      <h2>Dernières pièces ajoutées</h2>
+      <button class="btn btn-ghost" (click)="goToProducts()">
+        Voir tout le catalogue
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="info-text">
+      Chargement des produits...
+    </div>
+
+    <div *ngIf="!loading && error" class="error-text">
+      {{ error }}
+    </div>
+
+    <div
+      class="products-grid"
+      *ngIf="!loading && !error && products && products.length > 0"
+    >
+      <article class="product-card" *ngFor="let product of products">
+        <div class="product-image-wrapper">
+          <img [src]="getImage(product)" [alt]="product.name" />
+        </div>
+
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+
+          <p class="product-description" *ngIf="product.description">
+            {{ product.description }}
+          </p>
+
+          <p class="product-price">
+            {{ product.price | currency: product.currency : 'symbol' : '1.2-2' }}
+          </p>
+
+          <div class="product-actions">
+            <button class="btn btn-small" (click)="goToProductDetail(product)">
+              Voir le détail
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div
+      *ngIf="!loading && !error && products && products.length === 0"
+      class="info-text"
+    >
+      Aucun produit n’est disponible pour le moment.
+    </div>
+  </section>
+
+  <!-- QUI SOMMES-NOUS ? -->
+  <section class="about">
+    <div class="about-inner">
+      <h2>Qui sommes-nous&nbsp;?</h2>
+      <p>
+        Enoch Leathercraft est un atelier artisanal spécialisé dans la création de pièces en cuir uniques&nbsp;:
+        sacs, ceintures, portefeuilles et accessoires faits main.
+      </p>
+      <p>
+        Passionné par l’artisanat et le travail du cuir, l’atelier accompagne ses clients depuis plus de
+        10&nbsp;ans, avec déjà plus de 500 clients satisfaits. Chaque pièce est réalisée avec soin, dans l’idée
+        de proposer des accessoires durables, qui se patinent et racontent une histoire au fil du temps.
+      </p>
+    </div>
+  </section>
+
+</div>

@@ -7,6 +7,15 @@ import { AdminGuard } from './guards/admin-guard';
 import { OrderSuccessComponent } from './pages/order-sucess/order-sucess';
 
 export const routes: Routes = [
+
+  // --- Homepage ---
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./pages/home/home')
+        .then(m => m.HomeComponent),
+  },
+
   // --- Routes Publiques ---
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
@@ -19,7 +28,7 @@ export const routes: Routes = [
     canActivate: [AdminGuard],
   },
 
-  // --- Routes Lazy-loaded ---
+  // --- Lazy-loaded ---
   {
     path: 'products/:id',
     loadComponent: () =>
@@ -38,16 +47,12 @@ export const routes: Routes = [
       import('./pages/account-page/account-page')
         .then(m => m.AccountPageComponent),
   },
-
-  // --- Mot de passe oublié ---
   {
     path: 'forgot-password',
     loadComponent: () =>
       import('./pages/forgot-password/forgot-password')
         .then(m => m.ForgotPasswordComponent),
   },
-
-  // --- Reset password ---
   {
     path: 'reset-password',
     loadComponent: () =>
@@ -55,13 +60,13 @@ export const routes: Routes = [
         .then(m => m.ResetPasswordComponent),
   },
 
-  // --- Route de Succès ---
+  // --- Page de Succès ---
   {
     path: 'order-success/:reference',
     component: OrderSuccessComponent
   },
 
   // --- Redirections ---
-  { path: '', redirectTo: 'products', pathMatch: 'full' },
-  { path: '**', redirectTo: 'products' }
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: '**', redirectTo: 'home' }
 ];

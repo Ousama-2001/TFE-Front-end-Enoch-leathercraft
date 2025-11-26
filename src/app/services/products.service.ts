@@ -68,4 +68,20 @@ export class ProductService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/admin/products/${id}`);
   }
+  getMainImageUrl(product: Product): string {
+    if (!product.imageUrls || product.imageUrls.length === 0) {
+      return 'assets/images/placeholder-product.jpg';
+    }
+
+    const first = product.imageUrls[0]; // ex: "upload/products/image.jpg"
+
+    // si déjà complet
+    if (first.startsWith('http://') || first.startsWith('https://')) {
+      return first;
+    }
+
+    // si côté back tu stockes "upload/products/image.jpg"
+    return `http://localhost:8080/${first}`;
+  }
+
 }

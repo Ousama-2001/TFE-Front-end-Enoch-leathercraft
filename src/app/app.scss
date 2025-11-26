@@ -255,3 +255,16 @@
   flex: 1;
   padding: 1.5rem;
 }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
