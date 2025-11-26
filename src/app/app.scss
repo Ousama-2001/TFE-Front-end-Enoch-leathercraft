@@ -1,75 +1,257 @@
-.navbar {
+/* src/app/app.scss */
+
+.app-shell {
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background: #020617;
-  border-bottom: 1px solid #1e293b;
-  color: #e5e7eb;
-
-  .navbar-left .brand {
-    font-weight: 700;
-    font-size: 1.1rem;
-    text-decoration: none;
-    color: #f9fafb;
-  }
-
-  .navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-
-    .cart-link,
-    .profile-link,
-    .logout-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      text-decoration: none;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: #e5e7eb;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-
-      i {
-        font-size: 0.9rem;
-      }
-
-      &:hover {
-        background: #111827;
-        border-color: #4f46e5;
-        transform: translateY(-1px);
-      }
-    }
-
-    .cart-link {
-      position: relative;
-
-      .cart-badge {
-        margin-left: 0.3rem;
-        background: #4f46e5;
-        border-radius: 999px;
-        padding: 0 0.4rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #f9fafb;
-      }
-    }
-
-    .logout-btn {
-      border: 1px solid #dc2626;
-      background: #7f1d1d;
-
-      &:hover {
-        background: #b91c1c;
-        border-color: #f97373;
-      }
-    }
-  }
+  flex-direction: column;
+  background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* tu dois déjà avoir les styles mini-cart, je n'y touche pas */
+/* ===== TOPBAR / NAVBAR ===== */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(18px);
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.logo-title {
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: #f9fafb;
+}
+
+/* Right side (cart + account) */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ===== CART BUTTON ===== */
+
+.cart-wrapper {
+  position: relative;
+}
+
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: radial-gradient(circle at top left, #1f2937, #020617);
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.18s ease-out;
+}
+
+.cart-button:hover {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+}
+
+.cart-icon {
+  font-size: 1.05rem;
+}
+
+.cart-label {
+  font-weight: 500;
+}
+
+.cart-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #f97316;
+  color: #0f172a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== MINI CART POPOVER ===== */
+
+.cart-popover {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  width: 320px;
+  background: #020617;
+  border-radius: 16px;
+  box-shadow:
+    0 22px 60px rgba(15, 23, 42, 0.95),
+    0 0 0 1px rgba(148, 163, 184, 0.4);
+  padding: 0.9rem 1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cart-popover-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  color: #f9fafb;
+}
+
+/* Items inside mini cart */
+
+.cart-items {
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(30, 64, 175, 0.35);
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* Thumb (image du produit si présente) */
+.cart-item-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.cart-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item-info .name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #e5e7eb;
+}
+
+.cart-item-info .meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.cart-item-total {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #facc15;
+}
+
+/* Footer du mini cart */
+
+.cart-popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(30, 64, 175, 0.4);
+}
+
+.cart-popover-footer .summary {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.cart-popover-footer .summary .total {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.view-cart-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  color: #f9fafb;
+  white-space: nowrap;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+}
+
+.view-cart-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
+}
+
+.empty-text {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 0.25rem 0 0.1rem;
+}
+
+/* ===== ACCOUNT / LOGOUT BUTTONS ===== */
+
+.account-button,
+.logout-button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+}
+
+.account-button .icon {
+  font-size: 0.95rem;
+}
+
+.account-button:hover,
+.logout-button:hover {
+  border-color: #f97316;
+  background: rgba(15, 23, 42, 1);
+}
+
+/* ===== PAGE CONTENT ===== */
+
+.page {
+  flex: 1;
+  padding: 1.5rem;
+}

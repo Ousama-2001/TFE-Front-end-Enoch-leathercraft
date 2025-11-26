@@ -1,77 +1,64 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  Router,
-  RouterOutlet,
-  NavigationEnd,
-  RouterLink,
-} from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { CartService, CartResponse } from './services/cart.service';
 import { AuthService } from './services/auth.service';
-import { CartService } from './services/cart.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, RouterLink],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
 export class AppComponent implements OnInit {
-  showNavbar = true;
-  showMiniCart = false;
+
+  title = 'Enoch Leathercraft';
+
+  miniCartOpen = false;
+  cartQuantity = 0;
+
+  // 👉 on déclare seulement ici
+  cart$!: Observable<CartResponse | null>;
 
   constructor(
-    private auth: AuthService,
-    private router: Router,
-    public cart: CartService
+    private cartService: CartService,
+    private authService: AuthService,
+    private router: Router
   ) {
-    // au démarrage : savoir si on est sur /login ou /register
-    this.updateNavbarVisibility(this.router.url);
-
-    // mettre à jour la navbar à chaque navigation
-    this.router.events.subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.updateNavbarVisibility(event.urlAfterRedirects);
-      }
-    });
+    // 👉 et on l'initialise dans le constructeur
+    this.cart$ = this.cartService.cart$;
   }
 
   ngOnInit(): void {
-    // on récupère le panier dès que l'app démarre (si token présent)
-    this.cart.loadCart().subscribe({
-      error: () => {
-        // silencieux : si pas connecté, pas grave
-      },
+    // Charge le panier seulement si l'utilisateur est connecté
+    if (this.authService.isAuthenticated()) {
+      this.cartService.loadCart().subscribe({
+        next: (cart: CartResponse) => {
+          this.cartQuantity = cart.totalQuantity;
+        },
+        error: () => {
+          // on ignore les 403 éventuels
+        }
+      });
+    }
+
+    // Met à jour le badge du panier en live
+    this.cart$.subscribe((cart) => {
+      this.cartQuantity = cart ? cart.totalQuantity : 0;
     });
   }
 
-  private updateNavbarVisibility(url: string): void {
-    this.showNavbar = !(
-      url.startsWith('/login') ||
-      url.startsWith('/register')
-    );
+  isAuthPage(): boolean {
+    return this.authService.isAuthPage();
   }
 
-  // Utilisé dans le template pour afficher / cacher le bouton Déconnexion
-  get isLoggedIn(): boolean {
-    // si ton AuthService expose déjà isAuthenticated(), on l’utilise
-    if (typeof (this.auth as any).isAuthenticated === 'function') {
-      return this.auth.isAuthenticated();
-    }
-
-    // sinon on se base sur la présence du token
-    return !!localStorage.getItem('token');
+  goToCart(): void {
+    this.router.navigate(['/cart']);
   }
 
-  onLogout(): void {
-    this.auth.logout();
-  }
-
-  onCartEnter(): void {
-    this.showMiniCart = true;
-  }
-
-  onCartLeave(): void {
-    this.showMiniCart = false;
+  logout(): void {
+    this.authService.logout();
   }
 }

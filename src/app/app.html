@@ -1,82 +1,87 @@
-<!-- NAVBAR (cachée sur /login et /register) -->
-<nav class="navbar" *ngIf="showNavbar">
-  <div class="navbar-left">
-    <a routerLink="/" class="brand">Enoch Leathercraft</a>
-  </div>
-
-  <div class="navbar-right">
-    <!-- Lien panier -->
-    <a
-      routerLink="/cart"
-      class="cart-link"
-      (mouseenter)="onCartEnter()"
-      (mouseleave)="onCartLeave()"
-    >
-      <i class="fa-solid fa-shopping-bag"></i>
-      <span>Panier</span>
-      <span class="cart-badge">{{ cart.totalQuantity || 0 }}</span>
-    </a>
-
-    <!-- Lien profil (visible seulement connecté) -->
-    <a
-      *ngIf="isLoggedIn"
-      routerLink="/profile"
-      class="profile-link"
-    >
-      <i class="fa-solid fa-user"></i>
-      <span>Mon compte</span>
-    </a>
-
-    <!-- Bouton déconnexion -->
-    <button
-      class="logout-btn"
-      *ngIf="isLoggedIn"
-      (click)="onLogout()"
-    >
-      <i class="fa-solid fa-right-from-bracket"></i>
-      <span>Déconnexion</span>
-    </button>
-  </div>
-</nav>
-
-<!-- MINI APERÇU PANIER (hover sur le lien panier ou sur lui-même) -->
-<div
-  class="mini-cart"
-  *ngIf="showMiniCart"
-  (mouseenter)="onCartEnter()"
-  (mouseleave)="onCartLeave()"
->
-  <h3>Votre panier</h3>
-
-  <ng-container *ngIf="cart.items && cart.items.length; else emptyMiniCart">
-    <ul class="mini-cart-list">
-      <li *ngFor="let item of cart.items | slice:0:3">
-        <div class="mini-cart-item-name">
-          {{ item.name }}
-        </div>
-        <div class="mini-cart-item-info">
-          <span>x{{ item.quantity }}</span>
-          <span class="line-total">
-            {{ item.lineTotal | currency:'EUR' }}
-          </span>
-        </div>
-      </li>
-    </ul>
-
-    <div class="mini-cart-footer">
-      <div class="mini-cart-total">
-        Total : <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
-      </div>
-      <a routerLink="/cart" class="mini-cart-button">
-        Voir le panier
-      </a>
+<!-- src/app/app.html -->
+<div class="app-shell">
+  <!-- HEADER + NAVBAR (cachée sur /login et /register) -->
+  <header class="topbar" *ngIf="!isAuthPage()">
+    <div class="logo">
+      <span class="logo-title">Enoch Leathercraft</span>
     </div>
-  </ng-container>
 
-  <ng-template #emptyMiniCart>
-    <p class="mini-cart-empty">Votre panier est vide.</p>
-  </ng-template>
+    <div class="topbar-right">
+      <!-- Mini panier -->
+      <div class="cart-wrapper"
+           (mouseenter)="miniCartOpen = true"
+           (mouseleave)="miniCartOpen = false">
+
+        <button class="cart-button" (click)="goToCart()">
+          <span class="cart-icon">🛒</span>
+          <span class="cart-label">Panier</span>
+          <span class="cart-badge" *ngIf="cartQuantity > 0">{{ cartQuantity }}</span>
+        </button>
+
+        <!-- POPUP PANIER -->
+        <div class="cart-popover"
+             *ngIf="miniCartOpen && (cart$ | async) as cart">
+
+          <h3 class="cart-popover-title">Votre panier</h3>
+
+          <ng-container *ngIf="cart.items.length; else emptyCart">
+            <div class="cart-items">
+              <div class="cart-item" *ngFor="let item of cart.items">
+                <div class="cart-item-main">
+                  <!-- Image affichée uniquement si imageUrl existe -->
+                  <div class="cart-item-thumb" *ngIf="item.imageUrl">
+                    <img [src]="item.imageUrl" [alt]="item.name" />
+                  </div>
+
+                  <div class="cart-item-info">
+                    <div class="name">{{ item.name }}</div>
+                    <div class="meta">
+                      x{{ item.quantity }} •
+                      {{ item.unitPrice | currency:'EUR' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cart-item-total">
+                  {{ item.lineTotal | currency:'EUR' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="cart-popover-footer">
+              <div class="summary">
+                <span>{{ cart.totalQuantity }} article(s)</span>
+                <span class="total">
+                  {{ cart.totalAmount | currency:'EUR' }}
+                </span>
+              </div>
+              <button class="view-cart-btn" (click)="goToCart()">
+                Voir le panier
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyCart>
+            <p class="empty-text">Votre panier est vide.</p>
+          </ng-template>
+
+        </div>
+      </div>
+
+      <!-- Compte / Déconnexion -->
+      <button class="account-button" routerLink="/profile">
+        <span class="icon">👤</span>
+        <span>Mon compte</span>
+      </button>
+
+      <button class="logout-button" (click)="logout()">
+        Déconnexion
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENU DES PAGES -->
+  <main class="page">
+    <router-outlet></router-outlet>
+  </main>
 </div>
-
-<!-- CONTENU DES PAGES -->
-<router-outlet></router-outlet>

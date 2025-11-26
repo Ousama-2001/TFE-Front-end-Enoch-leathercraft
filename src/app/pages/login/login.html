@@ -1,9 +1,11 @@
 <div class="auth-page">
   <div class="auth-card">
     <h1>Connexion</h1>
+    <p class="subtitle">Rejoins Enoch Leathercraft Shop</p>
 
     <form (ngSubmit)="submit()" #f="ngForm">
 
+      <!-- IDENTIFIANT -->
       <div class="form-group">
         <label for="identifier">Email ou pseudo</label>
         <input
@@ -15,6 +17,7 @@
         />
       </div>
 
+      <!-- MOT DE PASSE -->
       <div class="form-group">
         <label for="password">Mot de passe</label>
         <input
@@ -28,7 +31,7 @@
 
       <p *ngIf="error" class="error-message">{{ error }}</p>
 
-      <button class="btn" type="submit" [disabled]="loading">
+      <button class="primary-btn" type="submit" [disabled]="loading">
         {{ loading ? 'Connexion...' : 'Se connecter' }}
       </button>
     </form>

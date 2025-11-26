@@ -1,4 +1,3 @@
-// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,7 +28,8 @@ export class LoginComponent {
     }
 
     const payload: LoginRequest = {
-      identifier: this.emailOrUsername.trim(), // 👈 correspond AU BACK
+      // 👇 correspond au champ `identifier` du AuthRequest côté back
+      identifier: this.emailOrUsername.trim(),
       password: this.password,
     };
 
@@ -41,10 +41,23 @@ export class LoginComponent {
         this.router.navigate(['/products']);
       },
       error: (err) => {
-        this.error =
-          err.error?.message ||
-          err.error ||
-          'Identifiants invalides. Veuillez réessayer.';
+        const code = err?.error?.message || err?.error;
+
+        switch (code) {
+          case 'BAD_CREDENTIALS':
+            this.error = 'Email/pseudo ou mot de passe incorrect.';
+            break;
+          case 'IDENTIFIER_REQUIRED':
+            this.error = 'Veuillez entrer votre email ou votre pseudo.';
+            break;
+          case 'EMAIL_REQUIRED':
+            this.error = 'Email requis.';
+            break;
+          default:
+            this.error =
+              'Identifiants invalides. Veuillez réessayer.';
+        }
+
         this.loading = false;
       },
     });
