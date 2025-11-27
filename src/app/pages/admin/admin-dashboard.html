@@ -1,193 +1,153 @@
 <div class="admin-dashboard">
 
-  <header class="dashboard-header">
-    <h1>Tableau de bord Admin</h1>
-    <!-- NOTE: Le bouton de déconnexion redondant a été retiré pour la navbar globale -->
-  </header>
+  <h1>Tableau de bord administrateur</h1>
+  <p class="subtitle">
+    Vue d’ensemble des ventes et du stock pour Enoch Leathercraft.
+  </p>
 
-  <!-- NAVIGATION ONGLETS -->
-  <div class="tabs-nav">
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'products'"
-      (click)="switchTab('products')">
-      📦 Produits
-    </button>
-    <button
-      class="tab-btn"
-      [class.active]="activeTab === 'orders'"
-      (click)="switchTab('orders')">
-      🚚 Commandes
-    </button>
-  </div>
+  <!-- ================== CARTES STATS ================== -->
+  <section class="stats-section">
 
-  <!-- ============================================== -->
-  <!-- CONTENU : PRODUITS -->
-  <!-- ============================================== -->
-  <div *ngIf="activeTab === 'products'" class="tab-content products-tab">
+    <div class="stats-row" *ngIf="!statsLoading && stats; else statsLoadingTpl">
 
-    <div class="toolbar">
-      <h2>Gestion du catalogue</h2>
-      <button class="btn-create" (click)="toggleCreateForm()">
-        {{ showCreateForm ? 'Fermer' : '+ Nouveau Produit' }}
-      </button>
+      <article class="stat-card">
+        <h3>Chiffre d’affaires total</h3>
+        <p class="value">
+          {{ stats.totalRevenue | currency:'EUR' }}
+        </p>
+        <p class="hint">Toutes commandes confondues</p>
+      </article>
+
+      <article class="stat-card">
+        <h3>Nombre de commandes</h3>
+        <p class="value">
+          {{ stats.totalOrders }}
+        </p>
+        <p class="hint">Commandes enregistrées</p>
+      </article>
+
+      <article class="stat-card">
+        <h3>Articles vendus</h3>
+        <p class="value">
+          {{ stats.totalItemsSold }}
+        </p>
+        <p class="hint">Total des pièces vendues</p>
+      </article>
+
+      <article class="stat-card">
+        <h3>Panier moyen</h3>
+        <p class="value">
+          {{ stats.averageOrderValue | currency:'EUR' }}
+        </p>
+        <p class="hint">Montant moyen par commande</p>
+      </article>
+
     </div>
 
-    <!-- Formulaire -->
-    <div *ngIf="showCreateForm" class="create-form-panel">
-      <h3>{{ editingProductId ? 'Modifier le produit' : 'Créer un produit' }}</h3>
+    <ng-template #statsLoadingTpl>
+      <p class="info">Chargement des statistiques...</p>
+    </ng-template>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Nom du produit</label>
-          <input [(ngModel)]="newProduct.name" placeholder="Ex: Sac à main Cuir" />
-        </div>
-        <div class="form-group">
-          <label>SKU (Référence)</label>
-          <input [(ngModel)]="newProduct.sku" placeholder="Ex: BAG-001" />
-        </div>
-        <div class="form-group">
-          <label>Prix (€)</label>
-          <input type="number" [(ngModel)]="newProduct.price" />
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea [(ngModel)]="newProduct.description" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Image du produit</label>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+    <p class="error" *ngIf="statsError">{{ statsError }}</p>
 
-          <div *ngIf="currentImagePreview" class="img-preview">
-            <p>Image actuelle :</p>
-            <img [src]="currentImagePreview" alt="Prévisualisation" />
-          </div>
-        </div>
-      </div>
+  </section>
 
-      <div class="form-actions">
-        <button class="btn-cancel" (click)="toggleCreateForm()">Annuler</button>
-        <button class="btn-save" (click)="submitForm()" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Sauvegarde...' : 'Enregistrer' }}
-        </button>
+  <!-- ================== STOCK FAIBLE ================== -->
+  <section class="stock-section">
+
+    <div class="stock-header">
+      <h2>Produits en stock faible</h2>
+
+      <div class="threshold-control">
+        <label for="threshold">Seuil d’alerte :</label>
+        <input
+          id="threshold"
+          type="number"
+          min="0"
+          [(ngModel)]="lowStockThreshold"
+          (ngModelChange)="onThresholdChange()"
+        />
       </div>
     </div>
 
-    <!-- Liste Produits -->
-    <div class="products-list">
-      <div *ngIf="loadingProducts" class="loading">Chargement des produits...</div>
+    <p class="info" *ngIf="lowStockLoading">Chargement des produits en stock faible...</p>
+    <p class="error" *ngIf="lowStockError">{{ lowStockError }}</p>
 
-      <table *ngIf="!loadingProducts" class="admin-table">
-        <thead>
-        <tr>
-          <th>Image</th>
-          <th>Nom</th>
-          <th>SKU</th>
-          <th>Prix</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let p of products">
-          <td>
-            <div class="thumb" *ngIf="p.imageUrls && p.imageUrls.length">
-              <img [src]="'http://localhost:8080' + p.imageUrls[0]" alt="img">
-            </div>
-          </td>
-          <td>{{ p.name }}</td>
-          <td>{{ p.sku }}</td>
-          <td>{{ p.price | currency:'EUR' }}</td>
-          <td class="actions-cell">
-            <button class="btn-icon edit" (click)="startEdit(p)" title="Modifier">✏️</button>
-            <button class="btn-icon delete" (click)="openDeleteConfirm(p)" title="Supprimer">🗑️</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- CONTENU : COMMANDES -->
-  <!-- ============================================== -->
-  <div *ngIf="activeTab === 'orders'" class="tab-content orders-tab">
-
-    <div class="toolbar">
-      <h2>Suivi des commandes</h2>
-      <button class="btn-refresh" (click)="loadOrders()">🔄 Actualiser</button>
-    </div>
-
-    <div *ngIf="loadingOrders" class="loading">Chargement des commandes...</div>
-
-    <table *ngIf="!loadingOrders" class="admin-table">
+    <table class="stock-table" *ngIf="!lowStockLoading && lowStockProducts.length > 0">
       <thead>
       <tr>
-        <th>Réf</th>
-        <th>Date</th>
-        <th>Total</th>
-        <th>Statut</th>
-        <th>Actions</th>
+        <th>Produit</th>
+        <th>SKU</th>
+        <th>Prix</th>
+        <th>Stock actuel</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let order of orders">
-        <td class="font-mono text-purple">{{ order.reference }}</td>
-        <td>{{ order.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-        <td class="font-bold">{{ order.totalAmount | currency:'EUR' }}</td>
-        <td>
-            <span [ngClass]="getStatusColor(order.status)" class="status-badge">
-              {{ order.status }}
-            </span>
-        </td>
-        <td class="actions-cell flex-gap">
-
-          <!-- ÉTAPE 1 : PENDING -> PAID (Validation du paiement) -->
-          <button *ngIf="order.status === 'PENDING'"
-                  (click)="updateOrderStatus(order.id, 'PAID')"
-                  class="btn-status btn-pay" title="Confirmer la réception du paiement">
-            💰 Valider Paiement
-          </button>
-
-          <!-- ÉTAPE 2 : PAID -> SHIPPED (Expédition) -->
-          <button *ngIf="order.status === 'PAID'"
-                  (click)="updateOrderStatus(order.id, 'SHIPPED')"
-                  class="btn-status btn-ship" title="Envoyer le colis">
-            📦 Expédier
-          </button>
-
-          <!-- ÉTAPE 3 : SHIPPED -> DELIVERED (Livraison) -->
-          <button *ngIf="order.status === 'SHIPPED'"
-                  (click)="updateOrderStatus(order.id, 'DELIVERED')"
-                  class="btn-status btn-deliver" title="Confirmer la livraison">
-            ✅ Livrer
-          </button>
-
-          <!-- ANNULATION (Possible tant que pas livré) -->
-          <button *ngIf="order.status === 'PENDING' || order.status === 'PAID'"
-                  (click)="updateOrderStatus(order.id, 'CANCELLED')"
-                  class="btn-status btn-cancel">
-            ✖ Annuler
-          </button>
-
-          <!-- STATUT FINAL -->
-          <span *ngIf="order.status === 'DELIVERED'" class="text-success">✅ Terminé</span>
-          <span *ngIf="order.status === 'CANCELLED'" class="text-error">🚫 Annulé</span>
-        </td>
+      <tr *ngFor="let p of lowStockProducts">
+        <td>{{ p.name }}</td>
+        <td>{{ p.sku }}</td>
+        <td>{{ p.price | currency:'EUR' }}</td>
+        <td class="stock-cell">{{ p.stockQuantity ?? 0 }}</td>
       </tr>
       </tbody>
     </table>
-  </div>
 
-  <!-- Popup Suppression (Produits) -->
-  <div class="modal-overlay" *ngIf="showDeleteConfirm">
-    <div class="modal-box">
-      <h3>Confirmer la suppression</h3>
-      <p>Voulez-vous vraiment supprimer "<strong>{{ deleteTargetName }}</strong>" ?</p>
-      <div class="modal-actions">
-        <button (click)="cancelDelete()" class="btn-cancel">Non</button>
-        <button (click)="confirmDelete()" class="btn-delete-confirm">Oui, supprimer</button>
-      </div>
-    </div>
-  </div>
+    <p class="info" *ngIf="!lowStockLoading && !lowStockProducts.length">
+      Aucun produit en dessous du seuil de {{ lowStockThreshold }} unités.
+    </p>
+
+  </section>
 
 </div>
+<!-- ================== COMMANDES ================== -->
+<section class="orders-section">
+
+  <div class="orders-header">
+    <h2>Dernières commandes</h2>
+    <p class="hint">Vue globale des commandes clients (côté administrateur).</p>
+  </div>
+
+  <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
+  <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
+
+  <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
+    <thead>
+    <tr>
+      <th>Référence</th>
+      <th>Date</th>
+      <th>Statut</th>
+      <th>Montant</th>
+      <th>Détails</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let o of orders">
+      <td>{{ o.reference }}</td>
+      <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+      <td>
+          <span class="status-pill" [ngClass]="o.status.toLowerCase()">
+            {{ o.status }}
+          </span>
+      </td>
+      <td>{{ o.totalAmount | currency:'EUR' }}</td>
+      <td>
+        <details class="order-details">
+          <summary>Voir les articles</summary>
+          <ul>
+            <li *ngFor="let item of o.items">
+              {{ item.quantity }} × {{ item.productName }}
+              ({{ item.unitPrice | currency:'EUR' }})
+            </li>
+          </ul>
+        </details>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <p class="info" *ngIf="!ordersLoading && !orders.length">
+    Aucune commande pour le moment.
+  </p>
+
+</section>
+

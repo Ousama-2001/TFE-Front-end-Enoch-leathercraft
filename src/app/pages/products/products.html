@@ -1,12 +1,71 @@
 <div class="products-page">
+
   <section class="hero">
     <h1>Enoch Leathercraft</h1>
     <p>Découvrez nos sacs, sacoches, ceintures et portefeuilles faits main.</p>
   </section>
 
+  <!-- BARRE DE FILTRES -->
+  <section class="filters">
+    <div class="filter-row">
+
+      <div class="filter-group">
+        <label>Recherche</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onFiltersChange()"
+          placeholder="Rechercher un produit..."
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>Univers</label>
+        <select [(ngModel)]="selectedSegment" (ngModelChange)="onFiltersChange()">
+          <option value="">Tous</option>
+          <option value="homme">Homme</option>
+          <option value="femme">Femme</option>
+          <option value="petite-maroquinerie">Petite maroquinerie</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Catégorie</label>
+        <select [(ngModel)]="selectedCategory" (ngModelChange)="onFiltersChange()">
+          <option value="">Toutes</option>
+          <option value="sacs-sacoches">Sacs & sacoches</option>
+          <option value="ceintures">Ceintures</option>
+          <option value="portefeuilles">Portefeuilles</option>
+          <option value="portes-cartes">Portes-cartes</option>
+          <option value="sets-de-table">Sets de table</option>
+        </select>
+      </div>
+
+      <div class="filter-group filter-price">
+        <label>Prix (€)</label>
+        <div class="filter-price-inputs">
+          <input
+            type="number"
+            [(ngModel)]="priceMin"
+            (ngModelChange)="onFiltersChange()"
+            placeholder="Min"
+          />
+          <span>—</span>
+          <input
+            type="number"
+            [(ngModel)]="priceMax"
+            (ngModelChange)="onFiltersChange()"
+            placeholder="Max"
+          />
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <section
     class="products-section"
-    *ngIf="products && products.length; else noProducts"
+    *ngIf="filteredProducts && filteredProducts.length; else noProducts"
   >
     <h2 class="section-title">Nos produits</h2>
 

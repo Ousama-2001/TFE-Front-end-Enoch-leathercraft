@@ -1,0 +1,36 @@
+.about-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #f1f5f9;
+  font-family: system-ui;
+}
+
+.about-hero h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-hero p {
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+}
+
+.about-block {
+  margin-bottom: 1.8rem;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1.3rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.about-block h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-block p {
+  font-size: 0.95rem;
+  color: #e2e8f0;
+  line-height: 1.6;
+}

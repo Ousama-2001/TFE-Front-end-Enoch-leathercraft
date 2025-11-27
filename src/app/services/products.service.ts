@@ -14,6 +14,7 @@ export interface Product {
   weightGrams?: number;
   isActive?: boolean;
   imageUrls?: string[];
+  stockQuantity?: number;
 }
 
 export interface ProductCreateRequest {
@@ -26,6 +27,7 @@ export interface ProductCreateRequest {
   currency?: string;
   weightGrams?: number;
   isActive?: boolean;
+  stockQuantity?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,7 +44,6 @@ export class ProductService {
     return this.http.get<Product>(`${this.baseUrl}/products/${id}`);
   }
 
-  // CREATE (Reste inchangé)
   create(body: ProductCreateRequest, file: File): Observable<Product> {
     const formData = new FormData();
     formData.append('file', file, file.name);
@@ -50,14 +51,10 @@ export class ProductService {
     return this.http.post<Product>(`${this.baseUrl}/admin/products`, formData);
   }
 
-  // UPDATE (MODIFIÉ : Accepte maintenant un fichier optionnel)
   update(id: number, body: ProductCreateRequest, file?: File | null): Observable<Product> {
     const formData = new FormData();
-
-    // Ajoute le produit en JSON
     formData.append('product', JSON.stringify(body));
 
-    // Ajoute le fichier SEULEMENT s'il est fourni (nouveau ou modifié)
     if (file) {
       formData.append('file', file, file.name);
     }
@@ -68,20 +65,18 @@ export class ProductService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/admin/products/${id}`);
   }
+
   getMainImageUrl(product: Product): string {
     if (!product.imageUrls || product.imageUrls.length === 0) {
       return 'assets/images/placeholder-product.jpg';
     }
 
-    const first = product.imageUrls[0]; // ex: "upload/products/image.jpg"
+    const first = product.imageUrls[0];
 
-    // si déjà complet
     if (first.startsWith('http://') || first.startsWith('https://')) {
       return first;
     }
 
-    // si côté back tu stockes "upload/products/image.jpg"
     return `http://localhost:8080/${first}`;
   }
-
 }

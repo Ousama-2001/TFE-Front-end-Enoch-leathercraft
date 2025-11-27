@@ -1,120 +1,247 @@
-$bg-dark: #0f172a;
-$bg-card: #1e293b;
-$text-light: #f1f5f9;
-$border-color: rgba(255, 255, 255, 0.1);
-$primary: #6366f1;
-$purple: #a855f7;
-
 .admin-dashboard {
-  min-height: 100vh;
   padding: 2rem;
-  background: $bg-dark;
-  color: $text-light;
-  font-family: sans-serif;
+  color: #e2e8f0;
+  font-family: system-ui, sans-serif;
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  h1 { font-size: 1.8rem; font-weight: 700; color: $purple; }
+h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
 }
 
-/* --- TABS NAVIGATION --- */
-.tabs-nav {
-  display: flex;
-  gap: 1rem;
+.subtitle {
+  color: #94a3b8;
   margin-bottom: 2rem;
-  border-bottom: 1px solid $border-color;
-  padding-bottom: 1px;
+}
 
-  .tab-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.1rem;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
+/* ================== STATS ================== */
 
-    &:hover { color: $text-light; }
+.stats-section {
+  margin-bottom: 2.5rem;
+}
 
-    &.active {
-      color: $primary;
-      border-bottom-color: $primary;
-    }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.2rem;
+}
+
+.stat-card {
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  border-radius: 14px;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.9);
+
+  h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    color: #cbd5e1;
+  }
+
+  .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: #f9fafb;
+  }
+
+  .hint {
+    font-size: 0.8rem;
+    color: #9ca3af;
   }
 }
 
-/* --- CONTENU COMMUN --- */
-.toolbar {
+/* ================== STOCK ================== */
+
+.stock-section {
+  margin-top: 2rem;
+}
+
+.stock-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  h2 { font-size: 1.4rem; }
-  .btn-create, .btn-refresh {
-    background: $primary; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;
-    &:hover { background: lighten($primary, 5%); }
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1.3rem;
   }
 }
 
-/* --- TABLEAU STYLE --- */
-.admin-table {
+.threshold-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  label {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+  }
+
+  input {
+    width: 70px;
+    padding: 0.25rem 0.4rem;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: #020617;
+    color: #e2e8f0;
+  }
+}
+
+.stock-table {
   width: 100%;
   border-collapse: collapse;
-  background: $bg-card;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-
-  th, td { padding: 1rem; text-align: left; border-bottom: 1px solid $border-color; }
-  th { background: rgba(0,0,0,0.2); color: #cbd5e1; font-weight: 600; }
-  tbody tr:hover { background: rgba(255,255,255,0.03); }
-
-  .thumb img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
-  .font-mono { font-family: monospace; }
-  .text-purple { color: $purple; }
-  .font-bold { font-weight: bold; }
-  .text-success { color: #4ade80; font-weight: bold; }
-  .text-error { color: #f87171; font-weight: bold; }
+  margin-top: 0.5rem;
+  background: rgba(15, 23, 42, 0.9);
 }
 
-/* --- BADGES STATUS --- */
-.status-badge {
-  padding: 4px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 700; border: 1px solid transparent;
+.stock-table th,
+.stock-table td {
+  padding: 0.7rem 0.8rem;
+  font-size: 0.9rem;
 }
-.bg-yellow-500\/20 { background: rgba(234, 179, 8, 0.2); color: #facc15; border-color: rgba(234, 179, 8, 0.3); } /* PENDING */
-.bg-purple-500\/20 { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.3); } /* PAID */
-.bg-blue-500\/20 { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); } /* SHIPPED */
-.bg-green-500\/20 { background: rgba(34, 197, 94, 0.2); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); } /* DELIVERED */
-.bg-red-500\/20 { background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.3); } /* CANCELLED */
 
-/* --- ACTIONS BOUTONS --- */
-.actions-cell { display: flex; gap: 8px; }
-.btn-icon { background: rgba(255,255,255,0.1); border:none; padding: 6px; border-radius: 4px; cursor: pointer; font-size: 1.2rem; }
-.btn-status { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; color: white; font-size: 0.85rem; font-weight: 600; }
-
-.btn-pay { background: #8b5cf6; } /* Valider Paiement */
-.btn-ship { background: #3b82f6; } /* Expédier */
-.btn-deliver { background: #22c55e; } /* Livrer */
-.btn-cancel { background: #ef4444; } /* Annuler */
-
-/* --- FORMULAIRE --- */
-.create-form-panel {
-  background: $bg-card; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid $primary;
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  .form-group { display: flex; flex-direction: column; gap: 0.5rem; label { color: #cbd5e1; font-size: 0.9rem; } input, textarea { background: rgba(0,0,0,0.3); border: 1px solid $border-color; color: white; padding: 10px; border-radius: 4px; } }
-  .img-preview img { max-width: 100px; margin-top: 10px; border-radius: 4px; }
+.stock-table thead {
+  background: rgba(30, 64, 175, 0.8);
 }
-.form-actions { display: flex; gap: 1rem; justify-content: flex-end; }
-.btn-save { background: $primary; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-.btn-cancel { background: transparent; color: #94a3b8; border: 1px solid #475569; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
 
-/* --- MODAL --- */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-.modal-box { background: $bg-card; padding: 2rem; border-radius: 8px; border: 1px solid $border-color; text-align: center; }
-.modal-actions { margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem; }
-.btn-delete-confirm { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.stock-table th {
+  text-align: left;
+}
+
+.stock-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.stock-table tbody tr:nth-child(odd) {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.stock-cell {
+  font-weight: 600;
+  color: #facc15;
+}
+
+/* ================== MESSAGES ================== */
+
+.info {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #fecaca;
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .stock-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+/* ================== COMMANDES ================== */
+
+.orders-section {
+  margin-top: 2.5rem;
+}
+
+.orders-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .hint {
+    font-size: 0.85rem;
+    color: #9ca3af;
+  }
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 0.65rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.orders-table thead {
+  background: rgba(30, 64, 175, 0.85);
+}
+
+.orders-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.orders-table tbody tr:nth-child(odd) {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+/* statut badge */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* adapte les classes aux statuts de ton enum OrderStatus */
+.status-pill.pending {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.status-pill.paid {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.status-pill.shipped {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.status-pill.cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* détails commande */
+.order-details {
+  summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: #60a5fa;
+  }
+
+  ul {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+  }
+}
+

@@ -66,6 +66,18 @@ export const routes: Routes = [
     component: OrderSuccessComponent
   },
 
+  {
+    path: 'about',
+    loadComponent: () =>
+      import('./pages/about/about').then(m => m.AboutComponent),
+  },
+  {
+    path: 'contact',
+    loadComponent: () =>
+      import('./pages/contact/contact').then(m => m.ContactComponent),
+  },
+
+
   // --- Redirections ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
 
