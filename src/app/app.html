@@ -11,17 +11,125 @@
           alt="Logo"
           class="brand-logo"
         />
-        <span class="brand-title">EN0CH LEATHERCRAFT</span>
+        <span class="brand-title">ENOCH LEATHERCRAFT</span>
       </a>
 
       <!-- NAVIGATION PRINCIPALE -->
       <nav class="main-nav">
-        <a routerLink="/home" routerLinkActive="active">Accueil</a>
-        <a routerLink="/products" routerLinkActive="active">Tous les produits</a>
-        <a routerLink="/products" [queryParams]="{ category: 'sacs' }">Sacs</a>
-        <a routerLink="/products" [queryParams]="{ category: 'portefeuilles' }">Portefeuilles</a>
-        <a routerLink="/products" [queryParams]="{ category: 'ceintures' }">Ceintures</a>
-        <a routerLink="/products" [queryParams]="{ category: 'accessoires' }">Accessoires</a>
+
+        <!-- Accueil (pas de dropdown) -->
+        <div class="nav-item">
+          <a
+            routerLink="/home"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            Accueil
+          </a>
+        </div>
+
+        <!-- HOMME -->
+        <div class="nav-item has-dropdown">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'homme' }"
+            routerLinkActive="active"
+          >
+            Homme
+          </a>
+
+          <div class="nav-dropdown">
+            <h4>Pour homme</h4>
+            <p class="dropdown-text">
+              Sacs, sacoches et ceintures en cuir pour homme.
+            </p>
+            <div class="dropdown-links">
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'homme', category: 'sacs-sacoches' }"
+              >
+                Sacs &amp; sacoches
+              </a>
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'homme', category: 'ceintures' }"
+              >
+                Ceintures
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEMME -->
+        <div class="nav-item has-dropdown">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'femme' }"
+            routerLinkActive="active"
+          >
+            Femme
+          </a>
+
+          <div class="nav-dropdown">
+            <h4>Pour femme</h4>
+            <p class="dropdown-text">
+              Sacs, sacoches et ceintures en cuir pour femme.
+            </p>
+            <div class="dropdown-links">
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'femme', category: 'sacs-sacoches' }"
+              >
+                Sacs &amp; sacoches
+              </a>
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'femme', category: 'ceintures' }"
+              >
+                Ceintures
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PETITE MAROQUINERIE -->
+        <div class="nav-item has-dropdown">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'petite-maroquinerie' }"
+            routerLinkActive="active"
+          >
+            Petite maroquinerie
+          </a>
+
+          <div class="nav-dropdown">
+            <h4>Petite maroquinerie</h4>
+            <p class="dropdown-text">
+              Portefeuilles, portes-cartes et sets de table en cuir.
+            </p>
+            <div class="dropdown-links">
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'petite-maroquinerie', category: 'portefeuilles' }"
+              >
+                Portefeuilles
+              </a>
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'petite-maroquinerie', category: 'portes-cartes' }"
+              >
+                Portes-cartes
+              </a>
+              <a
+                [routerLink]="['/products']"
+                [queryParams]="{ segment: 'petite-maroquinerie', category: 'sets-de-table' }"
+              >
+                Sets de table
+              </a>
+            </div>
+          </div>
+        </div>
+
       </nav>
     </div>
 
@@ -37,7 +145,7 @@
 
         <!-- BOUTON PANIER -->
         <button class="cart-button" (click)="goToCart()">
-          <span class="cart-icon">🛒</span>
+          <span class="cart-icon">🧺</span>
           <span class="cart-label">Panier</span>
           <span class="cart-badge" *ngIf="cartQuantity > 0">
             {{ cartQuantity }}

@@ -1,5 +1,3 @@
-/* src/app/app.scss */
-
 .app-shell {
   min-height: 100vh;
   display: flex;
@@ -21,19 +19,181 @@
   align-items: center;
   justify-content: space-between;
   backdrop-filter: blur(18px);
-  background: linear-gradient(to right, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+  background: linear-gradient(
+      to right,
+      rgba(15, 23, 42, 0.96),
+      rgba(15, 23, 42, 0.9)
+  );
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
-.logo-title {
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+/* Partie gauche : logo + menu */
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* LOGO DANS LA NAVBAR */
+
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.topbar .brand-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+}
+
+.topbar .brand-title {
   font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+/* NAVIGATION PRINCIPALE (ONGLETS + DROPDOWN) */
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  position: relative;
+}
+
+/* chaque item */
+
+.nav-item {
+  position: relative;
+}
+
+/* lien principal */
+
+.nav-item > a {
+  position: relative;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #cbd5f5;
+  text-decoration: none;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+/* Soulignement fluide */
+
+.nav-item > a::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f97316, #facc15);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.nav-item > a:hover {
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.nav-item > a:hover::after {
+  opacity: 0.8;
+  transform: scaleX(1);
+}
+
+/* Onglet actif */
+
+.nav-item > a.active {
+  color: #ffffff;
+  background: rgba(15, 118, 110, 0.25);
+}
+
+.nav-item > a.active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* ===== DROPDOWN ===== */
+
+.has-dropdown {
+  /* rien de spécial ici, c’est la classe pour le hover */
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  min-width: 260px;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: #020617;
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.95),
+    0 0 0 1px rgba(30, 64, 175, 0.4);
+  border: 1px solid rgba(30, 64, 175, 0.8);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 120;
+}
+
+.nav-dropdown h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.dropdown-text {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.dropdown-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dropdown-links a {
+  font-size: 0.85rem;
+  color: #e5e7eb;
+  text-decoration: none;
+  padding: 0.25rem 0.4rem;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-links a:hover {
+  background: rgba(30, 64, 175, 0.95);
   color: #f9fafb;
 }
 
-/* Right side (cart + account) */
+/* affichage au survol de l'item */
+
+.has-dropdown:hover .nav-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ===== RIGHT SIDE (cart + account) ===== */
+
 .topbar-right {
   display: flex;
   align-items: center;
@@ -113,8 +273,6 @@
   color: #f9fafb;
 }
 
-/* Items inside mini cart */
-
 .cart-items {
   max-height: 260px;
   overflow-y: auto;
@@ -134,14 +292,13 @@
   border-bottom: none;
 }
 
-.cart-item-main {
+.cart-item-left {
   display: flex;
   align-items: center;
   gap: 0.65rem;
 }
 
-/* Thumb (image du produit si présente) */
-.cart-item-thumb {
+.cart-thumb {
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -151,19 +308,19 @@
   border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
-.cart-item-thumb img {
+.cart-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.cart-item-info .name {
+.cart-info .name {
   font-size: 0.85rem;
   font-weight: 500;
   color: #e5e7eb;
 }
 
-.cart-item-info .meta {
+.cart-info .meta {
   font-size: 0.75rem;
   color: #9ca3af;
 }
@@ -173,8 +330,6 @@
   font-weight: 600;
   color: #facc15;
 }
-
-/* Footer du mini cart */
 
 .cart-popover-footer {
   display: flex;
@@ -239,10 +394,6 @@
   transition: all 0.15s ease-out;
 }
 
-.account-button .icon {
-  font-size: 0.95rem;
-}
-
 .account-button:hover,
 .logout-button:hover {
   border-color: #f97316;
@@ -255,38 +406,3 @@
   flex: 1;
   padding: 1.5rem;
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.logo-img {
-  height: 28px;
-  width: auto;
-  display: block;
-}
-/* LOGO DANS LA NAVBAR */
-.topbar .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-
-.topbar .brand-logo {
-  height: 38px;      /* Taille maîtrisée */
-  width: auto;
-  object-fit: contain;
-  display: block;
-  border-radius: 4px; /* léger arrondi pour faire propre */
-}
-
-.topbar .brand-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #ffffff;
-}
-
