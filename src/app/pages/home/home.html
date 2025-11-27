@@ -1,192 +1,191 @@
-<div class="home-page">
+<div class="home">
 
-  <!-- HERO -->
+  <!-- ============================ HERO ============================ -->
   <section class="hero">
     <div class="hero-left">
-      <div class="brand-line">
-        <img
-          class="brand-logo"
-          [src]="logoUrl"
-          alt="Enoch Leathercraft"
-        />
-        <span class="brand-name">Enoch Leathercraft</span>
+
+      <div class="hero-logo">
+        <img [src]="logoUrl" alt="Logo">
       </div>
 
-      <h1>
-        Pièces artisanales en cuir,<br />
-        pensées pour durer.
-      </h1>
+      <h1>Pièces artisanales en cuir, pensées pour durer.</h1>
 
-      <p class="hero-text">
-        Sacs, sacoches et petite maroquinerie réalisés à la main, en petites séries.
-        Chaque pièce est conçue pour vous accompagner des années, sans compromis
-        sur le style ni la qualité.
+      <p class="subtitle">
+        Sacs, sacoches et petite maroquinerie fabriqués à la main en petites séries.
+        Chaque pièce est conçue pour vous accompagner des années.
       </p>
 
       <div class="hero-actions">
-        <button class="btn-primary" (click)="goToProducts()">
-          Voir la collection
-        </button>
+        <button class="btn-primary" (click)="goToProducts()">Voir la collection</button>
       </div>
 
-      <div class="hero-badges">
-        <span>✔ Fabrication artisanale</span>
-        <span>✔ Pièces uniques</span>
-        <span>✔ Envoi suivi</span>
+      <div class="hero-tags">
+        <span>✓ Fabrication artisanale</span>
+        <span>✓ Pièces uniques</span>
+        <span>✓ Envoi suivi</span>
       </div>
     </div>
 
     <div class="hero-right">
-      <div class="hero-card">
-        <p class="hero-card-label">Nouvelle sélection</p>
-        <h2>Sacs & sacoches premium</h2>
-        <p class="hero-card-text">
-          Une sélection de pièces en cuir pleine fleur, pensées pour un usage
-          quotidien et un look intemporel.
+      <div class="highlight-card" *ngIf="latestProducts.length > 0">
+        <h4>NOUVELLE SÉLECTION</h4>
+        <h3>{{ latestProducts[0].name }}</h3>
+
+        <p class="highlight-desc" *ngIf="latestProducts[0].description">
+          {{ latestProducts[0].description }}
         </p>
 
-        <div class="hero-card-price">
-          <span>À partir de</span>
-          <strong>€149.00</strong>
-        </div>
+        <p class="highlight-price">
+          {{ latestProducts[0].price | currency:'EUR' }}
+        </p>
 
-        <button class="hero-card-btn" (click)="goToProducts()">
+        <button class="btn-highlight" (click)="goToProductDetail(latestProducts[0])">
           Découvrir maintenant
         </button>
       </div>
     </div>
   </section>
 
-  <!-- ACCÈS RAPIDE -->
-  <section class="quick-links">
-    <div class="quick-card" (click)="goToProducts()">
-      <div class="icon">👜</div>
-      <h3>Catalogue</h3>
-      <p>Découvrez nos sacs, sacoches et petite maroquinerie.</p>
-      <span class="link">Voir tous les produits →</span>
-    </div>
+  <!-- ============================ CATÉGORIES ============================ -->
+  <section class="categories">
+    <h2>Catégories</h2>
 
-    <div class="quick-card" (click)="goToProducts()">
-      <div class="icon">✨</div>
-      <h3>Nouveautés</h3>
-      <p>Les dernières pièces ajoutées en stock limité.</p>
-      <span class="link">Nouveautés →</span>
-    </div>
-
-    <div class="quick-card" (click)="goToLogin()">
-      <div class="icon">👤</div>
-      <h3>Mon compte</h3>
-      <p>Suivez vos commandes et gérez vos informations.</p>
-      <span class="link">Me connecter →</span>
-    </div>
-  </section>
-
-  <!-- DERNIERS PRODUITS -->
-  <section class="latest-products">
-    <div class="section-header">
-      <div>
-        <h2>Dernières pièces ajoutées</h2>
-        <p>Une sélection des 4 dernières créations Enoch Leathercraft.</p>
+    <div class="categories-grid">
+      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'homme' }">
+        <h3>Homme</h3>
+        <p>Sacs, ceintures et accessoires adaptés au quotidien.</p>
+        <span>Découvrir →</span>
       </div>
-      <button class="btn-link" (click)="goToProducts()">
-        Voir tout le catalogue →
-      </button>
+
+      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'femme' }">
+        <h3>Femme</h3>
+        <p>Sacoches, sacs à main & petite maroquinerie.</p>
+        <span>Voir les pièces →</span>
+      </div>
+
+      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">
+        <h3>Petite maroquinerie</h3>
+        <p>Portefeuilles, porte-cartes & sets artisanaux.</p>
+        <span>Explorer →</span>
+      </div>
     </div>
-
-    <div class="products-state" *ngIf="loading || error">
-      <p *ngIf="loading">Chargement des produits...</p>
-      <p *ngIf="error" class="error">{{ error }}</p>
-    </div>
-
-    <div class="products-grid" *ngIf="!loading && products.length">
-      <article
-        class="product-card"
-        *ngFor="let p of products"
-        (click)="goToProductDetail(p)"
-      >
-        <div class="product-image-wrapper">
-          <img
-            class="product-image"
-            [src]="getImage(p)"
-            [alt]="p.name"
-          />
-        </div>
-
-        <div class="product-info">
-          <h3 class="product-name">{{ p.name }}</h3>
-          <p class="product-desc">
-            {{ p.description || 'Pièce artisanale en cuir.' }}
-          </p>
-
-          <div class="product-footer">
-            <div class="price">
-              {{ p.price | currency:'EUR' }}
-            </div>
-            <button
-              type="button"
-              class="product-cta"
-              (click)="goToProductDetail(p); $event.stopPropagation()"
-            >
-              Voir le produit
-            </button>
-          </div>
-        </div>
-      </article>
-    </div>
-
-    <p class="empty-text" *ngIf="!loading && !products.length && !error">
-      Aucun produit n’est disponible pour le moment.
-    </p>
   </section>
 
-  <!-- AVIS CLIENTS -->
-  <section class="testimonials">
+
+  <!-- ============================ NOUVEAUTÉS ============================ -->
+  <section class="latest">
+    <div class="latest-header">
+      <h2>Dernières pièces ajoutées</h2>
+      <a class="see-all" (click)="goToProducts()">Voir tout →</a>
+    </div>
+
+    <div *ngIf="loading" class="info">Chargement...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="latest-grid" *ngIf="latestProducts.length > 0">
+      <article class="product-card" *ngFor="let p of latestProducts">
+
+        <div class="product-image">
+          <img [src]="getImage(p)" [alt]="p.name" />
+        </div>
+
+        <h3 class="product-name">{{ p.name }}</h3>
+
+        <p class="product-price">
+          {{ p.price | currency:'EUR' }}
+        </p>
+
+        <button class="btn-view" (click)="goToProductDetail(p)">
+          Voir le produit
+        </button>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- ============================ AVIS CLIENTS ============================ -->
+  <section class="reviews">
     <h2>Avis de nos clients</h2>
-    <p class="intro">
-      Ils ont choisi Enoch Leathercraft pour leurs accessoires du quotidien.
-    </p>
 
-    <div class="testimonials-grid">
-      <article class="testimonial">
-        <div class="stars">★★★★★</div>
-        <p class="quote">
-          « Sac magnifique, finitions impeccables. On voit que c’est fait à la main. »
-        </p>
-        <p class="author">Sonia L.</p>
-      </article>
+    <div class="reviews-grid">
+      <div class="review">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p>« Super qualité, la finesse du cuir est incroyable. »</p>
+        <span class="author">— Karim L.</span>
+      </div>
 
-      <article class="testimonial">
-        <div class="stars">★★★★★</div>
-        <p class="quote">
-          « Le cuir vieillit super bien, je l’utilise tous les jours pour aller au travail. »
-        </p>
-        <p class="author">Julien M.</p>
-      </article>
+      <div class="review">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p>« J’ai offert un sac à mon mari, il ne l’a jamais quitté ! »</p>
+        <span class="author">— Sarah D.</span>
+      </div>
 
-      <article class="testimonial">
-        <div class="stars">★★★★★</div>
-        <p class="quote">
-          « Service au top et livraison rapide, je recommande sans hésiter. »
-        </p>
-        <p class="author">Omar C.</p>
-      </article>
+      <div class="review">
+        <div class="stars">⭐⭐⭐⭐⭐</div>
+        <p>« Rapport qualité/prix exceptionnel, je recommande sans hésiter. »</p>
+        <span class="author">— Julie M.</span>
+      </div>
     </div>
   </section>
 
-  <!-- QUI SOMMES-NOUS -->
+
+  <!-- ============================ QUI SOMMES-NOUS ============================ -->
   <section class="about">
-    <div class="about-inner">
-      <h2>Qui sommes-nous&nbsp;?</h2>
-      <p>
-        Enoch Leathercraft est un atelier artisanal dédié aux pièces en cuir uniques :
-        sacs, sacoches, ceintures et portefeuilles faits main.
-      </p>
-      <p>
-        Chaque création est pensée pour durer, avec une sélection exigeante des cuirs
-        et des finitions soignées. Notre objectif : des pièces élégantes, durables,
-        et adaptées à votre quotidien.
-      </p>
-    </div>
+    <h2>Qui sommes-nous ?</h2>
+
+    <p>
+      Enoch Leathercraft est un atelier artisanal dédié aux pièces uniques : sacs, ceintures
+      et portefeuilles faits main. Chaque création est conçue pour durer, avec des matériaux
+      nobles et un savoir-faire raffiné.
+    </p>
+
+    <p>
+      Plus de <strong>500 clients satisfaits</strong> — 10 ans de passion pour le cuir et
+      l’artisanat d’excellence.
+    </p>
   </section>
 
 </div>
+<!-- ============================ FOOTER ============================ -->
+<footer class="footer">
+  <div class="footer-grid">
+
+    <div class="footer-col">
+      <h3>Enoch Leathercraft</h3>
+      <p>
+        Atelier artisanal de maroquinerie.<br>
+        Pièces uniques fabriquées à la main depuis 10 ans.
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Boutique</h4>
+      <a routerLink="/products">Tous les produits</a>
+      <a routerLink="/products" [queryParams]="{ category: 'homme' }">Homme</a>
+      <a routerLink="/products" [queryParams]="{ category: 'femme' }">Femme</a>
+      <a routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">Petite maroquinerie</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>Informations</h4>
+      <a routerLink="/about">À propos de l’atelier</a>
+      <a routerLink="/contact">Contact</a>
+      <a href="#">Conditions générales</a>
+      <a href="#">Politique de confidentialité</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>Nous suivre</h4>
+      <div class="socials">
+        <a href="#"><span>📸</span> Instagram</a>
+        <a href="#"><span>📘</span> Facebook</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © © {{ currentYear }} Enoch Leathercraft — Tous droits réservés.
+  </div>
+</footer>
+
