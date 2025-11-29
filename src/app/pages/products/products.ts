@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./products.scss'],
 })
 export class ProductsComponent implements OnInit {
+
   products: Product[] = [];
   filteredProducts: Product[] = [];
   loading = false;
@@ -22,12 +23,20 @@ export class ProductsComponent implements OnInit {
   page = 1;
   pageSize = 8;
 
-  // Filtres
+  // Filtres / recherche
   searchTerm = '';
-  selectedSegment = '';   // homme / femme / petite-maroquinerie
-  selectedCategory = '';  // sacs-sacoches / ceintures / etc.
+  selectedSegment = '';
+  selectedCategory = '';
+  selectedMaterial = '';
   priceMin: number | null = null;
   priceMax: number | null = null;
+  sortBy = '';
+
+  // Wishlist locale
+  favorites = new Set<number>();
+
+  // Skeleton
+  skeletonItems = Array(8).fill(0);
 
   constructor(
     private productService: ProductService,
@@ -38,15 +47,13 @@ export class ProductsComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
 
-    // Récupérer d'abord les query params pour initialiser les filtres
+    // récupération éventuelle des filtres depuis l'URL
     this.route.queryParams.subscribe(params => {
       this.selectedSegment = params['segment'] || '';
       this.selectedCategory = params['category'] || '';
       this.searchTerm = params['search'] || '';
-      // Le prix pourrait aussi venir des params si tu veux plus tard
     });
 
-    // Charger les produits
     this.productService.getAll().subscribe({
       next: (list) => {
         this.products = list;
@@ -60,16 +67,15 @@ export class ProductsComponent implements OnInit {
       },
     });
 
-    // Charger le panier pour afficher les quantités correctes
     this.cartService.loadCart().subscribe();
   }
 
-  // --- APPLIQUER LES FILTRES ---
+  // ====== FILTRES / TRI ======
 
   applyFilters(): void {
     let result = [...this.products];
 
-    // 1. Recherche texte
+    // recherche plein texte
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(p =>
@@ -78,36 +84,60 @@ export class ProductsComponent implements OnInit {
       );
     }
 
-    // 2. Segment (homme / femme / petite-maroquinerie)
-    // => suppose que plus tard tu ajouteras un champ segment côté back
+    // segment (homme/femme/mixte)
     if (this.selectedSegment) {
       result = result.filter(p => (p as any).segment === this.selectedSegment);
     }
 
-    // 3. Catégorie (sacs-sacoches / ceintures / etc.)
+    // catégorie (sacs, ceintures, etc.)
     if (this.selectedCategory) {
       result = result.filter(p => (p as any).category === this.selectedCategory);
     }
 
-    // 4. Prix minimum
+    // matériau
+    if (this.selectedMaterial) {
+      const mat = this.selectedMaterial.toLowerCase();
+      result = result.filter(p =>
+        p.material && p.material.toLowerCase().includes(mat)
+      );
+    }
+
+    // prix min / max
     if (this.priceMin != null) {
       result = result.filter(p => p.price >= this.priceMin!);
     }
-
-    // 5. Prix maximum
     if (this.priceMax != null) {
       result = result.filter(p => p.price <= this.priceMax!);
     }
 
+    // tri
+    switch (this.sortBy) {
+      case 'price-asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        // ici j'utilise l'id comme proxy "nouveauté" (plus grand = plus récent)
+        result.sort((a, b) => (b.id || 0) - (a.id || 0));
+        break;
+    }
+
     this.filteredProducts = result;
-    this.page = 1; // reset pagination quand filtres changent
+    this.page = 1;
   }
 
   onFiltersChange(): void {
     this.applyFilters();
   }
 
-  // --- PAGINATION ---
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  // ====== PAGINATION ======
 
   get paginatedProducts(): Product[] {
     const start = (this.page - 1) * this.pageSize;
@@ -125,7 +155,7 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  // --- LOGIQUE PANIER ---
+  // ====== PANIER + GESTION STOCK ======
 
   getQuantity(p: Product): number {
     if (!p.id) return 0;
@@ -133,8 +163,26 @@ export class ProductsComponent implements OnInit {
     return item ? item.quantity : 0;
   }
 
+  /** true si le bouton "ajouter au panier" doit être désactivé */
+  isAddDisabled(p: Product): boolean {
+    if (p.stockQuantity == null) return false;
+    return this.getQuantity(p) >= p.stockQuantity || p.stockQuantity <= 0;
+  }
+
+  /** true si on est déjà au stock maximum pour ce produit */
+  isMaxQuantityReached(p: Product): boolean {
+    if (p.stockQuantity == null) return false;
+    return this.getQuantity(p) >= p.stockQuantity;
+  }
+
   increase(p: Product): void {
     if (!p.id) return;
+
+    if (this.isAddDisabled(p)) {
+      alert('Vous avez atteint le stock maximum disponible pour ce produit.');
+      return;
+    }
+
     this.cartService.addProduct(p.id, 1).subscribe();
   }
 
@@ -146,5 +194,20 @@ export class ProductsComponent implements OnInit {
     } else {
       this.cartService.updateQuantity(p.id, q - 1).subscribe();
     }
+  }
+
+  // ====== FAVORIS (local uniquement) ======
+
+  toggleFavorite(p: Product): void {
+    if (!p.id) return;
+    if (this.favorites.has(p.id)) {
+      this.favorites.delete(p.id);
+    } else {
+      this.favorites.add(p.id);
+    }
+  }
+
+  isFavorite(p: Product): boolean {
+    return !!p.id && this.favorites.has(p.id);
   }
 }

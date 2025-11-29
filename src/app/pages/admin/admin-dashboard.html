@@ -1,153 +1,364 @@
+<!-- src/app/pages/admin/admin-dashboard.html -->
+
 <div class="admin-dashboard">
 
-  <h1>Tableau de bord administrateur</h1>
-  <p class="subtitle">
-    Vue d’ensemble des ventes et du stock pour Enoch Leathercraft.
-  </p>
+  <!-- ========= EN-TÊTE + ONGLETS ========= -->
+  <div class="admin-header">
+    <h1>Tableau de bord administrateur</h1>
+    <p class="subtitle">
+      Vue d’ensemble des ventes et du stock pour Enoch Leathercraft.
+    </p>
+  </div>
 
-  <!-- ================== CARTES STATS ================== -->
-  <section class="stats-section">
+  <nav class="admin-tabs">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="currentTab === 'stats'"
+      (click)="setTab('stats')">
+      Statistiques & commandes
+    </button>
 
-    <div class="stats-row" *ngIf="!statsLoading && stats; else statsLoadingTpl">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="currentTab === 'products'"
+      (click)="setTab('products')">
+      Gestion des produits
+    </button>
 
-      <article class="stat-card">
-        <h3>Chiffre d’affaires total</h3>
-        <p class="value">
-          {{ stats.totalRevenue | currency:'EUR' }}
-        </p>
-        <p class="hint">Toutes commandes confondues</p>
-      </article>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="currentTab === 'stock'"
+      (click)="setTab('stock')">
+      Gestion du stock
+    </button>
+  </nav>
 
-      <article class="stat-card">
-        <h3>Nombre de commandes</h3>
-        <p class="value">
-          {{ stats.totalOrders }}
-        </p>
-        <p class="hint">Commandes enregistrées</p>
-      </article>
+  <!-- =============== ONGLET 1 : STATS & COMMANDES =============== -->
+  <section *ngIf="currentTab === 'stats'">
 
-      <article class="stat-card">
-        <h3>Articles vendus</h3>
-        <p class="value">
-          {{ stats.totalItemsSold }}
-        </p>
-        <p class="hint">Total des pièces vendues</p>
-      </article>
+    <!-- ----- CARTES STATS ----- -->
+    <section class="stats-section">
+      <div class="stats-row" *ngIf="!statsLoading && stats; else statsLoadingTpl">
 
-      <article class="stat-card">
-        <h3>Panier moyen</h3>
-        <p class="value">
-          {{ stats.averageOrderValue | currency:'EUR' }}
-        </p>
-        <p class="hint">Montant moyen par commande</p>
-      </article>
+        <article class="stat-card">
+          <h3>Chiffre d’affaires total</h3>
+          <p class="value">
+            {{ stats.totalRevenue | currency:'EUR' }}
+          </p>
+          <p class="hint">Toutes commandes confondues</p>
+        </article>
 
-    </div>
+        <article class="stat-card">
+          <h3>Nombre de commandes</h3>
+          <p class="value">
+            {{ stats.totalOrders }}
+          </p>
+          <p class="hint">Commandes enregistrées</p>
+        </article>
 
-    <ng-template #statsLoadingTpl>
-      <p class="info">Chargement des statistiques...</p>
-    </ng-template>
+        <article class="stat-card">
+          <h3>Articles vendus</h3>
+          <p class="value">
+            {{ stats.totalItemsSold }}
+          </p>
+          <p class="hint">Total des pièces vendues</p>
+        </article>
 
-    <p class="error" *ngIf="statsError">{{ statsError }}</p>
+        <article class="stat-card">
+          <h3>Panier moyen</h3>
+          <p class="value">
+            {{ stats.averageOrderValue | currency:'EUR' }}
+          </p>
+          <p class="hint">Montant moyen par commande</p>
+        </article>
+
+      </div>
+
+      <ng-template #statsLoadingTpl>
+        <p class="info">Chargement des statistiques...</p>
+      </ng-template>
+
+      <p class="error" *ngIf="statsError">{{ statsError }}</p>
+    </section>
+
+    <!-- ----- PRODUITS EN STOCK FAIBLE ----- -->
+    <section class="stock-section">
+
+      <div class="stock-header">
+        <h2>Produits en stock faible</h2>
+
+        <div class="threshold-control">
+          <label for="threshold">Seuil d’alerte :</label>
+          <input
+            id="threshold"
+            type="number"
+            min="0"
+            [(ngModel)]="lowStockThreshold"
+            (ngModelChange)="onThresholdChange()"
+          />
+        </div>
+      </div>
+
+      <p class="info" *ngIf="lowStockLoading">Chargement des produits en stock faible...</p>
+      <p class="error" *ngIf="lowStockError">{{ lowStockError }}</p>
+
+      <table class="stock-table" *ngIf="!lowStockLoading && lowStockProducts.length > 0">
+        <thead>
+        <tr>
+          <th>Produit</th>
+          <th>SKU</th>
+          <th>Prix</th>
+          <th>Stock actuel</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let p of lowStockProducts">
+          <td>{{ p.name }}</td>
+          <td>{{ p.sku }}</td>
+          <td>{{ p.price | currency:'EUR' }}</td>
+          <td class="stock-cell">{{ p.stockQuantity ?? 0 }}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <p class="info" *ngIf="!lowStockLoading && !lowStockProducts.length">
+        Aucun produit en dessous du seuil de {{ lowStockThreshold }} unités.
+      </p>
+
+    </section>
+
+    <!-- ----- DERNIÈRES COMMANDES ----- -->
+    <section class="orders-section">
+
+      <div class="orders-header">
+        <h2>Dernières commandes</h2>
+        <p class="hint">Vue globale des commandes clients (côté administrateur).</p>
+      </div>
+
+      <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
+      <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
+
+      <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
+        <thead>
+        <tr>
+          <th>Référence</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Montant</th>
+          <th>Détails</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let o of orders">
+          <td>{{ o.reference }}</td>
+          <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="status-pill" [ngClass]="o.status.toLowerCase()">
+              {{ o.status }}
+            </span>
+          </td>
+          <td>{{ o.totalAmount | currency:'EUR' }}</td>
+          <td>
+            <details class="order-details">
+              <summary>Voir les articles</summary>
+              <ul>
+                <li *ngFor="let item of o.items">
+                  {{ item.quantity }} × {{ item.productName }}
+                  ({{ item.unitPrice | currency:'EUR' }})
+                </li>
+              </ul>
+            </details>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <p class="info" *ngIf="!ordersLoading && !orders.length">
+        Aucune commande pour le moment.
+      </p>
+
+    </section>
 
   </section>
 
-  <!-- ================== STOCK FAIBLE ================== -->
-  <section class="stock-section">
+  <!-- =============== ONGLET 2 : GESTION DES PRODUITS (ton ancien CRUD) =============== -->
+  <section *ngIf="currentTab === 'products'" class="admin-page">
 
-    <div class="stock-header">
-      <h2>Produits en stock faible</h2>
+    <div class="admin-header">
+      <div>
+        <h2>Gestion des produits</h2>
+        <p class="subtitle">Gestion des produits Enoch Leathercraft</p>
+      </div>
 
-      <div class="threshold-control">
-        <label for="threshold">Seuil d’alerte :</label>
-        <input
-          id="threshold"
-          type="number"
-          min="0"
-          [(ngModel)]="lowStockThreshold"
-          (ngModelChange)="onThresholdChange()"
-        />
+      <div class="admin-actions">
+        <button class="primary" (click)="toggleCreateForm()">
+          {{ showCreateForm ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
+        </button>
       </div>
     </div>
 
-    <p class="info" *ngIf="lowStockLoading">Chargement des produits en stock faible...</p>
-    <p class="error" *ngIf="lowStockError">{{ lowStockError }}</p>
+    <div class="state-messages">
+      <p *ngIf="loading" class="loading-message">
+        <span class="spinner">⏳</span> Chargement des produits...
+      </p>
 
-    <table class="stock-table" *ngIf="!lowStockLoading && lowStockProducts.length > 0">
-      <thead>
-      <tr>
-        <th>Produit</th>
-        <th>SKU</th>
-        <th>Prix</th>
-        <th>Stock actuel</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let p of lowStockProducts">
-        <td>{{ p.name }}</td>
-        <td>{{ p.sku }}</td>
-        <td>{{ p.price | currency:'EUR' }}</td>
-        <td class="stock-cell">{{ p.stockQuantity ?? 0 }}</td>
-      </tr>
-      </tbody>
-    </table>
+      <p *ngIf="error" class="error-message panel error">
+        ⚠️ Erreur : {{ error }}
+      </p>
+    </div>
 
-    <p class="info" *ngIf="!lowStockLoading && !lowStockProducts.length">
-      Aucun produit en dessous du seuil de {{ lowStockThreshold }} unités.
-    </p>
+    <!-- FORMULAIRE CREATE / EDIT -->
+    <div class="panel create-panel" *ngIf="showCreateForm">
+
+      <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+
+      <form (ngSubmit)="submitForm()" class="create-form">
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label>Nom *</label>
+            <input type="text" [(ngModel)]="newProduct.name" name="name" required />
+          </div>
+
+          <div class="form-group">
+            <label>SKU *</label>
+            <input type="text" [(ngModel)]="newProduct.sku" name="sku" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Image principale {{ editingProductId ? '(Laisser vide pour garder l\'actuelle)' : '*' }}</label>
+
+          <div class="current-img-preview" *ngIf="currentImagePreview && !selectedFile">
+            <p class="preview-label">Image actuelle :</p>
+            <img [src]="currentImagePreview" alt="Aperçu produit">
+          </div>
+
+          <input
+            type="file"
+            name="image"
+            (change)="onFileSelected($event)"
+            [required]="editingProductId === null"
+            accept="image/jpeg, image/png"
+          />
+
+          <p class="file-info" *ngIf="selectedFile">
+            Fichier sélectionné (remplacera l'actuelle) :
+            <strong>{{ selectedFile.name }}</strong>
+          </p>
+        </div>
+
+        <div class="form-row three-cols">
+          <div class="form-group">
+            <label>Prix (€)</label>
+            <input type="number" step="0.01" [(ngModel)]="newProduct.price" name="price" />
+          </div>
+
+          <div class="form-group">
+            <label>Poids (g)</label>
+            <input type="number" [(ngModel)]="newProduct.weightGrams" name="weightGrams" />
+          </div>
+
+          <div class="form-group">
+            <label>Matériau</label>
+            <input type="text" [(ngModel)]="newProduct.material" name="material" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea rows="3" [(ngModel)]="newProduct.description" name="description"></textarea>
+        </div>
+
+        <div class="form-footer">
+          <label>
+            <input type="checkbox" [(ngModel)]="newProduct.isActive" name="isActive" />
+            Produit actif
+          </label>
+
+          <button type="submit" class="primary" [disabled]="isSubmitting">
+            <span *ngIf="isSubmitting">⏳ Traitement en cours...</span>
+            <span *ngIf="!isSubmitting">
+              {{ editingProductId ? 'Mettre à jour le produit' : 'Créer le produit' }}
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- LISTE DES PRODUITS -->
+    <div class="panel">
+      <h2 class="section-title">Produits existants</h2>
+
+      <p *ngIf="!loading && products.length === 0 && !error" class="empty-message">
+        Aucun produit trouvé. Utilisez le bouton "+ Ajouter un produit" pour commencer.
+      </p>
+
+      <table class="product-table" *ngIf="products.length > 0">
+        <thead>
+        <tr>
+          <th>ID</th>
+          <th>IMAGE</th>
+          <th>NOM</th>
+          <th>PRIX</th>
+          <th>SKU</th>
+          <th>ACTIF</th>
+          <th>ACTIONS</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let p of products" [class.editing-row]="editingProductId === p.id">
+          <td>{{ p.id }}</td>
+
+          <td class="product-thumb">
+            <img
+              [src]="p.imageUrls && p.imageUrls.length > 0
+                       ? ('http://localhost:8080' + p.imageUrls[0])
+                       : 'assets/img/products/placeholder-thumb.jpg'"
+              [alt]="p.name"
+            />
+          </td>
+
+          <td>{{ p.name }}</td>
+          <td>{{ p.price | currency:'EUR' }}</td>
+          <td>{{ p.sku }}</td>
+          <td>{{ p.isActive ? 'Oui' : 'Non' }}</td>
+
+          <td class="actions">
+            <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
+            <button class="btn-delete" (click)="openDeleteConfirm(p)">🗑️ Supprimer</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MODAL SUPPRESSION -->
+    <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3>Confirmer la suppression</h3>
+        <p>Supprimer <strong>{{ deleteTargetName }}</strong> ?</p>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+          <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, supprimer</button>
+        </div>
+      </div>
+    </div>
 
   </section>
 
+  <!-- =============== ONGLET 3 : GESTION DU STOCK (placeholder) =============== -->
+  <section *ngIf="currentTab === 'stock'">
+    <h2>Gestion du stock</h2>
+    <p class="info">
+      On recodera ici une interface pour modifier les quantités de stock produit par produit.
+      Pour l’instant, tu peux déjà surveiller le stock faible depuis l’onglet
+      « Statistiques & commandes ».
+    </p>
+  </section>
+
 </div>
-<!-- ================== COMMANDES ================== -->
-<section class="orders-section">
-
-  <div class="orders-header">
-    <h2>Dernières commandes</h2>
-    <p class="hint">Vue globale des commandes clients (côté administrateur).</p>
-  </div>
-
-  <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
-  <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
-
-  <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
-    <thead>
-    <tr>
-      <th>Référence</th>
-      <th>Date</th>
-      <th>Statut</th>
-      <th>Montant</th>
-      <th>Détails</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let o of orders">
-      <td>{{ o.reference }}</td>
-      <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-      <td>
-          <span class="status-pill" [ngClass]="o.status.toLowerCase()">
-            {{ o.status }}
-          </span>
-      </td>
-      <td>{{ o.totalAmount | currency:'EUR' }}</td>
-      <td>
-        <details class="order-details">
-          <summary>Voir les articles</summary>
-          <ul>
-            <li *ngFor="let item of o.items">
-              {{ item.quantity }} × {{ item.productName }}
-              ({{ item.unitPrice | currency:'EUR' }})
-            </li>
-          </ul>
-        </details>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-
-  <p class="info" *ngIf="!ordersLoading && !orders.length">
-    Aucune commande pour le moment.
-  </p>
-
-</section>
-
