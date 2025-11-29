@@ -1,13 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
 import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
+import {
+  ProductReviewService,
+  ProductReview
+} from '../../services/product-review.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe],
+  imports: [CommonModule, CurrencyPipe, FormsModule],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })
@@ -16,13 +22,29 @@ export class ProductDetailComponent implements OnInit {
   loading = false;
   error = '';
   addedMessage = '';
+
+  // --- stock / panier ---
+  stockAvailable = 0;
+  isOutOfStock = false;
   stockMessage = '';
+
+  // --- avis ---
+  reviews: ProductReview[] = [];
+  reviewsLoading = false;
+  reviewsError = '';
+
+  reviewRating = 5;
+  reviewComment = '';
+  reviewSubmitting = false;
+  reviewError = '';
+  reviewSuccessMsg = '';
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
     public cartService: CartService,
+    private reviewService: ProductReviewService,
   ) {}
 
   ngOnInit(): void {
@@ -37,11 +59,17 @@ export class ProductDetailComponent implements OnInit {
     this.loading = true;
 
     this.productService.getOne(id).subscribe({
-      next: (p) => {
+      next: (p: Product) => {
         this.product = p;
+        this.stockAvailable = p.stockQuantity ?? 0;
+        this.isOutOfStock = this.stockAvailable <= 0;
         this.loading = false;
-        // recharge l’état du panier pour avoir les quantités à jour
+
+        // recharge le panier pour avoir les quantités à jour
         this.cartService.loadCart().subscribe();
+
+        // charge les avis
+        this.loadReviews(id);
       },
       error: (err) => {
         console.error('Erreur chargement produit', err);
@@ -51,21 +79,14 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  // =================== NAVIGATION ===================
   goBack(): void {
     this.router.navigate(['/products']);
   }
 
-  /** Stock disponible pour ce produit (0 si null / undefined) */
-  get stockAvailable(): number {
-    return this.product?.stockQuantity ?? 0;
-  }
+  // =================== PANIER / STOCK ===================
 
-  /** Produit en rupture ? */
-  get isOutOfStock(): boolean {
-    return this.stockAvailable <= 0;
-  }
-
-  /** Quantité actuelle de ce produit dans le panier */
+  // quantité actuelle du produit dans le panier
   get quantity(): number {
     if (!this.product) return 0;
     const item = this.cartService.items.find(
@@ -74,68 +95,64 @@ export class ProductDetailComponent implements OnInit {
     return item ? item.quantity : 0;
   }
 
-  /** Peut-on encore augmenter (sans dépasser le stock) ? */
+  // peut-on encore augmenter ?
   get canIncrease(): boolean {
     if (!this.product) return false;
     if (this.isOutOfStock) return false;
     return this.quantity < this.stockAvailable;
   }
 
-  private showStockMessage(msg: string): void {
-    this.stockMessage = msg;
-    setTimeout(() => (this.stockMessage = ''), 2000);
-  }
-
   increase(): void {
     if (!this.product || !this.product.id) return;
-
-    if (this.isOutOfStock) {
-      this.showStockMessage('Produit en rupture de stock.');
-      return;
-    }
-
     if (!this.canIncrease) {
-      this.showStockMessage(
-        `Stock insuffisant : il reste seulement ${this.stockAvailable} pièce(s).`,
-      );
-      return;
-    }
-
-    this.cartService.addProduct(this.product.id, 1).subscribe({
-      error: () => this.showStockMessage("Erreur lors de la mise à jour du panier."),
-    });
-  }
-
-  decrease(): void {
-    if (!this.product || !this.product.id) return;
-
-    if (this.quantity <= 1) {
-      this.cartService.removeItem(this.product.id).subscribe();
-    } else {
-      this.cartService
-        .updateQuantity(this.product.id, this.quantity - 1)
-        .subscribe();
-    }
-  }
-
-  addToCart(): void {
-    if (!this.product || !this.product.id) return;
-
-    if (this.isOutOfStock) {
-      this.showStockMessage('Ce produit est actuellement en rupture de stock.');
-      return;
-    }
-
-    if (!this.canIncrease) {
-      this.showStockMessage(
-        `Stock insuffisant : il reste seulement ${this.stockAvailable} pièce(s).`,
-      );
+      this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
     }
 
     this.cartService.addProduct(this.product.id, 1).subscribe({
       next: () => {
+        this.stockMessage = '';
+        this.cartService.loadCart().subscribe();
+      },
+      error: (err) => {
+        console.error('Erreur ajout au panier', err);
+      },
+    });
+  }
+
+  decrease(): void {
+    if (!this.product || !this.product.id) return;
+    if (this.quantity <= 0) return;
+
+    if (this.quantity === 1) {
+      this.cartService.removeItem(this.product.id).subscribe({
+        next: () => this.cartService.loadCart().subscribe(),
+      });
+    } else {
+      this.cartService
+        .updateQuantity(this.product.id, this.quantity - 1)
+        .subscribe({
+          next: () => this.cartService.loadCart().subscribe(),
+        });
+    }
+
+    this.stockMessage = '';
+  }
+
+  addToCart(): void {
+    if (!this.product || !this.product.id) return;
+
+    if (!this.canIncrease) {
+      this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
+      return;
+    }
+
+    this.cartService.addProduct(this.product.id, 1).subscribe({
+      next: () => {
+        this.cartService.loadCart().subscribe();
         this.addedMessage = 'Produit ajouté au panier ✔';
+        this.stockMessage = '';
+
         const btn = document.querySelector('.btn-cart-animated');
         btn?.classList.add('added');
 
@@ -149,5 +166,68 @@ export class ProductDetailComponent implements OnInit {
         setTimeout(() => (this.addedMessage = ''), 2000);
       },
     });
+  }
+
+  // =================== AVIS PRODUIT ===================
+
+  private loadReviews(productId: number): void {
+    this.reviewsLoading = true;
+    this.reviewsError = '';
+
+    this.reviewService.getForProduct(productId).subscribe({
+      next: (list: ProductReview[]) => {
+        this.reviews = list;
+        this.reviewsLoading = false;
+      },
+      error: (err) => {
+        console.error('Erreur chargement avis', err);
+        this.reviewsError = 'Impossible de charger les avis pour ce produit.';
+        this.reviewsLoading = false;
+      },
+    });
+  }
+
+  submitReview(): void {
+    if (!this.product || !this.product.id) {
+      return;
+    }
+
+    if (!this.reviewComment.trim()) {
+      this.reviewError = 'Veuillez entrer un commentaire.';
+      return;
+    }
+
+    this.reviewError = '';
+    this.reviewSubmitting = true;
+
+    this.reviewService
+      .addReview({
+        productId: this.product.id,
+        rating: this.reviewRating,
+        comment: this.reviewComment.trim(),
+      })
+      .subscribe({
+        next: (created: ProductReview) => {
+          this.reviews = [created, ...this.reviews];
+          this.reviewComment = '';
+          this.reviewRating = 5;
+          this.reviewSubmitting = false;
+          this.reviewSuccessMsg = 'Merci pour votre avis !';
+          setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
+        },
+        error: (err) => {
+          console.error('Erreur ajout avis', err);
+
+          if (err.status === 401 || err.status === 403) {
+            this.reviewError =
+              'Vous devez être connecté pour laisser un avis.';
+          } else {
+            this.reviewError =
+              'Impossible d’enregistrer votre avis. Réessayez plus tard.';
+          }
+
+          this.reviewSubmitting = false;
+        },
+      });
   }
 }
