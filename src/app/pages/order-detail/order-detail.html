@@ -1,0 +1,53 @@
+<div class="order-detail-page">
+  <a routerLink="/account/orders" class="back-link">← Retour à mes commandes</a>
+
+  <h1>Détail de la commande</h1>
+
+  <p class="info" *ngIf="loading">Chargement de la commande...</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <ng-container *ngIf="!loading && !error && order">
+
+    <section class="order-header">
+      <div>
+        <h2>Commande {{ order.reference }}</h2>
+        <p class="date">
+          Passée le {{ order.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+        </p>
+      </div>
+
+      <div class="order-meta">
+        <span class="status-pill" [ngClass]="order.status.toLowerCase()">
+          {{ getStatusLabel(order.status) }}
+        </span>
+        <p class="total">
+          Total : {{ order.totalAmount | currency:'EUR' }}
+        </p>
+      </div>
+    </section>
+
+    <section class="order-items">
+      <h3>Articles</h3>
+
+      <table>
+        <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Prix unitaire</th>
+          <th>Quantité</th>
+          <th>Total ligne</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of order.items">
+          <td>{{ item.productName }}</td>
+          <td>{{ item.unitPrice | currency:'EUR' }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unitPrice * item.quantity | currency:'EUR' }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </ng-container>
+</div>

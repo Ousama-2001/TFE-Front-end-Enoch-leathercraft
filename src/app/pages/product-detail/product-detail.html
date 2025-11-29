@@ -32,9 +32,23 @@
       </div>
 
       <div class="qty-row">
-        <button type="button" class="round-btn" (click)="decrease()">−</button>
+        <button
+          type="button"
+          class="round-btn"
+          (click)="decrease()"
+          [disabled]="isOutOfStock || quantity === 0">
+          −
+        </button>
+
         <span class="qty-label">{{ quantity }}</span>
-        <button type="button" class="round-btn" (click)="increase()">+</button>
+
+        <button
+          type="button"
+          class="round-btn"
+          (click)="increase()"
+          [disabled]="!canAddToCart()">
+          +
+        </button>
       </div>
 
       <div class="actions">
@@ -42,7 +56,7 @@
           class="btn-cart-animated"
           type="button"
           (click)="addToCart()"
-        >
+          [disabled]="!canAddToCart()">
           🛒 Ajouter au panier
         </button>
 
@@ -50,6 +64,11 @@
           {{ addedMessage }}
         </span>
       </div>
+
+      <!-- Message stock insuffisant -->
+      <p class="out-of-stock-msg" *ngIf="isOutOfStock">
+        Stock insuffisant pour ce produit.
+      </p>
     </div>
   </div>
 </div>

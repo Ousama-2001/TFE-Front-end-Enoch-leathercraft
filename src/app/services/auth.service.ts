@@ -17,9 +17,12 @@ export interface RegisterRequest {
   password: string;
 }
 
+// ➜ On ajoute SUPER_ADMIN ici
+export type UserRole = 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN';
+
 export interface LoginResponse {
   token: string;
-  role: 'ADMIN' | 'CUSTOMER';
+  role: UserRole;
 }
 
 @Injectable({
@@ -67,8 +70,16 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  // ➜ ADMIN + SUPER_ADMIN ont accès à l'admin
   isAdmin(): boolean {
-    return localStorage.getItem(this.roleKey) === 'ADMIN';
+    const role = localStorage.getItem(this.roleKey) as UserRole | null;
+    return role === 'ADMIN' || role === 'SUPER_ADMIN';
+  }
+
+  // ➜ strictement super admin
+  isSuperAdmin(): boolean {
+    const role = localStorage.getItem(this.roleKey) as UserRole | null;
+    return role === 'SUPER_ADMIN';
   }
 
   // ---------- MOT DE PASSE OUBLIÉ ----------

@@ -38,8 +38,8 @@ export class ProductDetailComponent implements OnInit {
     this.productService.getOne(id).subscribe({
       next: (p) => {
         this.product = p;
+        console.log('Produit détail :', p); // debug stock
         this.loading = false;
-        // recharge l’état du panier pour avoir les quantités à jour
         this.cartService.loadCart().subscribe();
       },
       error: (err) => {
@@ -54,6 +54,24 @@ export class ProductDetailComponent implements OnInit {
     this.router.navigate(['/products']);
   }
 
+  // ---- Stock réel détecté (stockQuantity OU stock) ----
+  get stockQuantity(): number {
+    if (!this.product) return 0;
+    const anyProd: any = this.product as any;
+
+    if (typeof anyProd.stockQuantity === 'number') {
+      return anyProd.stockQuantity;
+    }
+    if (typeof anyProd.stock === 'number') {
+      return anyProd.stock;
+    }
+    return 0;
+  }
+
+  get isOutOfStock(): boolean {
+    return this.stockQuantity <= 0;
+  }
+
   // Quantité actuelle du produit dans le panier
   get quantity(): number {
     if (!this.product) return 0;
@@ -63,24 +81,64 @@ export class ProductDetailComponent implements OnInit {
     return item ? item.quantity : 0;
   }
 
+  // Est-ce qu'on peut encore ajouter au panier ?
+  canAddToCart(): boolean {
+    if (!this.product) return false;
+    if (this.isOutOfStock) return false;
+    return this.quantity < this.stockQuantity;
+  }
+
+  private showTempMessage(msg: string): void {
+    this.addedMessage = msg;
+    setTimeout(() => (this.addedMessage = ''), 1800);
+  }
+
   increase(): void {
     if (!this.product || !this.product.id) return;
-    this.cartService.addProduct(this.product.id, 1).subscribe();
+    if (!this.canAddToCart()) {
+      this.showTempMessage('Stock maximum atteint pour ce produit.');
+      return;
+    }
+
+    this.cartService.addProduct(this.product.id, 1).subscribe({
+      error: () => {
+        this.showTempMessage("Erreur lors de la mise à jour du panier.");
+      }
+    });
   }
 
   decrease(): void {
     if (!this.product || !this.product.id) return;
+    if (this.isOutOfStock) return;
+
     if (this.quantity <= 1) {
-      this.cartService.removeItem(this.product.id).subscribe();
+      this.cartService.removeItem(this.product.id).subscribe({
+        error: () => {
+          this.showTempMessage("Erreur lors de la mise à jour du panier.");
+        }
+      });
     } else {
       this.cartService
         .updateQuantity(this.product.id, this.quantity - 1)
-        .subscribe();
+        .subscribe({
+          error: () => {
+            this.showTempMessage("Erreur lors de la mise à jour du panier.");
+          }
+        });
     }
   }
 
   addToCart(): void {
     if (!this.product || !this.product.id) return;
+
+    if (!this.canAddToCart()) {
+      if (this.isOutOfStock) {
+        this.showTempMessage('Stock insuffisant pour ce produit.');
+      } else {
+        this.showTempMessage('Stock maximum atteint pour ce produit.');
+      }
+      return;
+    }
 
     this.cartService.addProduct(this.product.id, 1).subscribe({
       next: () => {
@@ -94,8 +152,7 @@ export class ProductDetailComponent implements OnInit {
         }, 1500);
       },
       error: () => {
-        this.addedMessage = "Erreur lors de l'ajout au panier";
-        setTimeout(() => (this.addedMessage = ''), 2000);
+        this.showTempMessage("Erreur lors de l'ajout au panier.");
       },
     });
   }

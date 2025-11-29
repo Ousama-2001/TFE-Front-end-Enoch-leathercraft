@@ -1,15 +1,13 @@
-// src/app/pages/admin/admin-dashboard.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { AuthService } from '../../services/auth.service';
 import {
   ProductService,
   Product,
-  ProductCreateRequest,
+  ProductCreateRequest
 } from '../../services/products.service';
-
 import {
   AdminStatsService,
   SalesStatsResponse,
@@ -25,24 +23,36 @@ import {
 })
 export class AdminDashboardComponent implements OnInit {
 
-  // ---------- ONGLET COURANT ----------
-  currentTab: 'stats' | 'products' | 'stock' = 'stats';
+  // ------- Onglet actif -------
+  activeTab: 'stats' | 'orders' | 'products' | 'stock' = 'stats';
 
-  // ---------- STATS / COMMANDES ----------
+  // ------- STATS -------
   stats: SalesStatsResponse | null = null;
   statsLoading = false;
   statsError: string | null = null;
 
+  // Stat dérivée : revenu moyen par article
+  get revenuePerItem(): number | null {
+    if (!this.stats) return null;
+    if (!this.stats.totalItemsSold) return null;
+    return this.stats.totalRevenue / this.stats.totalItemsSold;
+  }
+
+  // ------- COMMANDES -------
+  orders: AdminOrderResponse[] = [];
+  ordersLoading = false;
+  ordersError: string | null = null;
+
+  selectedOrder: AdminOrderResponse | null = null;
+  showOrderDetailModal = false;
+
+  // ------- STOCK -------
   lowStockProducts: Product[] = [];
   lowStockLoading = false;
   lowStockError: string | null = null;
   lowStockThreshold = 5;
 
-  orders: AdminOrderResponse[] = [];
-  ordersLoading = false;
-  ordersError: string | null = null;
-
-  // ---------- CRUD PRODUITS (ton ancien code) ----------
+  // ------- CRUD PRODUITS -------
   products: Product[] = [];
   loading = false;
   error = '';
@@ -67,41 +77,47 @@ export class AdminDashboardComponent implements OnInit {
     isActive: true,
     currency: 'EUR',
     slug: '',
-    // si tu as ajouté stockQuantity côté back :
-    // stockQuantity: 0,
   };
 
   constructor(
+    private adminStatsService: AdminStatsService,
     private productService: ProductService,
-    private adminStatsService: AdminStatsService
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
-    // CRUD
-    this.loadProducts();
-
-    // STATS
     this.loadStats();
-    this.loadLowStock();
     this.loadOrders();
+    this.loadLowStock();
+    this.loadProducts();
   }
 
-  // ========= ONGLET =========
-  setTab(tab: 'stats' | 'products' | 'stock'): void {
-    this.currentTab = tab;
+  // ========= Onglets =========
+  setTab(tab: 'stats' | 'orders' | 'products' | 'stock'): void {
+    this.activeTab = tab;
+
+    if (tab === 'stats') {
+      if (!this.stats) this.loadStats();
+    } else if (tab === 'orders') {
+      if (!this.orders.length) this.loadOrders();
+    } else if (tab === 'stock') {
+      this.loadLowStock();
+    } else if (tab === 'products') {
+      if (!this.products.length) this.loadProducts();
+    }
   }
 
-  // ========= STATS / COMMANDES =========
+  // ========= STATS =========
   loadStats(): void {
     this.statsLoading = true;
     this.statsError = null;
 
     this.adminStatsService.getSalesStats().subscribe({
-      next: (data) => {
+      next: data => {
         this.stats = data;
         this.statsLoading = false;
       },
-      error: (err) => {
+      error: err => {
         console.error('Erreur chargement stats', err);
         this.statsError = 'Impossible de charger les statistiques de ventes.';
         this.statsLoading = false;
@@ -109,16 +125,59 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // ========= COMMANDES =========
+  loadOrders(): void {
+    this.ordersLoading = true;
+    this.ordersError = null;
+
+    this.adminStatsService.getAllOrders().subscribe({
+      next: list => {
+        this.orders = list;
+        this.ordersLoading = false;
+      },
+      error: err => {
+        console.error('Erreur chargement commandes', err);
+        this.ordersError = 'Impossible de charger les commandes.';
+        this.ordersLoading = false;
+      }
+    });
+  }
+
+  updateOrderStatus(order: AdminOrderResponse): void {
+    if (!order.id) return;
+
+    this.adminStatsService.updateOrderStatus(order.id, order.status).subscribe({
+      next: (updated) => {
+        order.status = updated.status; // on aligne avec le back
+      },
+      error: (err) => {
+        console.error('Erreur mise à jour statut commande', err);
+        this.ordersError = 'Impossible de mettre à jour le statut de la commande.';
+      }
+    });
+  }
+
+  openOrderDetail(order: AdminOrderResponse): void {
+    this.selectedOrder = order;
+    this.showOrderDetailModal = true;
+  }
+
+  closeOrderDetail(): void {
+    this.showOrderDetailModal = false;
+    this.selectedOrder = null;
+  }
+
+  // ========= STOCK =========
   loadLowStock(): void {
     this.lowStockLoading = true;
     this.lowStockError = null;
 
     this.adminStatsService.getLowStockProducts(this.lowStockThreshold).subscribe({
-      next: (list) => {
+      next: list => {
         this.lowStockProducts = list;
         this.lowStockLoading = false;
       },
-      error: (err) => {
+      error: err => {
         console.error('Erreur chargement stock bas', err);
         this.lowStockError = 'Impossible de charger les produits en stock faible.';
         this.lowStockLoading = false;
@@ -130,25 +189,22 @@ export class AdminDashboardComponent implements OnInit {
     this.loadLowStock();
   }
 
-  loadOrders(): void {
-    this.ordersLoading = true;
-    this.ordersError = null;
+  saveStock(p: Product): void {
+    if (p.id == null) return;
+    const newQty = p.stockQuantity ?? 0;
 
-    this.adminStatsService.getAllOrders().subscribe({
-      next: (list) => {
-        this.orders = list;
-        this.ordersLoading = false;
+    this.adminStatsService.updateProductStock(p.id, newQty).subscribe({
+      next: updated => {
+        p.stockQuantity = updated.stockQuantity;
       },
-      error: (err) => {
-        console.error('Erreur chargement commandes', err);
-        this.ordersError = 'Impossible de charger les commandes.';
-        this.ordersLoading = false;
+      error: err => {
+        console.error('Erreur mise à jour stock', err);
+        this.lowStockError = 'Impossible de mettre à jour le stock pour ce produit.';
       }
     });
   }
 
-  // ========= CRUD PRODUITS (repris de ton ancien code) =========
-
+  // ========= CRUD PRODUITS =========
   loadProducts(): void {
     this.loading = true;
     this.error = '';
@@ -214,7 +270,7 @@ export class AdminDashboardComponent implements OnInit {
     this.isSubmitting = true;
 
     if (this.editingProductId === null) {
-      // CRÉATION
+      // Création
       if (this.selectedFile) {
         this.productService.create(payload, this.selectedFile).subscribe({
           next: (created: Product) => {
@@ -228,12 +284,10 @@ export class AdminDashboardComponent implements OnInit {
         });
       }
     } else {
-      // ÉDITION
+      // Edition
       this.productService.update(this.editingProductId, payload, this.selectedFile).subscribe({
         next: (updated: Product) => {
-          this.products = this.products.map((p) =>
-            p.id === updated.id ? updated : p
-          );
+          this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
           this.resetForm();
         },
         error: (err) => {
@@ -245,9 +299,8 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   startEdit(p: Product): void {
-    this.currentTab = 'products'; // au cas où
     this.showCreateForm = true;
-    this.editingProductId = p.id;
+    this.editingProductId = p.id ?? null;
     this.error = '';
     this.selectedFile = null;
 
@@ -267,7 +320,6 @@ export class AdminDashboardComponent implements OnInit {
       isActive: p.isActive ?? true,
       currency: p.currency ?? 'EUR',
       slug: p.slug ?? '',
-      // stockQuantity: p.stockQuantity ?? 0,
     };
   }
 
@@ -293,12 +345,16 @@ export class AdminDashboardComponent implements OnInit {
       isActive: true,
       currency: 'EUR',
       slug: '',
-      // stockQuantity: 0,
     };
   }
 
+  onLogout(): void {
+    this.auth.logout();
+  }
+
+  // ---------- suppression ----------
   openDeleteConfirm(p: Product): void {
-    this.deleteTargetId = p.id;
+    this.deleteTargetId = p.id ?? null;
     this.deleteTargetName = p.name;
     this.showDeleteConfirm = true;
   }

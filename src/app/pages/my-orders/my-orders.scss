@@ -1,0 +1,143 @@
+.my-orders-page {
+  padding: 2rem 1.5rem;
+  color: #e5e7eb;
+  font-family: system-ui, sans-serif;
+
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.info {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #fecaca;
+}
+
+.empty {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #9ca3af;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.order-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.9);
+}
+
+.order-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+
+  h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .date {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin: 0.2rem 0 0;
+  }
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+
+  .amount {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+}
+
+.order-footer {
+  margin-top: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+
+  .items {
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .link-detail {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .link-detail:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Badges statut réutilisés */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-pill.pending {
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.status-pill.paid {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.status-pill.shipped {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.status-pill.cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+@media (max-width: 700px) {
+  .order-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-meta {
+    align-items: flex-start;
+  }
+}

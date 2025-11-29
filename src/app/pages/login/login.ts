@@ -28,7 +28,7 @@ export class LoginComponent {
     }
 
     const payload: LoginRequest = {
-      // 👇 correspond au champ `identifier` du AuthRequest côté back
+      // correspond au champ `identifier` du AuthRequest côté back
       identifier: this.emailOrUsername.trim(),
       password: this.password,
     };
@@ -38,7 +38,8 @@ export class LoginComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/products']);
+        // ✅ redirection vers la home
+        this.router.navigate(['/home']);
       },
       error: (err) => {
         const code = err?.error?.message || err?.error;

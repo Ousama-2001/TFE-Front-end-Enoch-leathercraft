@@ -28,25 +28,45 @@ export const routes: Routes = [
     canActivate: [AdminGuard],
   },
 
-  // --- Lazy-loaded ---
+  // --- Détail produit ---
   {
     path: 'products/:id',
     loadComponent: () =>
       import('./pages/product-detail/product-detail')
         .then(m => m.ProductDetailComponent),
   },
+
+  // --- Panier ---
   {
     path: 'cart',
     loadComponent: () =>
       import('./pages/cart/cart')
         .then(m => m.CartComponent),
   },
+
+  // --- Page profil / compte ---
   {
     path: 'profile',
     loadComponent: () =>
       import('./pages/account-page/account-page')
         .then(m => m.AccountPageComponent),
   },
+
+  // --- ✅ Commandes client (liste + détail) ---
+  {
+    path: 'my-orders',
+    loadComponent: () =>
+      import('./pages/my-orders/my-orders')
+        .then(m => m.MyOrdersComponent),
+  },
+  {
+    path: 'my-orders/:id',
+    loadComponent: () =>
+      import('./pages/order-detail/order-detail')
+        .then(m => m.OrderDetailComponent),
+  },
+
+  // --- Mot de passe oublié / reset ---
   {
     path: 'forgot-password',
     loadComponent: () =>
@@ -77,9 +97,7 @@ export const routes: Routes = [
       import('./pages/contact/contact').then(m => m.ContactComponent),
   },
 
-
   // --- Redirections ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-
   { path: '**', redirectTo: 'home' }
 ];

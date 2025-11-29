@@ -1,0 +1,44 @@
+<div class="my-orders-page">
+  <h1>Mes commandes</h1>
+  <p class="subtitle">
+    Retrouvez ici l’historique de vos commandes Enoch Leathercraft.
+  </p>
+
+  <p class="info" *ngIf="loading">Chargement de vos commandes...</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div *ngIf="!loading && !error && orders.length === 0" class="empty">
+    Vous n’avez encore passé aucune commande.
+  </div>
+
+  <div class="orders-list" *ngIf="!loading && !error && orders.length > 0">
+    <article class="order-card" *ngFor="let o of orders">
+      <div class="order-main">
+        <div>
+          <h2>Commande {{ o.reference }}</h2>
+          <p class="date">
+            Passée le {{ o.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+          </p>
+        </div>
+
+        <div class="order-meta">
+          <span class="status-pill" [ngClass]="o.status.toLowerCase()">
+            {{ getStatusLabel(o.status) }}
+          </span>
+          <div class="amount">
+            {{ o.totalAmount | currency:'EUR' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <p class="items">
+          {{ o.items.length }} article(s)
+        </p>
+        <a [routerLink]="['/account/orders', o.id]" class="link-detail">
+          Voir le détail →
+        </a>
+      </div>
+    </article>
+  </div>
+</div>

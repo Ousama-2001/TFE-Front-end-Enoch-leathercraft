@@ -4,14 +4,13 @@ import { Observable } from 'rxjs';
 import { Product } from './products.service';
 
 export interface SalesStatsResponse {
+  totalRevenue: number;
   totalOrders: number;
   totalItemsSold: number;
-  totalRevenue: number;
   averageOrderValue: number;
 }
 
-// 👇 même structure que ton OrderResponse côté back
-export interface AdminOrderItem {
+export interface AdminOrderItemResponse {
   productName: string;
   unitPrice: number;
   quantity: number;
@@ -22,27 +21,50 @@ export interface AdminOrderResponse {
   reference: string;
   totalAmount: number;
   status: string;
-  createdAt: string; // ISO date
-  items: AdminOrderItem[];
+  createdAt: string;
+  items: AdminOrderItemResponse[];
 }
 
 @Injectable({ providedIn: 'root' })
 export class AdminStatsService {
-  private baseUrl = 'http://localhost:8080/api/admin';
+  private baseUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient) {}
 
+  // ---- Stats de ventes ----
   getSalesStats(): Observable<SalesStatsResponse> {
-    return this.http.get<SalesStatsResponse>(`${this.baseUrl}/stats/sales`);
+    return this.http.get<SalesStatsResponse>(`${this.baseUrl}/admin/stats/sales`);
   }
 
-  getLowStockProducts(threshold: number = 5): Observable<Product[]> {
-    const params = new HttpParams().set('threshold', threshold);
-    return this.http.get<Product[]>(`${this.baseUrl}/products/low-stock`, { params });
-  }
-
-  // 👇 nouvelles : récupérer toutes les commandes admin
+  // ---- Commandes admin ----
   getAllOrders(): Observable<AdminOrderResponse[]> {
-    return this.http.get<AdminOrderResponse[]>(`${this.baseUrl}/orders`);
+    return this.http.get<AdminOrderResponse[]>(`${this.baseUrl}/admin/orders`);
+  }
+
+  // ---- Stock faible ----
+  getLowStockProducts(threshold: number): Observable<Product[]> {
+    const params = new HttpParams().set('threshold', threshold.toString());
+    return this.http.get<Product[]>(`${this.baseUrl}/admin/products/low-stock`, { params });
+  }
+
+  // ---- Mise à jour stock produit ----
+  updateProductStock(productId: number, quantity: number): Observable<Product> {
+    const params = new HttpParams().set('quantity', quantity.toString());
+
+    return this.http.put<Product>(
+      `${this.baseUrl}/admin/products/${productId}/stock`,
+      null,      // pas de body
+      { params }
+    );
+  }
+
+  // ---- Mise à jour statut commande ----
+  updateOrderStatus(orderId: number, status: string): Observable<AdminOrderResponse> {
+    const params = new HttpParams().set('status', status);
+    return this.http.patch<AdminOrderResponse>(
+      `${this.baseUrl}/admin/orders/${orderId}/status`,
+      null,
+      { params }
+    );
   }
 }

@@ -25,21 +25,33 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
-  checkout(): Observable<OrderResponse> {
+  private getAuthHeaders(): HttpHeaders | undefined {
     const token = localStorage.getItem('token');
-    const headers = token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : undefined;
+    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+  }
 
-    return this.http.post<OrderResponse>(`${this.baseUrl}/checkout`, {}, { headers });
+  checkout(): Observable<OrderResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<OrderResponse>(
+      `${this.baseUrl}/checkout`,
+      {},
+      { headers }
+    );
   }
 
   getMyOrders(): Observable<OrderResponse[]> {
-    const token = localStorage.getItem('token');
-    const headers = token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : undefined;
+    const headers = this.getAuthHeaders();
+    return this.http.get<OrderResponse[]>(
+      `${this.baseUrl}/my-orders`,
+      { headers }
+    );
+  }
 
-    return this.http.get<OrderResponse[]>(`${this.baseUrl}/my-orders`, { headers });
+  getMyOrderById(id: number): Observable<OrderResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<OrderResponse>(
+      `${this.baseUrl}/${id}`,
+      { headers }
+    );
   }
 }
