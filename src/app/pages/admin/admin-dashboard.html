@@ -34,12 +34,10 @@
     </div>
   </div>
 
-  <!-- ========= ONGLET 1 : STATISTIQUES ========= -->
+  <!-- ========= ONGLET 1 : STATS ========= -->
   <section *ngIf="activeTab === 'stats'">
 
-    <!-- Cartes de stats -->
     <section class="stats-section">
-
       <div class="stats-row" *ngIf="!statsLoading && stats; else statsLoadingTpl">
         <article class="stat-card">
           <h3>Chiffre d’affaires total</h3>
@@ -65,138 +63,136 @@
           <p class="hint">Montant moyen par commande</p>
         </article>
 
-        <article class="stat-card" *ngIf="revenuePerItem !== null">
+        <article class="stat-card">
           <h3>Revenu moyen par article</h3>
-          <p class="value">{{ revenuePerItem | currency:'EUR' }}</p>
+          <p class="value">
+            {{ (stats.totalRevenue / (stats.totalItemsSold || 1)) | currency:'EUR' }}
+          </p>
           <p class="hint">Chiffre d’affaires ÷ articles vendus</p>
         </article>
       </div>
 
-      <p class="stats-note" *ngIf="stats">
-        Ces statistiques sont calculées sur l’ensemble des commandes enregistrées (tous statuts confondus).
-      </p>
-
       <ng-template #statsLoadingTpl>
         <p class="info">Chargement des statistiques...</p>
       </ng-template>
+
+      <p class="info small">
+        Ces statistiques sont calculées sur l'ensemble des commandes enregistrées (tous statuts confondus).
+      </p>
 
       <p class="error" *ngIf="statsError">{{ statsError }}</p>
     </section>
 
   </section>
 
-  <!-- ========= ONGLET 2 : COMMANDES ========= -->
-  <section *ngIf="activeTab === 'orders'">
+  <!-- ========= ONGLET 2 : GESTION DES COMMANDES ========= -->
+  <section *ngIf="activeTab === 'orders'" class="orders-page">
 
-    <section class="orders-section">
-      <div class="orders-header">
+    <div class="orders-header">
+      <div>
         <h2>Gestion des commandes</h2>
-        <p class="hint">Vue globale des commandes clients (côté administrateur).</p>
+        <p class="hint">
+          Vue globale des commandes clients (côté administrateur).
+        </p>
       </div>
+    </div>
 
-      <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
-      <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
+    <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
+    <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
 
-      <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
-        <thead>
-        <tr>
-          <th>Référence</th>
-          <th>Date</th>
-          <th>Statut</th>
-          <th>Montant</th>
-          <th>Détails</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let o of orders">
-          <td>{{ o.reference }}</td>
-          <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+    <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
+      <thead>
+      <tr>
+        <th>Référence</th>
+        <th>Date</th>
+        <th>Statut</th>
+        <th>Montant</th>
+        <th>Détails</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let o of orders">
+        <td>{{ o.reference }}</td>
+        <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <span class="status-pill" [ngClass]="getStatusClass(o.status)">
+            {{ o.status }}
+          </span>
+        </td>
+        <td>{{ o.totalAmount | currency:'EUR' }}</td>
+        <td>
+          <button class="link-btn" type="button" (click)="openOrderModal(o)">
+            Détail de la commande
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
 
-          <!-- Colonne statut -->
-          <td class="status-cell">
-            <span class="status-pill" [ngClass]="o.status.toLowerCase()">
-              {{ o.status }}
-            </span>
+    <p class="info" *ngIf="!ordersLoading && !orders.length">
+      Aucune commande pour le moment.
+    </p>
 
-            <select class="status-select" [(ngModel)]="o.status">
-              <option value="PENDING">En attente</option>
-              <option value="PAID">Payée</option>
-              <option value="SHIPPED">Expédiée</option>
-              <option value="DELIVERED">Livrée</option>
-              <option value="CANCELLED">Annulée</option>
-            </select>
-
-            <button
-              class="btn-status-apply"
-              type="button"
-              (click)="updateOrderStatus(o)">
-              Mettre à jour
-            </button>
-          </td>
-
-          <td>{{ o.totalAmount | currency:'EUR' }}</td>
-
-          <!-- Colonne détails -->
-          <td>
-            <button
-              type="button"
-              class="btn-link"
-              (click)="openOrderDetail(o)">
-              Détail de la commande
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <p class="info" *ngIf="!ordersLoading && !orders.length">
-        Aucune commande pour le moment.
-      </p>
-    </section>
-
-    <!-- ✅ Modale détail de commande -->
-    <div class="modal-overlay" *ngIf="showOrderDetailModal" (click)="closeOrderDetail()">
+    <!-- MODALE DÉTAIL COMMANDE -->
+    <div class="modal-overlay" *ngIf="showOrderModal" (click)="closeOrderModal()">
       <div class="modal order-modal" (click)="$event.stopPropagation()">
-        <h3>Détail de la commande</h3>
+        <div class="order-modal-header">
+          <div>
+            <h3>Commande {{ selectedOrder?.reference }}</h3>
+            <p class="order-subtitle">
+              Créée le {{ selectedOrder?.createdAt | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+          </div>
+          <button class="close-btn" type="button" (click)="closeOrderModal()">✕</button>
+        </div>
 
-        <ng-container *ngIf="selectedOrder">
-          <p class="order-ref">
-            <strong>Référence :</strong> {{ selectedOrder.reference }}
-          </p>
-          <p>
-            <strong>Date :</strong>
-            {{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }}
-          </p>
-          <p>
-            <strong>Statut :</strong>
-            <span class="status-pill" [ngClass]="selectedOrder.status.toLowerCase()">
-              {{ selectedOrder.status }}
+        <div class="order-meta">
+          <div class="meta-line">
+            <span class="label">Statut actuel :</span>
+            <span class="status-pill" [ngClass]="getStatusClass(selectedOrder?.status || '')">
+              {{ selectedOrder?.status }}
             </span>
-          </p>
-          <p>
-            <strong>Montant total :</strong>
-            {{ selectedOrder.totalAmount | currency:'EUR' }}
-          </p>
+          </div>
 
-          <h4>Articles</h4>
-          <ul class="order-items-list">
+          <div class="meta-line">
+            <span class="label">Montant :</span>
+            <span class="value">
+              {{ selectedOrder?.totalAmount | currency:'EUR' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="order-status-edit">
+          <label for="status-select">Modifier le statut :</label>
+          <select id="status-select" [(ngModel)]="modalStatus">
+            <option *ngFor="let opt of statusOptions" [value]="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+
+          <button class="primary small" type="button" (click)="saveOrderStatusFromModal()">
+            Mettre à jour
+          </button>
+        </div>
+
+        <div class="order-items" *ngIf="selectedOrder">
+          <h4>Articles de la commande</h4>
+          <ul>
             <li *ngFor="let item of selectedOrder.items">
-              {{ item.quantity }} × {{ item.productName }}
-              ({{ item.unitPrice | currency:'EUR' }})
+              <span>{{ item.quantity }} × {{ item.productName }}</span>
+              <span class="line-price">
+                {{ item.unitPrice | currency:'EUR' }}
+              </span>
             </li>
           </ul>
-        </ng-container>
-
-        <div class="modal-actions">
-          <button class="btn-cancel" type="button" (click)="closeOrderDetail()">
-            Fermer
-          </button>
         </div>
       </div>
     </div>
+
   </section>
 
-  <!-- ========= ONGLET 3 : GESTION DES PRODUITS ========= -->
+  <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->
+  <!-- (partie produits = identique à avant, je la laisse telle quelle) -->
   <section *ngIf="activeTab === 'products'" class="admin-page">
 
     <div class="admin-header">

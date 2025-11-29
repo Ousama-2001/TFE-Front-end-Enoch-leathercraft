@@ -29,6 +29,12 @@
         <p *ngIf="product.description">
           {{ product.description }}
         </p>
+        <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
+          Stock disponible : {{ stockAvailable }} pièce(s).
+        </p>
+        <p class="stock-msg stock-error" *ngIf="isOutOfStock">
+          Produit actuellement en rupture de stock.
+        </p>
       </div>
 
       <div class="qty-row">
@@ -36,17 +42,17 @@
           type="button"
           class="round-btn"
           (click)="decrease()"
-          [disabled]="isOutOfStock || quantity === 0">
+          [disabled]="quantity === 0"
+        >
           −
         </button>
-
         <span class="qty-label">{{ quantity }}</span>
-
         <button
           type="button"
           class="round-btn"
           (click)="increase()"
-          [disabled]="!canAddToCart()">
+          [disabled]="!canIncrease"
+        >
           +
         </button>
       </div>
@@ -56,7 +62,8 @@
           class="btn-cart-animated"
           type="button"
           (click)="addToCart()"
-          [disabled]="!canAddToCart()">
+          [disabled]="isOutOfStock || !canIncrease"
+        >
           🛒 Ajouter au panier
         </button>
 
@@ -65,9 +72,8 @@
         </span>
       </div>
 
-      <!-- Message stock insuffisant -->
-      <p class="out-of-stock-msg" *ngIf="isOutOfStock">
-        Stock insuffisant pour ce produit.
+      <p class="stock-msg inline-msg" *ngIf="stockMessage">
+        {{ stockMessage }}
       </p>
     </div>
   </div>

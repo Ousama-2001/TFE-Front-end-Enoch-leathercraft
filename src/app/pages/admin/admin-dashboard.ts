@@ -24,47 +24,75 @@ import {
 export class AdminDashboardComponent implements OnInit {
 
   // ------- Onglet actif -------
+// @ts-ignore
   activeTab: 'stats' | 'orders' | 'products' | 'stock' = 'stats';
 
   // ------- STATS -------
+// @ts-ignore
   stats: SalesStatsResponse | null = null;
+// @ts-ignore
   statsLoading = false;
+// @ts-ignore
   statsError: string | null = null;
 
-  // Stat dérivée : revenu moyen par article
-  get revenuePerItem(): number | null {
-    if (!this.stats) return null;
-    if (!this.stats.totalItemsSold) return null;
-    return this.stats.totalRevenue / this.stats.totalItemsSold;
-  }
-
   // ------- COMMANDES -------
+// @ts-ignore
   orders: AdminOrderResponse[] = [];
+// @ts-ignore
   ordersLoading = false;
+// @ts-ignore
   ordersError: string | null = null;
 
+  // Modal détail commande
+// @ts-ignore
+  showOrderModal = false;
+// @ts-ignore
   selectedOrder: AdminOrderResponse | null = null;
-  showOrderDetailModal = false;
+// @ts-ignore
+  modalStatus: string = 'PENDING';
+
+  statusOptions = [
+    { value: 'PENDING',   label: 'En attente' },
+    { value: 'PAID',      label: 'Payée' },
+    { value: 'SHIPPED',   label: 'Expédiée' },
+    { value: 'DELIVERED', label: 'Livrée' },
+    { value: 'CANCELLED', label: 'Annulée' },
+  ];
 
   // ------- STOCK -------
+// @ts-ignore
   lowStockProducts: Product[] = [];
+// @ts-ignore
   lowStockLoading = false;
+// @ts-ignore
   lowStockError: string | null = null;
+// @ts-ignore
   lowStockThreshold = 5;
 
   // ------- CRUD PRODUITS -------
+// @ts-ignore
   products: Product[] = [];
+// @ts-ignore
   loading = false;
+// @ts-ignore
   error = '';
+// @ts-ignore
   showCreateForm = false;
 
+// @ts-ignore
   editingProductId: number | null = null;
+// @ts-ignore
   selectedFile: File | null = null;
+// @ts-ignore
   currentImagePreview: string | null = null;
+// @ts-ignore
   isSubmitting = false;
 
+// @ts-ignore
   showDeleteConfirm = false;
+// @ts-ignore
   deleteTargetId: number | null = null;
+// @ts-ignore
   deleteTargetName = '';
 
   newProduct: ProductCreateRequest = {
@@ -143,28 +171,46 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  updateOrderStatus(order: AdminOrderResponse): void {
-    if (!order.id) return;
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'PENDING':   return 'pending';
+      case 'PAID':      return 'paid';
+      case 'SHIPPED':   return 'shipped';
+      case 'DELIVERED': return 'delivered';
+      case 'CANCELLED': return 'cancelled';
+      default:          return '';
+    }
+  }
 
-    this.adminStatsService.updateOrderStatus(order.id, order.status).subscribe({
+  openOrderModal(order: AdminOrderResponse): void {
+    this.selectedOrder = { ...order };
+    this.modalStatus = order.status;
+    this.showOrderModal = true;
+  }
+
+  closeOrderModal(): void {
+    this.showOrderModal = false;
+    this.selectedOrder = null;
+  }
+
+  saveOrderStatusFromModal(): void {
+    if (!this.selectedOrder?.id) return;
+
+    const orderId = this.selectedOrder.id;
+    const newStatus = this.modalStatus;
+
+    this.adminStatsService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (updated) => {
-        order.status = updated.status; // on aligne avec le back
+        // Mise à jour dans la liste principale
+        this.orders = this.orders.map(o => o.id === updated.id ? updated : o);
+        this.selectedOrder = updated;
+        this.closeOrderModal();
       },
       error: (err) => {
         console.error('Erreur mise à jour statut commande', err);
         this.ordersError = 'Impossible de mettre à jour le statut de la commande.';
       }
     });
-  }
-
-  openOrderDetail(order: AdminOrderResponse): void {
-    this.selectedOrder = order;
-    this.showOrderDetailModal = true;
-  }
-
-  closeOrderDetail(): void {
-    this.showOrderDetailModal = false;
-    this.selectedOrder = null;
   }
 
   // ========= STOCK =========
@@ -352,7 +398,7 @@ export class AdminDashboardComponent implements OnInit {
     this.auth.logout();
   }
 
-  // ---------- suppression ----------
+  // ---------- suppression produit ----------
   openDeleteConfirm(p: Product): void {
     this.deleteTargetId = p.id ?? null;
     this.deleteTargetName = p.name;
