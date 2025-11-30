@@ -1,5 +1,6 @@
+// src/app/pages/product-detail/product-detail.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -7,13 +8,13 @@ import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
 import {
   ProductReviewService,
-  ProductReview
+  ProductReview,
 } from '../../services/product-review.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })
@@ -33,21 +34,38 @@ export class ProductDetailComponent implements OnInit {
   reviewsLoading = false;
   reviewsError = '';
 
+  averageRating = 0;
+  totalReviews = 0;
+
+  // création avis
+  isLoggedIn = false;
   reviewRating = 5;
   reviewComment = '';
   reviewSubmitting = false;
   reviewError = '';
   reviewSuccessMsg = '';
 
+  // édition avis
+  editingReviewId: number | null = null;
+  editRating = 5;
+  editComment = '';
+  editSubmitting = false;
+
+  // suppression
+  deleteError = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
     public cartService: CartService,
-    private reviewService: ProductReviewService,
+    private reviewService: ProductReviewService
   ) {}
 
   ngOnInit(): void {
+    // ✅ détection GENERIQUE de la connexion : on cherche n'importe quel JWT
+    this.isLoggedIn = this.detectLoggedInFromStorage();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : null;
 
@@ -65,18 +83,42 @@ export class ProductDetailComponent implements OnInit {
         this.isOutOfStock = this.stockAvailable <= 0;
         this.loading = false;
 
-        // recharge le panier pour avoir les quantités à jour
+        // cart à jour
         this.cartService.loadCart().subscribe();
 
-        // charge les avis
+        // avis
         this.loadReviews(id);
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('Erreur chargement produit', err);
         this.error = 'Produit introuvable.';
         this.loading = false;
       },
     });
+  }
+
+  // ===== helper : détection de n'importe quel JWT dans localStorage / sessionStorage
+  private detectLoggedInFromStorage(): boolean {
+    try {
+      const storages = [window.localStorage, window.sessionStorage];
+
+      for (const storage of storages) {
+        for (let i = 0; i < storage.length; i++) {
+          const key = storage.key(i);
+          if (!key) continue;
+          const value = storage.getItem(key);
+          if (!value) continue;
+
+          // ressemble à un JWT (3 parties séparées par des points)
+          if (value.split('.').length === 3) {
+            return true;
+          }
+        }
+      }
+    } catch {
+      // SSR / sécurité navigateur : on ignore
+    }
+    return false;
   }
 
   // =================== NAVIGATION ===================
@@ -86,16 +128,14 @@ export class ProductDetailComponent implements OnInit {
 
   // =================== PANIER / STOCK ===================
 
-  // quantité actuelle du produit dans le panier
   get quantity(): number {
     if (!this.product) return 0;
     const item = this.cartService.items.find(
-      (i: CartItem) => i.productId === this.product!.id,
+      (i: CartItem) => i.productId === this.product!.id
     );
     return item ? item.quantity : 0;
   }
 
-  // peut-on encore augmenter ?
   get canIncrease(): boolean {
     if (!this.product) return false;
     if (this.isOutOfStock) return false;
@@ -114,7 +154,7 @@ export class ProductDetailComponent implements OnInit {
         this.stockMessage = '';
         this.cartService.loadCart().subscribe();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('Erreur ajout au panier', err);
       },
     });
@@ -141,7 +181,6 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart(): void {
     if (!this.product || !this.product.id) return;
-
     if (!this.canIncrease) {
       this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
@@ -170,6 +209,22 @@ export class ProductDetailComponent implements OnInit {
 
   // =================== AVIS PRODUIT ===================
 
+  private recomputeAverage(): void {
+    if (!this.reviews.length) {
+      this.averageRating = 0;
+      this.totalReviews = 0;
+      return;
+    }
+
+    const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
+    this.totalReviews = this.reviews.length;
+    this.averageRating = sum / this.totalReviews;
+  }
+
+  get roundedAverage(): number {
+    return Math.round(this.averageRating || 0);
+  }
+
   private loadReviews(productId: number): void {
     this.reviewsLoading = true;
     this.reviewsError = '';
@@ -178,8 +233,9 @@ export class ProductDetailComponent implements OnInit {
       next: (list: ProductReview[]) => {
         this.reviews = list;
         this.reviewsLoading = false;
+        this.recomputeAverage();
       },
-      error: (err) => {
+      error: (err: unknown) => {
         console.error('Erreur chargement avis', err);
         this.reviewsError = 'Impossible de charger les avis pour ce produit.';
         this.reviewsLoading = false;
@@ -188,7 +244,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   submitReview(): void {
-    if (!this.product || !this.product.id) {
+    if (!this.isLoggedIn || !this.product || !this.product.id) {
       return;
     }
 
@@ -209,25 +265,94 @@ export class ProductDetailComponent implements OnInit {
       .subscribe({
         next: (created: ProductReview) => {
           this.reviews = [created, ...this.reviews];
+          this.recomputeAverage();
+
           this.reviewComment = '';
           this.reviewRating = 5;
           this.reviewSubmitting = false;
           this.reviewSuccessMsg = 'Merci pour votre avis !';
           setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
         },
-        error: (err) => {
+        error: (err: unknown) => {
           console.error('Erreur ajout avis', err);
-
-          if (err.status === 401 || err.status === 403) {
-            this.reviewError =
-              'Vous devez être connecté pour laisser un avis.';
-          } else {
-            this.reviewError =
-              'Impossible d’enregistrer votre avis. Réessayez plus tard.';
-          }
-
+          this.reviewError =
+            'Impossible d’enregistrer votre avis. Réessayez plus tard.';
           this.reviewSubmitting = false;
         },
       });
+  }
+
+  // édition avis
+  startEdit(review: ProductReview): void {
+    if (!review.mine) return;
+    this.editingReviewId = review.id;
+    this.editRating = review.rating;
+    this.editComment = review.comment;
+    this.editSubmitting = false;
+    this.deleteError = '';
+    this.reviewError = '';
+    this.reviewSuccessMsg = '';
+  }
+
+  cancelEdit(): void {
+    this.editingReviewId = null;
+    this.editRating = 5;
+    this.editComment = '';
+    this.editSubmitting = false;
+  }
+
+  submitEdit(review: ProductReview): void {
+    if (!this.product || !this.product.id || !review.mine) return;
+    if (!this.editComment.trim()) {
+      this.reviewError = 'Veuillez entrer un commentaire.';
+      return;
+    }
+
+    this.editSubmitting = true;
+    this.reviewError = '';
+    this.reviewSuccessMsg = '';
+
+    this.reviewService
+      .updateReview(review.id, {
+        rating: this.editRating,
+        comment: this.editComment.trim(),
+      })
+      .subscribe({
+        next: (updated: ProductReview) => {
+          this.reviews = this.reviews.map((r) =>
+            r.id === updated.id ? updated : r
+          );
+          this.recomputeAverage();
+          this.editSubmitting = false;
+          this.cancelEdit();
+          this.reviewSuccessMsg = 'Votre avis a été mis à jour.';
+          setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
+        },
+        error: (err: unknown) => {
+          console.error('Erreur mise à jour avis', err);
+          this.reviewError = 'Impossible de mettre à jour votre avis.';
+          this.editSubmitting = false;
+        },
+      });
+  }
+
+  deleteReview(review: ProductReview): void {
+    if (!review.mine) return;
+    if (!confirm('Supprimer cet avis ?')) return;
+
+    this.deleteError = '';
+    this.reviewService.deleteReview(review.id).subscribe({
+      next: () => {
+        this.reviews = this.reviews.filter((r) => r.id !== review.id);
+        this.recomputeAverage();
+        if (this.editingReviewId === review.id) {
+          this.cancelEdit();
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Erreur suppression avis', err);
+        this.deleteError = 'Impossible de supprimer cet avis.';
+      },
+    });
   }
 }

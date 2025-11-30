@@ -3,14 +3,14 @@
     ← Retour aux produits
   </button>
 
-  <!-- ========= CARTE PRODUIT ========= -->
+  <!-- ========= CARTE PRODUIT (Haut de page) ========= -->
   <div class="product-detail-card">
     <div class="left">
       <div class="image-wrapper">
         <img
           [src]="product.imageUrls && product.imageUrls.length > 0
-                  ? ('http://localhost:8080' + product.imageUrls[0])
-                  : 'assets/img/products/placeholder-bag.jpg'"
+                    ? ('http://localhost:8080' + product.imageUrls[0])
+                    : 'assets/img/products/placeholder-bag.jpg'"
           [alt]="product.name"
         />
       </div>
@@ -20,7 +20,7 @@
       <h1>{{ product.name }}</h1>
 
       <p class="price">
-        {{ product.price | currency : 'EUR' }}
+        {{ product.price | currency: 'EUR' }}
       </p>
 
       <div class="meta">
@@ -48,9 +48,7 @@
         >
           −
         </button>
-
         <span class="qty-label">{{ quantity }}</span>
-
         <button
           type="button"
           class="round-btn"
@@ -82,79 +80,142 @@
     </div>
   </div>
 
-  <!-- ========= SECTION AVIS PRODUIT ========= -->
+  <!-- ========= SECTION AVIS (VERTICALE) ========= -->
   <section class="reviews-section">
-    <!-- Colonne gauche : liste des avis -->
-    <div class="reviews-card left-card">
-      <h2>Avis clients</h2>
 
-      <p *ngIf="reviewsLoading">Chargement des avis...</p>
-      <p *ngIf="reviewsError" class="error">{{ reviewsError }}</p>
+    <!-- 1. En-tête des avis (Stats) -->
+    <header class="reviews-header-block">
+      <h3>Avis clients</h3>
+      <div class="rating-overview">
+        <div class="big-rating">
+          {{ totalReviews > 0 ? (averageRating | number:'1.1-1') : '-' }}
+          <span class="max">/5</span>
+        </div>
+        <div class="stars-display">
+          <span *ngFor="let s of [1,2,3,4,5]" class="star big" [class.filled]="s <= roundedAverage">★</span>
+        </div>
+        <div class="total-count">
+          Basé sur {{ totalReviews }} avis
+        </div>
+      </div>
+    </header>
 
-      <p *ngIf="!reviewsLoading && !reviewsError && reviews.length === 0">
-        Aucun avis pour ce produit pour l’instant.
-      </p>
+    <!-- 2. Liste des avis existants -->
+    <div class="reviews-list-container">
+      <p *ngIf="reviewsLoading" class="loading-text">Chargement des avis...</p>
+      <p *ngIf="reviewsError" class="error-text">{{ reviewsError }}</p>
 
-      <ul
-        class="reviews-list"
-        *ngIf="!reviewsLoading && !reviewsError && reviews.length > 0"
-      >
-        <li *ngFor="let r of reviews" class="review-item">
-          <div class="review-header">
-            <span class="author">{{ r.authorName }}</span>
-            <span class="rating">★ {{ r.rating }}/5</span>
+      <div *ngIf="!reviewsLoading && !reviewsError && reviews.length === 0" class="empty-state">
+        Soer le premier à donner votre avis sur ce produit !
+      </div>
+
+      <ul class="review-list" *ngIf="!reviewsLoading && !reviewsError && reviews.length > 0">
+        <li *ngFor="let r of reviews" class="review-card">
+          <!-- Header de l'avis (Avatar + Nom + Date) -->
+          <div class="review-card-header">
+            <div class="user-info">
+              <div class="avatar">{{ r.authorName ? r.authorName.charAt(0).toUpperCase() : '?' }}</div>
+              <div class="meta-user">
+                <span class="username">{{ r.authorName }}</span>
+                <span class="review-date">{{ r.createdAt | date:'dd MMM yyyy' }}</span>
+              </div>
+            </div>
+
+            <!-- Étoiles de l'avis -->
+            <div class="review-rating-stars">
+              <span *ngFor="let s of [1,2,3,4,5]" class="star" [class.filled]="s <= r.rating">★</span>
+            </div>
           </div>
-          <p class="comment">{{ r.comment }}</p>
-          <p class="date">{{ r.createdAt | date:'dd/MM/yyyy à HH:mm' }}</p>
+
+          <!-- Contenu ou Mode Édition -->
+          <div class="review-content">
+            <!-- Mode Lecture -->
+            <div *ngIf="editingReviewId !== r.id">
+              <p class="comment-text">{{ r.comment }}</p>
+
+              <!-- Actions (Modifier/Supprimer) -->
+              <div class="review-actions" *ngIf="r.mine">
+                <button class="text-btn" (click)="startEdit(r)">Modifier</button>
+                <span class="separator">•</span>
+                <button class="text-btn danger" (click)="deleteReview(r)">Supprimer</button>
+              </div>
+            </div>
+
+            <!-- Mode Édition -->
+            <div *ngIf="editingReviewId === r.id" class="edit-box">
+              <div class="form-row">
+                <label>Note :</label>
+                <select [(ngModel)]="editRating" class="input-dark">
+                  <option [value]="5">★★★★★ - Excellent</option>
+                  <option [value]="4">★★★★☆ - Très bon</option>
+                  <option [value]="3">★★★☆☆ - Correct</option>
+                  <option [value]="2">★★☆☆☆ - Moyen</option>
+                  <option [value]="1">★☆☆☆☆ - Mauvais</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <textarea rows="3" [(ngModel)]="editComment" class="input-dark"></textarea>
+              </div>
+              <div class="edit-buttons">
+                <button class="btn-cancel" (click)="cancelEdit()">Annuler</button>
+                <button class="btn-save" (click)="submitEdit(r)" [disabled]="editSubmitting">Enregistrer</button>
+              </div>
+            </div>
+          </div>
         </li>
       </ul>
     </div>
 
-    <!-- Colonne droite : formulaire -->
-    <div class="reviews-card right-card">
-      <h2>Laisser un avis</h2>
+    <!-- 3. Formulaire d'ajout (En bas) -->
+    <div class="write-review-area">
+      <div class="write-card">
+        <h4>Donnez votre avis</h4>
 
-      <form (ngSubmit)="submitReview()" class="review-form">
-        <div class="form-group">
-          <label for="rating">Note</label>
-          <select id="rating" name="rating" [(ngModel)]="reviewRating">
-            <option [value]="5">5 - Excellent</option>
-            <option [value]="4">4 - Très bon</option>
-            <option [value]="3">3 - Correct</option>
-            <option [value]="2">2 - Moyen</option>
-            <option [value]="1">1 - Mauvais</option>
-          </select>
-        </div>
+        <p *ngIf="!isLoggedIn" class="login-prompt">
+          <a routerLink="/login">Connectez-vous</a> pour partager votre expérience.
+        </p>
 
-        <div class="form-group">
-          <label for="comment">Commentaire</label>
-          <textarea
-            id="comment"
-            name="comment"
-            rows="3"
-            [(ngModel)]="reviewComment"
-          ></textarea>
-        </div>
+        <form *ngIf="isLoggedIn" (ngSubmit)="submitReview()" class="write-form">
+          <div class="rating-select-wrapper">
+            <label>Votre note globale</label>
+            <select name="rating" [(ngModel)]="reviewRating" class="input-dark large-select">
+              <option [value]="5">★★★★★ (Excellent)</option>
+              <option [value]="4">★★★★☆ (Très bon)</option>
+              <option [value]="3">★★★☆☆ (Correct)</option>
+              <option [value]="2">★★☆☆☆ (Moyen)</option>
+              <option [value]="1">★☆☆☆☆ (Mauvais)</option>
+            </select>
+          </div>
 
-        <p *ngIf="reviewError" class="error">{{ reviewError }}</p>
-        <p *ngIf="reviewSuccessMsg" class="success">{{ reviewSuccessMsg }}</p>
+          <div class="comment-input-wrapper">
+            <label>Votre commentaire</label>
+            <textarea
+              name="comment"
+              rows="4"
+              placeholder="Qu'avez-vous pensé de la qualité, du design..."
+              [(ngModel)]="reviewComment"
+              class="input-dark"
+            ></textarea>
+          </div>
 
-        <button
-          type="submit"
-          class="btn-cart-animated"
-          [disabled]="reviewSubmitting"
-        >
-          {{ reviewSubmitting ? 'Envoi en cours...' : 'Envoyer mon avis' }}
-        </button>
-      </form>
+          <div class="form-footer">
+            <p *ngIf="reviewError" class="error-msg">{{ reviewError }}</p>
+            <p *ngIf="reviewSuccessMsg" class="success-msg">{{ reviewSuccessMsg }}</p>
+
+            <button type="submit" class="btn-submit" [disabled]="reviewSubmitting">
+              {{ reviewSubmitting ? 'Envoi...' : 'Publier mon avis' }}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+
   </section>
 </div>
 
-<!-- ========= TEMPLATE CHARGEMENT / ERREUR ========= -->
 <ng-template #loadingOrError>
   <div class="product-detail-page center">
-    <p *ngIf="loading">Chargement du produit...</p>
+    <p *ngIf="loading">Chargement...</p>
     <p *ngIf="!loading && error">{{ error }}</p>
   </div>
 </ng-template>
