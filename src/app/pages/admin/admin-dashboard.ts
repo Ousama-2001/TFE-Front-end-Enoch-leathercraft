@@ -11,13 +11,14 @@ import {
 import {
   AdminStatsService,
   SalesStatsResponse,
-  AdminOrderResponse
+  AdminOrderResponse,
 } from '../../services/admin-stats.service';
+import {RouterLink, RouterLinkActive} from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, RouterLink, RouterLinkActive],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })

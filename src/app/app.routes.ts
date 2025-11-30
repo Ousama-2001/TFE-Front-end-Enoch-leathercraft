@@ -5,6 +5,7 @@ import { ProductsComponent } from './pages/products/products';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard';
 import { AdminGuard } from './guards/admin-guard';
 import { OrderSuccessComponent } from './pages/order-sucess/order-sucess';
+import { superAdminGuard } from './guards/super-admin.guard';
 
 export const routes: Routes = [
 
@@ -26,6 +27,16 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminDashboardComponent,
     canActivate: [AdminGuard],
+  },
+
+  // --- Page de modération des avis (admin + super admin) ---
+  {
+    path: 'admin/reviews',
+    canActivate: [AdminGuard],          // ton guard admin actuel (ADMIN + SUPER_ADMIN)
+    loadComponent: () =>
+      import('./pages/admin-reviews/admin-reviews').then(
+        (m) => m.AdminReviewsPageComponent
+      ),
   },
 
   // --- Détail produit ---
@@ -86,6 +97,7 @@ export const routes: Routes = [
     component: OrderSuccessComponent
   },
 
+  // --- Pages simples ---
   {
     path: 'about',
     loadComponent: () =>

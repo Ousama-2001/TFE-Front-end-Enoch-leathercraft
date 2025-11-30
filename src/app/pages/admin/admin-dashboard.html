@@ -31,6 +31,15 @@
               (click)="setTab('stock')">
         Gestion du stock
       </button>
+
+      <!-- 🆕 Onglet qui envoie vers la page /admin/reviews -->
+      <button
+        class="tab-btn"
+        routerLink="/admin/reviews"
+        routerLinkActive="active"
+        type="button">
+        Avis produits
+      </button>
     </div>
   </div>
 
@@ -192,7 +201,6 @@
   </section>
 
   <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->
-  <!-- (partie produits = identique à avant, je la laisse telle quelle) -->
   <section *ngIf="activeTab === 'products'" class="admin-page">
 
     <div class="admin-header">
