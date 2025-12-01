@@ -1,3 +1,4 @@
+<!-- src/app/app.html -->
 <div class="app-shell">
 
   <!-- ======================= NAVBAR ======================= -->
@@ -24,7 +25,7 @@
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
           >
-            Accueil
+            {{ 'nav.home' | t }}
           </a>
         </div>
 
@@ -35,11 +36,11 @@
             [queryParams]="{ segment: 'homme' }"
             routerLinkActive="active"
           >
-            Homme
+            {{ 'nav.men' | t }}
           </a>
 
           <div class="nav-dropdown">
-            <h4>Pour homme</h4>
+            <h4>{{ 'nav.men' | t }}</h4>
             <p class="dropdown-text">
               Sacs, sacoches et ceintures en cuir pour homme.
             </p>
@@ -67,11 +68,11 @@
             [queryParams]="{ segment: 'femme' }"
             routerLinkActive="active"
           >
-            Femme
+            {{ 'nav.women' | t }}
           </a>
 
           <div class="nav-dropdown">
-            <h4>Pour femme</h4>
+            <h4>{{ 'nav.women' | t }}</h4>
             <p class="dropdown-text">
               Sacs, sacoches et ceintures en cuir pour femme.
             </p>
@@ -99,11 +100,11 @@
             [queryParams]="{ segment: 'petite-maroquinerie' }"
             routerLinkActive="active"
           >
-            Petite maroquinerie
+            {{ 'nav.small-leather' | t }}
           </a>
 
           <div class="nav-dropdown">
-            <h4>Petite maroquinerie</h4>
+            <h4>{{ 'nav.small-leather' | t }}</h4>
             <p class="dropdown-text">
               Portefeuilles, portes-cartes et sets de table en cuir.
             </p>
@@ -129,23 +130,18 @@
             </div>
           </div>
         </div>
+
         <!-- À propos -->
         <div class="nav-item">
-          <a
-            routerLink="/about"
-            routerLinkActive="active"
-          >
-            À propos
+          <a routerLink="/about" routerLinkActive="active">
+            {{ 'nav.about' | t }}
           </a>
         </div>
 
         <!-- Contact -->
         <div class="nav-item">
-          <a
-            routerLink="/contact"
-            routerLinkActive="active"
-          >
-            Contact
+          <a routerLink="/contact" routerLinkActive="active">
+            {{ 'nav.contact' | t }}
           </a>
         </div>
 
@@ -154,6 +150,35 @@
 
     <!-- BOUTONS À DROITE -->
     <div class="topbar-right">
+
+      <!-- Sélecteur de langue stylé -->
+      <div class="lang-switcher">
+        <div class="lang-toggle">
+          <div class="lang-toggle-indicator" [class.right]="currentLang === 'en'"></div>
+
+          <button
+            type="button"
+            class="lang-option"
+            [class.active]="currentLang === 'fr'"
+            (click)="changeLang('fr')"
+          >
+            <span class="lang-code">FR</span>
+          </button>
+
+          <button
+            type="button"
+            class="lang-option"
+            [class.active]="currentLang === 'en'"
+            (click)="changeLang('en')"
+          >
+            <span class="lang-code">EN</span>
+          </button>
+        </div>
+
+        <span class="lang-label">
+    🌍
+  </span>
+      </div>
 
       <!-- MINI PANIER -->
       <div
@@ -165,7 +190,7 @@
         <!-- BOUTON PANIER -->
         <button class="cart-button" (click)="goToCart()">
           <span class="cart-icon">🧺</span>
-          <span class="cart-label">Panier</span>
+          <span class="cart-label">{{ 'nav.cart' | t }}</span>
           <span class="cart-badge" *ngIf="cartQuantity > 0">
             {{ cartQuantity }}
           </span>
@@ -174,9 +199,9 @@
         <!-- POPOVER DU PANIER -->
         <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
 
-          <h3 class="cart-popover-title">Votre panier</h3>
+          <h3 class="cart-popover-title">{{ 'cart.title' | t }}</h3>
 
-          <ng-container *ngIf="cart.items.length > 0; else emptyCart">
+          <ng-container *ngIf="cart && cart.items.length > 0; else emptyCart">
             <div class="cart-items">
 
               <div class="cart-item" *ngFor="let item of cart.items">
@@ -201,18 +226,20 @@
 
             <div class="cart-popover-footer">
               <div class="summary">
-                <span>{{ cart.totalQuantity }} article(s)</span>
+                <span>
+                  {{ cart.totalQuantity }} {{ 'cart.itemsCount' | t }}
+                </span>
                 <span class="total">{{ cart.totalAmount | currency:'EUR' }}</span>
               </div>
 
               <button class="view-cart-btn" (click)="goToCart()">
-                Voir le panier →
+                {{ 'cart.view' | t }}
               </button>
             </div>
           </ng-container>
 
           <ng-template #emptyCart>
-            <p class="empty-text">Votre panier est vide.</p>
+            <p class="empty-text">{{ 'cart.empty' | t }}</p>
           </ng-template>
 
         </div>
@@ -221,12 +248,12 @@
 
       <!-- MON COMPTE -->
       <button class="account-button" routerLink="/profile">
-        👤 Mon compte
+        👤 {{ 'nav.account' | t }}
       </button>
 
       <!-- DECONNEXION -->
       <button class="logout-button" (click)="logout()">
-        Déconnexion
+        {{ 'nav.logout' | t }}
       </button>
 
     </div>

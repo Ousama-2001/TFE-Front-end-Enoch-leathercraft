@@ -1,106 +1,105 @@
 <div class="account">
-
-  <h1>Mon compte</h1>
+  <h1>{{ 'account.title' | t }}</h1>
 
   <!-- TABS -->
   <div class="tabs">
-    <button [class.active]="activeTab === 'profile'" (click)="switchTab('profile')">👤 Profil</button>
-    <button [class.active]="activeTab === 'address'" (click)="switchTab('address')">📍 Adresse</button>
-    <button [class.active]="activeTab === 'orders'" (click)="switchTab('orders')">📦 Commandes</button>
-    <button [class.active]="activeTab === 'security'" (click)="switchTab('security')">🔒 Sécurité</button>
+    <button [class.active]="activeTab === 'profile'" (click)="switchTab('profile')">
+      {{ 'account.tabs.profile' | t }}
+    </button>
+    <button [class.active]="activeTab === 'address'" (click)="switchTab('address')">
+      {{ 'account.tabs.address' | t }}
+    </button>
+    <button [class.active]="activeTab === 'orders'" (click)="switchTab('orders')">
+      {{ 'account.tabs.orders' | t }}
+    </button>
+    <button [class.active]="activeTab === 'security'" (click)="switchTab('security')">
+      {{ 'account.tabs.security' | t }}
+    </button>
   </div>
 
-  <!-- ALERTS -->
+  <!-- ALERTS (venant du TS) -->
   <p *ngIf="error" class="alert error">{{ error }}</p>
   <p *ngIf="success" class="alert success">{{ success }}</p>
 
   <!-- PROFIL -->
   <div *ngIf="activeTab === 'profile'" class="card">
-
-    <h2>Informations personnelles</h2>
+    <h2>{{ 'account.profile.title' | t }}</h2>
 
     <form (ngSubmit)="saveProfile()">
       <div class="grid">
-
         <label>
-          Prénom :
+          {{ 'account.profile.firstName' | t }} :
           <input [(ngModel)]="profile.firstName" name="first" />
         </label>
 
         <label>
-          Nom :
+          {{ 'account.profile.lastName' | t }} :
           <input [(ngModel)]="profile.lastName" name="last" />
         </label>
 
         <label>
-          Email :
+          {{ 'account.profile.email' | t }} :
           <input [value]="profile.email" disabled />
         </label>
 
         <label>
-          Téléphone :
+          {{ 'account.profile.phone' | t }} :
           <input [(ngModel)]="profile.phone" name="phone" />
         </label>
-
       </div>
 
       <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? '...Enregistrement' : 'Mettre à jour' }}
+        {{ savingProfile ? ('account.profile.saving' | t) : ('account.profile.save' | t) }}
       </button>
     </form>
-
   </div>
 
   <!-- ADRESSE -->
   <div *ngIf="activeTab === 'address'" class="card">
-
-    <h2>Adresse de livraison</h2>
+    <h2>{{ 'account.address.title' | t }}</h2>
 
     <form (ngSubmit)="saveProfile()">
       <div class="grid">
-
         <label>
-          Adresse :
+          {{ 'account.address.address' | t }} :
           <input [(ngModel)]="profile.addressLine1" name="address" />
         </label>
 
         <label>
-          Code postal :
+          {{ 'account.address.postalCode' | t }} :
           <input [(ngModel)]="profile.postalCode" name="postalCode" />
         </label>
 
         <label>
-          Ville :
+          {{ 'account.address.city' | t }} :
           <input [(ngModel)]="profile.city" name="city" />
         </label>
 
         <label>
-          Pays :
+          {{ 'account.address.country' | t }} :
           <input [(ngModel)]="profile.country" name="country" />
         </label>
-
       </div>
 
       <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? '...Enregistrement' : 'Mettre à jour' }}
+        {{ savingProfile ? ('account.address.saving' | t) : ('account.address.save' | t) }}
       </button>
     </form>
-
   </div>
 
   <!-- COMMANDES -->
   <div *ngIf="activeTab === 'orders'" class="card">
-    <h2>Mes commandes</h2>
+    <h2>{{ 'account.orders.title' | t }}</h2>
 
-    <p *ngIf="loadingOrders">Chargement...</p>
+    <p *ngIf="loadingOrders">{{ 'account.orders.loading' | t }}</p>
 
     <table *ngIf="!loadingOrders && myOrders.length" class="orders">
       <thead>
       <tr>
-        <th>Réf</th>
-        <th>Date</th>
-        <th>Total</th>
-        <th>Statut</th>
+        <th>{{ 'account.orders.ref' | t }}</th>
+        <th>{{ 'account.orders.date' | t }}</th>
+        <th>{{ 'account.orders.total' | t }}</th>
+        <th>{{ 'account.orders.status' | t }}</th>
       </tr>
       </thead>
       <tbody>
@@ -113,36 +112,38 @@
       </tbody>
     </table>
 
-    <p *ngIf="!loadingOrders && !myOrders.length">Aucune commande.</p>
+    <p *ngIf="!loadingOrders && !myOrders.length">
+      {{ 'account.orders.empty' | t }}
+    </p>
   </div>
-
 
   <!-- SÉCURITÉ -->
   <div *ngIf="activeTab === 'security'" class="card">
-    <h2>Changer le mot de passe</h2>
+    <h2>{{ 'account.security.title' | t }}</h2>
 
     <form (submit)="submitPasswordChange()">
-
       <label>
-        Ancien mot de passe :
+        {{ 'account.security.oldPassword' | t }} :
         <input type="password" [(ngModel)]="oldPassword" name="old" />
       </label>
 
       <label>
-        Nouveau mot de passe :
+        {{ 'account.security.newPassword' | t }} :
         <input type="password" [(ngModel)]="newPassword" name="new" />
       </label>
 
       <label>
-        Confirmer :
+        {{ 'account.security.confirm' | t }} :
         <input type="password" [(ngModel)]="confirmPassword" name="confirm" />
       </label>
 
       <button class="btn" [disabled]="changingPassword">
-        {{ changingPassword ? '...' : 'Changer le mot de passe' }}
+        {{
+          changingPassword
+            ? ('account.security.changing' | t)
+            : ('account.security.change' | t)
+        }}
       </button>
-
     </form>
   </div>
-
 </div>

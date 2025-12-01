@@ -8,27 +8,28 @@
         <img [src]="logoUrl" alt="Logo">
       </div>
 
-      <h1>Pièces artisanales en cuir, pensées pour durer.</h1>
+      <h1>{{ 'home.hero.title' | t }}</h1>
 
       <p class="subtitle">
-        Sacs, sacoches et petite maroquinerie fabriqués à la main en petites séries.
-        Chaque pièce est conçue pour vous accompagner des années.
+        {{ 'home.hero.subtitle' | t }}
       </p>
 
       <div class="hero-actions">
-        <button class="btn-primary" (click)="goToProducts()">Voir la collection</button>
+        <button class="btn-primary" (click)="goToProducts()">
+          {{ 'home.hero.cta' | t }}
+        </button>
       </div>
 
       <div class="hero-tags">
-        <span>✓ Fabrication artisanale</span>
-        <span>✓ Pièces uniques</span>
-        <span>✓ Envoi suivi</span>
+        <span>{{ 'home.hero.tag.artisanal' | t }}</span>
+        <span>{{ 'home.hero.tag.unique' | t }}</span>
+        <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
       </div>
     </div>
 
     <div class="hero-right">
       <div class="highlight-card" *ngIf="latestProducts.length > 0">
-        <h4>NOUVELLE SÉLECTION</h4>
+        <h4>{{ 'home.highlight.newSelection' | t }}</h4>
         <h3>{{ latestProducts[0].name }}</h3>
 
         <p class="highlight-desc" *ngIf="latestProducts[0].description">
@@ -40,7 +41,7 @@
         </p>
 
         <button class="btn-highlight" (click)="goToProductDetail(latestProducts[0])">
-          Découvrir maintenant
+          {{ 'home.highlight.cta' | t }}
         </button>
       </div>
     </div>
@@ -48,25 +49,25 @@
 
   <!-- ============================ CATÉGORIES ============================ -->
   <section class="categories">
-    <h2>Catégories</h2>
+    <h2>{{ 'home.categories.title' | t }}</h2>
 
     <div class="categories-grid">
       <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'homme' }">
-        <h3>Homme</h3>
-        <p>Sacs, ceintures et accessoires adaptés au quotidien.</p>
-        <span>Découvrir →</span>
+        <h3>{{ 'home.categories.men.title' | t }}</h3>
+        <p>{{ 'home.categories.men.text' | t }}</p>
+        <span>{{ 'home.categories.men.cta' | t }}</span>
       </div>
 
       <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'femme' }">
-        <h3>Femme</h3>
-        <p>Sacoches, sacs à main & petite maroquinerie.</p>
-        <span>Voir les pièces →</span>
+        <h3>{{ 'home.categories.women.title' | t }}</h3>
+        <p>{{ 'home.categories.women.text' | t }}</p>
+        <span>{{ 'home.categories.women.cta' | t }}</span>
       </div>
 
       <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">
-        <h3>Petite maroquinerie</h3>
-        <p>Portefeuilles, porte-cartes & sets artisanaux.</p>
-        <span>Explorer →</span>
+        <h3>{{ 'home.categories.smallLeather.title' | t }}</h3>
+        <p>{{ 'home.categories.smallLeather.text' | t }}</p>
+        <span>{{ 'home.categories.smallLeather.cta' | t }}</span>
       </div>
     </div>
   </section>
@@ -75,11 +76,15 @@
   <!-- ============================ NOUVEAUTÉS ============================ -->
   <section class="latest">
     <div class="latest-header">
-      <h2>Dernières pièces ajoutées</h2>
-      <a class="see-all" (click)="goToProducts()">Voir tout →</a>
+      <h2>{{ 'home.latest.title' | t }}</h2>
+      <a class="see-all" (click)="goToProducts()">
+        {{ 'home.latest.seeAll' | t }}
+      </a>
     </div>
 
-    <div *ngIf="loading" class="info">Chargement...</div>
+    <div *ngIf="loading" class="info">
+      {{ 'home.latest.loading' | t }}
+    </div>
     <div *ngIf="error" class="error">{{ error }}</div>
 
     <div class="latest-grid" *ngIf="latestProducts.length > 0">
@@ -96,7 +101,7 @@
         </p>
 
         <button class="btn-view" (click)="goToProductDetail(p)">
-          Voir le produit
+          {{ 'home.latest.viewProduct' | t }}
         </button>
       </article>
     </div>
@@ -105,25 +110,25 @@
 
   <!-- ============================ AVIS CLIENTS ============================ -->
   <section class="reviews">
-    <h2>Avis de nos clients</h2>
+    <h2>{{ 'home.reviews.title' | t }}</h2>
 
     <div class="reviews-grid">
       <div class="review">
         <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>« Super qualité, la finesse du cuir est incroyable. »</p>
-        <span class="author">— Karim L.</span>
+        <p>{{ 'home.reviews.1.text' | t }}</p>
+        <span class="author">{{ 'home.reviews.1.author' | t }}</span>
       </div>
 
       <div class="review">
         <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>« J’ai offert un sac à mon mari, il ne l’a jamais quitté ! »</p>
-        <span class="author">— Sarah D.</span>
+        <p>{{ 'home.reviews.2.text' | t }}</p>
+        <span class="author">{{ 'home.reviews.2.author' | t }}</span>
       </div>
 
       <div class="review">
         <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>« Rapport qualité/prix exceptionnel, je recommande sans hésiter. »</p>
-        <span class="author">— Julie M.</span>
+        <p>{{ 'home.reviews.3.text' | t }}</p>
+        <span class="author">{{ 'home.reviews.3.author' | t }}</span>
       </div>
     </div>
   </section>
@@ -131,61 +136,63 @@
 
   <!-- ============================ QUI SOMMES-NOUS ============================ -->
   <section class="about">
-    <h2>Qui sommes-nous ?</h2>
+    <h2>{{ 'home.about.title' | t }}</h2>
 
     <p>
-      Enoch Leathercraft est un atelier artisanal dédié aux pièces uniques : sacs, ceintures
-      et portefeuilles faits main. Chaque création est conçue pour durer, avec des matériaux
-      nobles et un savoir-faire raffiné.
+      {{ 'home.about.p1' | t }}
     </p>
 
     <p>
-      Plus de <strong>500 clients satisfaits</strong> — 10 ans de passion pour le cuir et
-      l’artisanat d’excellence.
+      {{ 'home.about.p2' | t }}
     </p>
   </section>
 
 </div>
+
 <!-- ============================ FOOTER ============================ -->
 <footer class="footer">
   <div class="footer-grid">
 
     <div class="footer-col">
-      <h3>Enoch Leathercraft</h3>
+      <h3>{{ 'footer.title' | t }}</h3>
       <p>
-        Atelier artisanal de maroquinerie.<br>
-        Pièces uniques fabriquées à la main depuis 10 ans.
+        {{ 'footer.description' | t }}
       </p>
     </div>
 
     <div class="footer-col">
-      <h4>Boutique</h4>
-      <a routerLink="/products">Tous les produits</a>
-      <a routerLink="/products" [queryParams]="{ category: 'homme' }">Homme</a>
-      <a routerLink="/products" [queryParams]="{ category: 'femme' }">Femme</a>
-      <a routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">Petite maroquinerie</a>
+      <h4>{{ 'footer.shop' | t }}</h4>
+      <a routerLink="/products">{{ 'footer.shop.all' | t }}</a>
+      <a routerLink="/products" [queryParams]="{ category: 'homme' }">
+        {{ 'footer.shop.men' | t }}
+      </a>
+      <a routerLink="/products" [queryParams]="{ category: 'femme' }">
+        {{ 'footer.shop.women' | t }}
+      </a>
+      <a routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">
+        {{ 'footer.shop.smallLeather' | t }}
+      </a>
     </div>
 
     <div class="footer-col">
-      <h4>Informations</h4>
-      <a routerLink="/about">À propos de l’atelier</a>
-      <a routerLink="/contact">Contact</a>
-      <a href="#">Conditions générales</a>
-      <a href="#">Politique de confidentialité</a>
+      <h4>{{ 'footer.info' | t }}</h4>
+      <a routerLink="/about">{{ 'footer.info.about' | t }}</a>
+      <a routerLink="/contact">{{ 'footer.info.contact' | t }}</a>
+      <a href="#">{{ 'footer.info.terms' | t }}</a>
+      <a href="#">{{ 'footer.info.privacy' | t }}</a>
     </div>
 
     <div class="footer-col">
-      <h4>Nous suivre</h4>
+      <h4>{{ 'footer.follow' | t }}</h4>
       <div class="socials">
-        <a href="#"><span>📸</span> Instagram</a>
-        <a href="#"><span>📘</span> Facebook</a>
+        <a href="#"><span>📸</span> {{ 'footer.follow.instagram' | t }}</a>
+        <a href="#"><span>📘</span> {{ 'footer.follow.facebook' | t }}</a>
       </div>
     </div>
 
   </div>
 
   <div class="footer-bottom">
-    © © {{ currentYear }} Enoch Leathercraft — Tous droits réservés.
+    © {{ currentYear }} {{ 'footer.bottom' | t }}
   </div>
 </footer>
-

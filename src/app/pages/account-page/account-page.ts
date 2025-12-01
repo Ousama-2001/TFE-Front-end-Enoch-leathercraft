@@ -4,13 +4,14 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AccountService, Profile, UserOrder } from '../../services/account.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 type AccountTab = 'profile' | 'address' | 'orders' | 'security';
 
 @Component({
   selector: 'app-account-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, TranslatePipe],
   templateUrl: './account-page.html',
   styleUrls: ['./account-page.scss']
 })

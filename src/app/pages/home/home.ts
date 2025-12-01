@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ProductService, Product } from '../../services/products.service';
 import { CurrencyPipe } from '@angular/common';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe],
+  imports: [CommonModule, RouterLink, CurrencyPipe, TranslatePipe],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
