@@ -1,34 +1,52 @@
 // src/app/pages/admin-reviews/admin-reviews.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import {
   AdminReviewsService,
   AdminReview,
   ReviewStatus,
 } from '../../services/admin-reviews.service';
 
+type StatusFilter = ReviewStatus | 'ALL';
+
 @Component({
   selector: 'app-admin-reviews',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './admin-reviews.html',
   styleUrls: ['./admin-reviews.scss'],
 })
 export class AdminReviewsPageComponent implements OnInit {
+
   reviews: AdminReview[] = [];
   loading = false;
   error = '';
 
-  // filtres
-  statusFilter: ReviewStatus | '' = '';
+  // Filtres
+  statusFilter: StatusFilter = 'ALL';
   productIdFilter: number | null = null;
-  emailFilter = '';
+  customerFilter = '';
 
-  // pour désactiver les boutons pendant un changement de statut
-  updatingId: number | null = null;
+  // ID d'avis sur lequel on est en train d'agir (pour désactiver les boutons)
+  actionId: number | null = null;
 
-  constructor(private adminReviewsService: AdminReviewsService) {}
+  // Constantes pour les statuts (évite les erreurs de types dans le template)
+  readonly statuses: Record<'VISIBLE' | 'HIDDEN' | 'DELETED', ReviewStatus> = {
+    VISIBLE: 'VISIBLE',
+    HIDDEN: 'HIDDEN',
+    DELETED: 'DELETED',
+  };
+
+  readonly statusOptions: { value: StatusFilter; label: string }[] = [
+    { value: 'ALL',     label: 'Tous' },
+    { value: 'VISIBLE', label: 'Visible' },
+    { value: 'HIDDEN',  label: 'Masqué' },
+    { value: 'DELETED', label: 'Supprimé' },
+  ];
+
+  constructor(private reviewService: AdminReviewsService) {}
 
   ngOnInit(): void {
     this.loadReviews();
@@ -38,11 +56,14 @@ export class AdminReviewsPageComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.adminReviewsService
+    const statusParam =
+      this.statusFilter === 'ALL' ? undefined : this.statusFilter;
+
+    this.reviewService
       .search({
-        status: this.statusFilter,
+        status: statusParam,
         productId: this.productIdFilter,
-        email: this.emailFilter,
+        email: this.customerFilter,
       })
       .subscribe({
         next: (data) => {
@@ -61,44 +82,46 @@ export class AdminReviewsPageComponent implements OnInit {
   }
 
   resetFilters(): void {
-    this.statusFilter = '';
+    this.statusFilter = 'ALL';
     this.productIdFilter = null;
-    this.emailFilter = '';
+    this.customerFilter = '';
     this.loadReviews();
   }
 
+  // Changer statut (VISIBLE / HIDDEN / DELETED)
   changeStatus(review: AdminReview, status: ReviewStatus): void {
-    if (this.updatingId !== null) return;
+    if (this.actionId !== null) return;
 
-    this.updatingId = review.id;
+    this.actionId = review.id;
 
-    this.adminReviewsService.changeStatus(review.id, status).subscribe({
+    this.reviewService.changeStatus(review.id, status).subscribe({
       next: (updated) => {
         // on met à jour la ligne dans le tableau
-        const idx = this.reviews.findIndex((r) => r.id === review.id);
+        const idx = this.reviews.findIndex(r => r.id === updated.id);
         if (idx !== -1) {
           this.reviews[idx] = updated;
         }
-        this.updatingId = null;
+        this.actionId = null;
       },
       error: () => {
-        alert("Erreur lors de la mise à jour de l'avis.");
-        this.updatingId = null;
+        alert("Erreur lors de la mise à jour du statut.");
+        this.actionId = null;
       },
     });
   }
 
+  // CSS du badge
   badgeClass(status: ReviewStatus): string {
     switch (status) {
-      case 'APPROVED':
-        return 'badge badge-approved';
-      case 'REJECTED':
-        return 'badge badge-rejected';
-      case 'DELETED':
-        return 'badge badge-deleted';
-      case 'PENDING':
-      default:
-        return 'badge badge-pending';
+      case 'VISIBLE': return 'status-pill status-visible';
+      case 'HIDDEN':  return 'status-pill status-hidden';
+      case 'DELETED': return 'status-pill status-deleted';
+      default:        return 'status-pill';
     }
+  }
+
+  // petites étoiles jolies
+  getStars(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => i + 1);
   }
 }
