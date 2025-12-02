@@ -13,43 +13,45 @@ import {
   SalesStatsResponse,
   AdminOrderResponse,
 } from '../../services/admin-stats.service';
-import {RouterLink, RouterLinkActive} from '@angular/router';
+
+// Gestion des avis
+import { AdminReviewsPageComponent } from '../admin-reviews/admin-reviews';
+// Gestion des utilisateurs (super admin)
+import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-users';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    DatePipe,
+    AdminReviewsPageComponent,
+    SuperAdminUsersPageComponent
+  ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboardComponent implements OnInit {
 
   // ------- Onglet actif -------
-// @ts-ignore
-  activeTab: 'stats' | 'orders' | 'products' | 'stock' = 'stats';
+  // on ajoute 'reviews' et 'users'
+  activeTab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' = 'stats';
 
   // ------- STATS -------
-// @ts-ignore
   stats: SalesStatsResponse | null = null;
-// @ts-ignore
   statsLoading = false;
-// @ts-ignore
   statsError: string | null = null;
 
   // ------- COMMANDES -------
-// @ts-ignore
   orders: AdminOrderResponse[] = [];
-// @ts-ignore
   ordersLoading = false;
-// @ts-ignore
   ordersError: string | null = null;
 
   // Modal détail commande
-// @ts-ignore
   showOrderModal = false;
-// @ts-ignore
   selectedOrder: AdminOrderResponse | null = null;
-// @ts-ignore
   modalStatus: string = 'PENDING';
 
   statusOptions = [
@@ -61,39 +63,24 @@ export class AdminDashboardComponent implements OnInit {
   ];
 
   // ------- STOCK -------
-// @ts-ignore
   lowStockProducts: Product[] = [];
-// @ts-ignore
   lowStockLoading = false;
-// @ts-ignore
   lowStockError: string | null = null;
-// @ts-ignore
   lowStockThreshold = 5;
 
   // ------- CRUD PRODUITS -------
-// @ts-ignore
   products: Product[] = [];
-// @ts-ignore
   loading = false;
-// @ts-ignore
   error = '';
-// @ts-ignore
   showCreateForm = false;
 
-// @ts-ignore
   editingProductId: number | null = null;
-// @ts-ignore
   selectedFile: File | null = null;
-// @ts-ignore
   currentImagePreview: string | null = null;
-// @ts-ignore
   isSubmitting = false;
 
-// @ts-ignore
   showDeleteConfirm = false;
-// @ts-ignore
   deleteTargetId: number | null = null;
-// @ts-ignore
   deleteTargetName = '';
 
   newProduct: ProductCreateRequest = {
@@ -122,7 +109,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // ========= Onglets =========
-  setTab(tab: 'stats' | 'orders' | 'products' | 'stock'): void {
+  setTab(tab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users'): void {
     this.activeTab = tab;
 
     if (tab === 'stats') {
@@ -134,6 +121,7 @@ export class AdminDashboardComponent implements OnInit {
     } else if (tab === 'products') {
       if (!this.products.length) this.loadProducts();
     }
+    // 'reviews' et 'users' → les composants enfants gèrent leurs propres chargements
   }
 
   // ========= STATS =========
@@ -202,7 +190,6 @@ export class AdminDashboardComponent implements OnInit {
 
     this.adminStatsService.updateOrderStatus(orderId, newStatus).subscribe({
       next: (updated) => {
-        // Mise à jour dans la liste principale
         this.orders = this.orders.map(o => o.id === updated.id ? updated : o);
         this.selectedOrder = updated;
         this.closeOrderModal();

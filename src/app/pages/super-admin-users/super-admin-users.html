@@ -1,0 +1,197 @@
+<div class="sa-users-page">
+
+  <header class="page-header">
+    <div class="title-block">
+      <h1>Super Admin · Utilisateurs</h1>
+      <p>
+        Gérez les rôles (client, admin, super admin) et désactivez les comptes via un soft delete.
+      </p>
+    </div>
+    <div class="stats-chip" *ngIf="users.length">
+      <span class="label">Total</span>
+      <span class="value">{{ users.length }}</span>
+      <span class="suffix">utilisateurs</span>
+    </div>
+  </header>
+
+  <div class="state-messages">
+    <p *ngIf="loading" class="loading-message">
+      <span class="spinner">⏳</span> Chargement des utilisateurs...
+    </p>
+
+    <p *ngIf="error" class="error-message">
+      ⚠️ {{ error }}
+    </p>
+  </div>
+
+  <!-- GRID UTILISATEURS -->
+  <section class="users-grid" *ngIf="!loading && users.length">
+
+    <article
+      class="user-card"
+      *ngFor="let u of paginatedUsers"
+      [class.user-locked]="!canModify(u)"
+    >
+      <!-- Bandeau de rôle -->
+      <div class="role-strip" [ngClass]="u.role.toLowerCase()">
+        <span class="strip-label">{{ getRoleLabel(u.role) }}</span>
+      </div>
+
+      <div class="user-card-body">
+
+        <!-- header utilisateur -->
+        <div class="user-header">
+          <div class="avatar">
+            <span>
+              {{ getDisplayName(u) | slice : 0 : 1 | uppercase }}
+            </span>
+          </div>
+
+          <div class="identity">
+            <h3>{{ getDisplayName(u) }}</h3>
+            <p class="email">{{ u.email }}</p>
+            <p class="username" *ngIf="u.username">
+              @{{ u.username }}
+            </p>
+          </div>
+        </div>
+
+        <!-- meta -->
+        <div class="meta">
+          <div class="meta-row">
+            <span class="label">Prénom</span>
+            <span class="value">{{ u.firstName || '—' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Nom</span>
+            <span class="value">{{ u.lastName || '—' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Rôle actuel</span>
+            <span class="value">
+              <span [class]="getRoleClass(u.role)">{{ getRoleLabel(u.role) }}</span>
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="label">Créé le</span>
+            <span class="value">
+              {{ u.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- actions rôle -->
+        <div class="actions">
+          <button
+            type="button"
+            class="btn-role customer"
+            (click)="changeRole(u, 'CUSTOMER')"
+            [disabled]="!canModify(u) || actionLoadingId === u.id || u.role === 'CUSTOMER'"
+          >
+            Client
+          </button>
+
+          <button
+            type="button"
+            class="btn-role admin"
+            (click)="changeRole(u, 'ADMIN')"
+            [disabled]="!canModify(u) || actionLoadingId === u.id || u.role === 'ADMIN'"
+          >
+            Admin
+          </button>
+
+          <button
+            type="button"
+            class="btn-role super-admin"
+            (click)="changeRole(u, 'SUPER_ADMIN')"
+            [disabled]="!canModify(u) || actionLoadingId === u.id || u.role === 'SUPER_ADMIN'"
+          >
+            Super admin
+          </button>
+        </div>
+
+        <!-- soft delete -->
+        <div class="footer">
+          <button
+            type="button"
+            class="btn-delete"
+            (click)="openDeleteConfirm(u)"
+            [disabled]="!canModify(u) || actionLoadingId === u.id"
+          >
+            Désactiver (soft delete)
+          </button>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <p class="info" *ngIf="!loading && !users.length && !error">
+    Aucun utilisateur pour le moment.
+  </p>
+
+  <!-- PAGINATION -->
+  <div class="pagination-bar" *ngIf="!loading && users.length > pageSize">
+    <button
+      type="button"
+      class="page-btn"
+      (click)="prevPage()"
+      [disabled]="currentPage === 1"
+    >
+      ◀
+    </button>
+
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button
+        type="button"
+        class="page-btn"
+        [class.active]="currentPage === (i + 1)"
+        (click)="goToPage(i + 1)"
+      >
+        {{ i + 1 }}
+      </button>
+    </ng-container>
+
+    <button
+      type="button"
+      class="page-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+    >
+      ▶
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} / {{ totalPages }}
+    </span>
+  </div>
+
+  <!-- Modale de confirmation soft delete -->
+  <div
+    class="modal-overlay"
+    *ngIf="deleteConfirmId !== null"
+    (click)="cancelDelete()"
+  >
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Confirmer la désactivation</h3>
+      <p>
+        Voulez-vous vraiment désactiver le compte
+        <strong>{{ deleteConfirmName }}</strong> ?
+        L’utilisateur ne pourra plus se connecter.
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="cancelDelete()">
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn-confirm"
+          (click)="confirmDelete()"
+        >
+          Oui, désactiver
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

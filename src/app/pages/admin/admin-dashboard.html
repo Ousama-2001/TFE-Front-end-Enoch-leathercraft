@@ -4,7 +4,7 @@
   <div class="admin-header">
     <h1>Tableau de bord administrateur</h1>
     <p class="subtitle">
-      Gestion des ventes, des produits et du stock pour Enoch Leathercraft.
+      Gestion des ventes, des produits, du stock et des utilisateurs pour Enoch Leathercraft.
     </p>
 
     <div class="admin-tabs">
@@ -32,13 +32,17 @@
         Gestion du stock
       </button>
 
-      <!-- 🆕 Onglet qui envoie vers la page /admin/reviews -->
-      <button
-        class="tab-btn"
-        routerLink="/admin/reviews"
-        routerLinkActive="active"
-        type="button">
-        Avis produits
+      <button class="tab-btn"
+              [class.active]="activeTab === 'reviews'"
+              (click)="setTab('reviews')">
+        Gestion des avis
+      </button>
+
+      <!-- 🔹 Nouvel onglet : gestion des utilisateurs -->
+      <button class="tab-btn"
+              [class.active]="activeTab === 'users'"
+              (click)="setTab('users')">
+        Gestion des utilisateurs
       </button>
     </div>
   </div>
@@ -429,4 +433,15 @@
       Aucun produit en dessous du seuil de {{ lowStockThreshold }} unités.
     </p>
   </section>
+
+  <!-- ========= ONGLET 5 : GESTION DES AVIS ========= -->
+  <section *ngIf="activeTab === 'reviews'" class="reviews-tab">
+    <app-admin-reviews></app-admin-reviews>
+  </section>
+
+  <!-- ========= ONGLET 6 : GESTION DES UTILISATEURS (SUPER ADMIN) ========= -->
+  <section *ngIf="activeTab === 'users'" class="users-tab">
+    <app-super-admin-users></app-super-admin-users>
+  </section>
+
 </div>

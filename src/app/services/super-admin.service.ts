@@ -1,34 +1,41 @@
+// src/app/services/super-admin-users.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export type UserRole = 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN';
 
-export interface UserAdmin {
+export interface SaUser {
   id: number;
   email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
   role: UserRole;
   createdAt: string;
 }
 
-@Injectable({ providedIn: 'root' })
-export class UserAdminService {
+@Injectable({
+  providedIn: 'root',
+})
+export class SuperAdminUsersService {
   private baseUrl = 'http://localhost:8080/api/super-admin/users';
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<UserAdmin[]> {
-    return this.http.get<UserAdmin[]>(this.baseUrl);
+  getAll(): Observable<SaUser[]> {
+    return this.http.get<SaUser[]>(this.baseUrl);
   }
 
-  updateRole(id: number, role: UserRole): Observable<UserAdmin> {
-    return this.http.patch<UserAdmin>(`${this.baseUrl}/${id}/role`, { role });
+  updateRole(id: number, role: UserRole): Observable<SaUser> {
+    const url = `${this.baseUrl}/${id}/role`;
+    return this.http.patch<SaUser>(url, null, {
+      params: { value: role },
+    });
   }
 
-  deleteUser(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  softDelete(id: number): Observable<void> {
+    const url = `${this.baseUrl}/${id}`;
+    return this.http.delete<void>(url);
   }
 }

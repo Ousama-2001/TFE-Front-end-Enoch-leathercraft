@@ -29,6 +29,15 @@ export const routes: Routes = [
     canActivate: [AdminGuard],
   },
 
+  {
+    path: 'super-admin/users',
+    canActivate: [AdminGuard], // SUPER_ADMIN est un type d'admin, le back filtrera
+    loadComponent: () =>
+      import('./pages/super-admin-users/super-admin-users').then(
+        (m) => m.SuperAdminUsersPageComponent
+      ),
+  },
+
   // --- Page de modération des avis (admin + super admin) ---
   {
     path: 'admin/reviews',
