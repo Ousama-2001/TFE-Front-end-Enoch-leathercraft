@@ -207,17 +207,36 @@
   <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->
   <section *ngIf="activeTab === 'products'" class="admin-page">
 
-    <div class="admin-header">
+    <div class="admin-header-row">
       <div>
         <h2>Gestion des produits</h2>
-        <p class="subtitle">Création, édition et suppression des produits.</p>
+        <p class="subtitle">Création, édition, archivage et restauration des produits.</p>
       </div>
 
-      <div class="admin-actions">
+      <div class="admin-actions" *ngIf="productsMode === 'active'">
         <button class="primary" (click)="toggleCreateForm()">
           {{ showCreateForm ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
         </button>
       </div>
+    </div>
+
+    <!-- 🔀 Switch actifs / archivés -->
+    <div class="products-mode-switch">
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="productsMode === 'active'"
+        (click)="setProductsMode('active')">
+        Produits actifs
+      </button>
+
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="productsMode === 'archived'"
+        (click)="setProductsMode('archived')">
+        Produits archivés
+      </button>
     </div>
 
     <div class="state-messages">
@@ -230,8 +249,8 @@
       </p>
     </div>
 
-    <!-- Formulaire création / édition -->
-    <div class="panel create-panel" *ngIf="showCreateForm">
+    <!-- Formulaire création / édition (UNIQUEMENT mode actifs) -->
+    <div class="panel create-panel" *ngIf="showCreateForm && productsMode === 'active'">
 
       <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
 
@@ -310,10 +329,12 @@
 
     <!-- Liste des produits -->
     <div class="panel">
-      <h2 class="section-title">Produits existants</h2>
+      <h2 class="section-title">
+        {{ productsMode === 'active' ? 'Produits existants' : 'Produits archivés' }}
+      </h2>
 
       <p *ngIf="!loading && products.length === 0 && !error" class="empty-message">
-        Aucun produit trouvé. Utilisez le bouton "+ Ajouter un produit" pour commencer.
+        Aucun produit trouvé dans ce mode.
       </p>
 
       <table class="product-table" *ngIf="products.length > 0">
@@ -348,8 +369,18 @@
           <td>{{ p.isActive ? 'Oui' : 'Non' }}</td>
 
           <td class="actions">
-            <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
-            <button class="btn-delete" (click)="openDeleteConfirm(p)">🗑️ Supprimer</button>
+            <!-- Mode actifs : modifier / supprimer -->
+            <ng-container *ngIf="productsMode === 'active'; else archivedActions">
+              <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
+              <button class="btn-delete" (click)="openDeleteConfirm(p)">🗑️ Supprimer</button>
+            </ng-container>
+
+            <!-- Mode archivés : restaurer -->
+            <ng-template #archivedActions>
+              <button class="btn-restore" type="button" (click)="restoreProduct(p)">
+                ↩ Restaurer
+              </button>
+            </ng-template>
           </td>
         </tr>
         </tbody>
@@ -360,11 +391,11 @@
     <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
       <div class="modal" (click)="$event.stopPropagation()">
         <h3>Confirmer la suppression</h3>
-        <p>Supprimer <strong>{{ deleteTargetName }}</strong> ?</p>
+        <p>Archiver (soft delete) <strong>{{ deleteTargetName }}</strong> ?</p>
 
         <div class="modal-actions">
           <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
-          <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, supprimer</button>
+          <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, archiver</button>
         </div>
       </div>
     </div>

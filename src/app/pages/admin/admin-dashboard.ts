@@ -36,8 +36,10 @@ import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-u
 export class AdminDashboardComponent implements OnInit {
 
   // ------- Onglet actif -------
-  // on ajoute 'reviews' et 'users'
   activeTab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' = 'stats';
+
+  // ------- Mode produits (actifs / archivés) -------
+  productsMode: 'active' | 'archived' = 'active';
 
   // ------- STATS -------
   stats: SalesStatsResponse | null = null;
@@ -119,7 +121,7 @@ export class AdminDashboardComponent implements OnInit {
     } else if (tab === 'stock') {
       this.loadLowStock();
     } else if (tab === 'products') {
-      if (!this.products.length) this.loadProducts();
+      this.loadProducts();
     }
     // 'reviews' et 'users' → les composants enfants gèrent leurs propres chargements
   }
@@ -238,12 +240,34 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // ========= MODE PRODUITS (actifs / archivés) =========
+  setProductsMode(mode: 'active' | 'archived'): void {
+    if (this.productsMode === mode) return;
+
+    this.productsMode = mode;
+
+    // En mode archivés, on ferme le formulaire d’édition/création
+    if (mode === 'archived') {
+      this.showCreateForm = false;
+      this.editingProductId = null;
+      this.selectedFile = null;
+      this.currentImagePreview = null;
+    }
+
+    this.loadProducts();
+  }
+
   // ========= CRUD PRODUITS =========
   loadProducts(): void {
     this.loading = true;
     this.error = '';
 
-    this.productService.getAll().subscribe({
+    const source$ =
+      this.productsMode === 'active'
+        ? this.productService.getAll()
+        : this.productService.getArchived();
+
+    source$.subscribe({
       next: (list: Product[]) => {
         this.products = list;
         this.loading = false;
@@ -263,6 +287,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   toggleCreateForm(): void {
+    if (this.productsMode === 'archived') {
+      return; // pas de création en mode archivés
+    }
+
     if (this.editingProductId !== null) {
       this.resetForm();
     } else {
@@ -282,6 +310,11 @@ export class AdminDashboardComponent implements OnInit {
 
   submitForm(): void {
     this.error = '';
+
+    if (this.productsMode === 'archived') {
+      this.error = 'Impossible de créer ou éditer en mode "archivés".';
+      return;
+    }
 
     if (!this.newProduct.name || !this.newProduct.sku || !this.newProduct.price) {
       this.error = 'Nom, SKU et prix sont obligatoires.';
@@ -333,6 +366,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   startEdit(p: Product): void {
+    if (this.productsMode === 'archived') {
+      return; // pas d’édition en mode archivés
+    }
+
     this.showCreateForm = true;
     this.editingProductId = p.id ?? null;
     this.error = '';
@@ -355,6 +392,28 @@ export class AdminDashboardComponent implements OnInit {
       currency: p.currency ?? 'EUR',
       slug: p.slug ?? '',
     };
+  }
+
+  restoreProduct(p: Product): void {
+    if (!p.id) return;
+
+    if (!confirm(`Restaurer le produit "${p.name}" ?`)) {
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.productService.restore(p.id).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        // On recharge la liste des archivés
+        this.loadProducts();
+      },
+      error: (err) => {
+        console.error('Erreur restauration produit', err);
+        this.isSubmitting = false;
+        alert('Erreur lors de la restauration du produit.');
+      }
+    });
   }
 
   handleError(err: any): void {
@@ -386,8 +445,12 @@ export class AdminDashboardComponent implements OnInit {
     this.auth.logout();
   }
 
-  // ---------- suppression produit ----------
+  // ---------- suppression produit (soft delete) ----------
   openDeleteConfirm(p: Product): void {
+    if (this.productsMode === 'archived') {
+      return; // pas de delete depuis archivés (restauration uniquement)
+    }
+
     this.deleteTargetId = p.id ?? null;
     this.deleteTargetName = p.name;
     this.showDeleteConfirm = true;
@@ -411,7 +474,7 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur suppression produit', err);
-        this.error = 'Impossible de supprimer ce produit.';
+        this.error = 'Impossible d’archiver ce produit.';
         this.cancelDelete();
       },
     });
