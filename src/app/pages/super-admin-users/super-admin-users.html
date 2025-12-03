@@ -1,3 +1,4 @@
+<!-- src/app/pages/super-admin-users/super-admin-users.html -->
 <div class="sa-users-page">
 
   <header class="page-header">
@@ -14,6 +15,34 @@
     </div>
   </header>
 
+  <!-- 🔹 Filtre d'état -->
+  <div class="status-filters" *ngIf="users.length">
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="statusFilter === 'all'"
+      (click)="setStatusFilter('all')"
+    >
+      Tous
+    </button>
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="statusFilter === 'active'"
+      (click)="setStatusFilter('active')"
+    >
+      Actifs
+    </button>
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="statusFilter === 'deleted'"
+      (click)="setStatusFilter('deleted')"
+    >
+      Désactivés
+    </button>
+  </div>
+
   <div class="state-messages">
     <p *ngIf="loading" class="loading-message">
       <span class="spinner">⏳</span> Chargement des utilisateurs...
@@ -25,12 +54,13 @@
   </div>
 
   <!-- GRID UTILISATEURS -->
-  <section class="users-grid" *ngIf="!loading && users.length">
+  <section class="users-grid" *ngIf="!loading && filteredUsers.length">
 
     <article
       class="user-card"
       *ngFor="let u of paginatedUsers"
       [class.user-locked]="!canModify(u)"
+      [class.user-deleted]="isDeleted(u)"
     >
       <!-- Bandeau de rôle -->
       <div class="role-strip" [ngClass]="u.role.toLowerCase()">
@@ -76,6 +106,19 @@
             <span class="label">Créé le</span>
             <span class="value">
               {{ u.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+
+          <!-- 🔹 Statut -->
+          <div class="meta-row">
+            <span class="label">Statut</span>
+            <span class="value">
+              <span *ngIf="!isDeleted(u)" class="status-pill status-active">
+                Actif
+              </span>
+              <span *ngIf="isDeleted(u)" class="status-pill status-deleted">
+                Désactivé
+              </span>
             </span>
           </div>
         </div>
@@ -126,12 +169,12 @@
 
   </section>
 
-  <p class="info" *ngIf="!loading && !users.length && !error">
-    Aucun utilisateur pour le moment.
+  <p class="info" *ngIf="!loading && !filteredUsers.length && !error">
+    Aucun utilisateur pour ce filtre.
   </p>
 
   <!-- PAGINATION -->
-  <div class="pagination-bar" *ngIf="!loading && users.length > pageSize">
+  <div class="pagination-bar" *ngIf="!loading && filteredUsers.length > pageSize">
     <button
       type="button"
       class="page-btn"

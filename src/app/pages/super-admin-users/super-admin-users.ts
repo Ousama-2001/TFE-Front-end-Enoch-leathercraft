@@ -7,6 +7,8 @@ import {
   UserRole
 } from '../../services/super-admin.service';
 
+type StatusFilter = 'all' | 'active' | 'deleted';
+
 @Component({
   selector: 'app-super-admin-users',
   standalone: true,
@@ -30,6 +32,9 @@ export class SuperAdminUsersPageComponent implements OnInit {
   // Pagination
   pageSize = 6;
   currentPage = 1;
+
+  // 🔹 Filtre : tous / actifs / supprimés
+  statusFilter: StatusFilter = 'all';
 
   constructor(private superAdminService: SuperAdminUsersService) {}
 
@@ -55,15 +60,34 @@ export class SuperAdminUsersPageComponent implements OnInit {
     });
   }
 
+  // ---------- helpers ----------
+
+  isDeleted(u: SaUser): boolean {
+    return !!u.deleted;
+  }
+
+  // Liste filtrée avant pagination
+  get filteredUsers(): SaUser[] {
+    switch (this.statusFilter) {
+      case 'active':
+        return this.users.filter(u => !this.isDeleted(u));
+      case 'deleted':
+        return this.users.filter(u => this.isDeleted(u));
+      case 'all':
+      default:
+        return this.users;
+    }
+  }
+
   // ---------- pagination ----------
 
   get totalPages(): number {
-    return Math.max(1, Math.ceil(this.users.length / this.pageSize));
+    return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
   }
 
   get paginatedUsers(): SaUser[] {
     const start = (this.currentPage - 1) * this.pageSize;
-    return this.users.slice(start, start + this.pageSize);
+    return this.filteredUsers.slice(start, start + this.pageSize);
   }
 
   goToPage(page: number): void {
@@ -107,8 +131,10 @@ export class SuperAdminUsersPageComponent implements OnInit {
     }
   }
 
-  canModify(_u: SaUser): boolean {
-    // Pour l’instant tout est géré côté back (SUPER_ADMIN seulement)
+  // 🔹 On ne peut pas modifier un compte désactivé
+  canModify(u: SaUser): boolean {
+    if (this.isDeleted(u)) return false;
+    // tu peux ajouter d'autres règles ici si besoin
     return true;
   }
 
@@ -152,13 +178,15 @@ export class SuperAdminUsersPageComponent implements OnInit {
     this.actionLoadingId = id;
 
     this.superAdminService.softDelete(id).subscribe({
-      next: () => {
-        this.users = this.users.filter(u => u.id !== id);
+      next: (updated: SaUser) => {
+        // 🔹 on met à jour l'utilisateur (deleted=true) au lieu de le retirer
+        this.users = this.users.map(u => (u.id === updated.id ? updated : u));
         this.actionLoadingId = null;
         this.cancelDelete();
 
-        // si on supprime le dernier user de la page, on recule d'une page
-        if ((this.currentPage - 1) * this.pageSize >= this.users.length && this.currentPage > 1) {
+        // si plus aucun user sur la page actuelle avec le filtre, on recule d'une page
+        const totalAfter = this.filteredUsers.length;
+        if (totalAfter === 0 && this.currentPage > 1) {
           this.currentPage--;
         }
       },
@@ -169,5 +197,12 @@ export class SuperAdminUsersPageComponent implements OnInit {
         this.cancelDelete();
       },
     });
+  }
+
+  // ---------- changement de filtre ----------
+
+  setStatusFilter(filter: StatusFilter): void {
+    this.statusFilter = filter;
+    this.currentPage = 1;
   }
 }
