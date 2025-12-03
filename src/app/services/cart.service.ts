@@ -11,7 +11,7 @@ export interface CartItem {
   unitPrice: number;
   quantity: number;
   lineTotal: number;
-  imageUrl?: string; // Ajouté si jamais le back renvoie l'image ici
+  imageUrl?: string;
 }
 
 export interface CartResponse {
@@ -30,7 +30,6 @@ export interface CartUpdateRequest {
   quantity: number;
 }
 
-// NOUVEAU : Interface pour la réponse de commande
 export interface OrderResponse {
   id: number;
   reference: string;
@@ -39,9 +38,22 @@ export interface OrderResponse {
   createdAt: string;
 }
 
+/** 🔹 Payload envoyé au back pour le checkout */
+export interface CheckoutPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  notes?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private baseUrl = 'http://localhost:8080/api'; // Attention: J'ai retiré '/cart' ici pour flexibilité
+  private baseUrl = 'http://localhost:8080/api';
 
   // État local "simple"
   items: CartItem[] = [];
@@ -61,14 +73,12 @@ export class CartService {
     this.totalAmount = cart.totalAmount;
   }
 
-  /** Charger le panier depuis le back */
   loadCart() {
     return this.http.get<CartResponse>(`${this.baseUrl}/cart`).pipe(
       tap((cart) => this.syncState(cart))
     );
   }
 
-  /** Ajouter un produit */
   addProduct(productOrId: number | { id?: number }, quantity: number = 1) {
     let productId: number;
     if (typeof productOrId === 'number') {
@@ -84,7 +94,6 @@ export class CartService {
       .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  /** Mettre à jour quantité */
   updateQuantity(productId: number, quantity: number) {
     const body: CartUpdateRequest = { quantity };
     return this.http
@@ -92,25 +101,22 @@ export class CartService {
       .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  /** Supprimer un produit */
   removeItem(productId: number) {
     return this.http
       .delete<CartResponse>(`${this.baseUrl}/cart/items/${productId}`)
       .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  /** Vider le panier */
   clear() {
     return this.http
       .delete<CartResponse>(`${this.baseUrl}/cart`)
       .pipe(tap((cart) => this.syncState(cart)));
   }
 
-  /** NOUVEAU : Valider la commande */
-  checkout(): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(`${this.baseUrl}/orders/checkout`, {}).pipe(
+  /** ✅ Checkout avec payload */
+  checkout(payload: CheckoutPayload): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.baseUrl}/orders/checkout`, payload).pipe(
       tap(() => {
-        // Sur succès, on vide l'état local car le back a vidé le panier
         this.syncState({ cartId: 0, items: [], totalQuantity: 0, totalAmount: 0 });
       })
     );

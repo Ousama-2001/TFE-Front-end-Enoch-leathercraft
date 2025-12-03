@@ -3,8 +3,9 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { CartService, OrderResponse } from '../../services/cart.service';
-import {TranslatePipe} from '../../pipes/translate.pipe';
+import { CartService, CheckoutPayload } from '../../services/cart.service';
+import { PaymentService, StripeCheckoutResponse } from '../../services/payment.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-checkout',
@@ -16,27 +17,24 @@ import {TranslatePipe} from '../../pipes/translate.pipe';
 export class CheckoutComponent implements OnInit {
 
   checkoutForm!: FormGroup;
-
   loading = false;
   error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     public cart: CartService,
+    private paymentService: PaymentService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // Recharge le panier à l'arrivée sur la page
     this.cart.loadCart().subscribe({
       next: (cart) => {
         if (!cart.items.length) {
           this.router.navigate(['/cart']);
         }
       },
-      error: () => {
-        this.router.navigate(['/cart']);
-      }
+      error: () => this.router.navigate(['/cart'])
     });
 
     this.checkoutForm = this.fb.group({
@@ -52,7 +50,6 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  // On laisse ce getter, mais on l'utilise avec f['firstName'] dans le HTML
   get f() {
     return this.checkoutForm.controls;
   }
@@ -76,16 +73,36 @@ export class CheckoutComponent implements OnInit {
 
     this.loading = true;
 
-    // Pour l’instant : on valide juste la commande via le back existant
-    this.cart.checkout().subscribe({
-      next: (order: OrderResponse) => {
+    const v = this.checkoutForm.value;
+
+    const payload: CheckoutPayload = {
+      firstName: v.firstName,
+      lastName: v.lastName,
+      email: v.email,
+      phone: v.phone,
+      street: v.street,
+      postalCode: v.postalCode,
+      city: v.city,
+      country: v.country,
+      notes: v.notes,
+    };
+
+    this.paymentService.startStripeCheckout(payload).subscribe({
+      next: (res: StripeCheckoutResponse) => {
         this.loading = false;
-        this.router.navigate(['/order-success', order.reference]);
+        // Redirection vers Stripe Checkout
+        window.location.href = res.checkoutUrl;
       },
       error: (err) => {
-        console.error('Erreur checkout : ', err);
+        console.error('Erreur Stripe checkout : ', err);
         this.loading = false;
-        this.error = 'Une erreur est survenue lors de la validation de la commande.';
+
+        // ✅ on affiche le message métier du back si dispo (ex: "Stock insuffisant...")
+        if (err.status === 409 && err.error?.message) {
+          this.error = err.error.message;
+        } else {
+          this.error = 'Impossible de démarrer le paiement. Réessayez plus tard.';
+        }
       }
     });
   }
