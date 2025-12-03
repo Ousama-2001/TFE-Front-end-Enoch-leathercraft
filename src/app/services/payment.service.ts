@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CheckoutPayload } from './cart.service';
+import { CheckoutPayload, OrderResponse } from './cart.service';
 
 export interface StripeCheckoutResponse {
   checkoutUrl: string;
@@ -22,5 +22,11 @@ export class PaymentService {
       `${this.baseUrl}/stripe-checkout`,
       payload
     );
+  }
+
+  // 🔹 Confirmation Stripe : le back vérifie et envoie l'email
+  confirmStripePayment(sessionId: string): Observable<OrderResponse> {
+    const params = new HttpParams().set('session_id', sessionId);
+    return this.http.post<OrderResponse>(`${this.baseUrl}/stripe-confirm`, null, { params });
   }
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { PaymentService } from '../../services/payment.service';
+import { OrderResponse } from '../../services/cart.service';
 
 @Component({
   selector: 'app-order-success',
@@ -10,16 +12,31 @@ import { CommonModule } from '@angular/common';
     <div class="success-page">
       <div class="success-card">
         <div class="icon">🎉</div>
-        <h1>Merci pour votre commande !</h1>
-        <p class="subtitle">Votre commande a été validée avec succès.</p>
 
-        <div class="order-ref" *ngIf="orderReference">
-          Référence : <strong>{{ orderReference }}</strong>
-        </div>
+        <ng-container *ngIf="!loading && !error; else loadingOrError">
+          <h1>Merci pour votre commande !</h1>
+          <p class="subtitle">Votre paiement a été confirmé.</p>
 
-        <p class="info">Vous pouvez retrouver le détail dans votre historique.</p>
+          <div class="order-ref" *ngIf="orderReference">
+            Référence : <strong>{{ orderReference }}</strong>
+          </div>
 
-        <a routerLink="/products" class="btn-home">Retour à la boutique</a>
+          <p class="info">
+            Un email de confirmation vous a été envoyé.
+          </p>
+
+          <a routerLink="/products" class="btn-home">Retour à la boutique</a>
+        </ng-container>
+
+        <ng-template #loadingOrError>
+          <div *ngIf="loading" class="info">
+            Vérification de votre paiement en cours...
+          </div>
+          <div *ngIf="!loading && error" class="info">
+            {{ error }}
+          </div>
+          <a routerLink="/products" class="btn-home">Retour à la boutique</a>
+        </ng-template>
       </div>
     </div>
   `,
@@ -73,10 +90,35 @@ import { CommonModule } from '@angular/common';
 })
 export class OrderSuccessComponent implements OnInit {
   orderReference: string | null = null;
+  loading = true;
+  error: string | null = null;
+  order: OrderResponse | null = null;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private paymentService: PaymentService
+  ) {}
 
   ngOnInit(): void {
     this.orderReference = this.route.snapshot.paramMap.get('reference');
+    const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+
+    if (!sessionId) {
+      this.loading = false;
+      this.error = 'Aucune session de paiement trouvée.';
+      return;
+    }
+
+    this.paymentService.confirmStripePayment(sessionId).subscribe({
+      next: (order) => {
+        this.order = order;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur confirmation Stripe : ', err);
+        this.error = 'Le paiement n’a pas pu être confirmé.';
+        this.loading = false;
+      }
+    });
   }
 }
