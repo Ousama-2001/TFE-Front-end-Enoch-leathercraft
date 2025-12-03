@@ -22,18 +22,14 @@ export class SuperAdminUsersPageComponent implements OnInit {
   loading = false;
   error = '';
 
-  // id en cours d'action (changement de rôle / delete)
   actionLoadingId: number | null = null;
 
-  // soft delete (modale de confirmation)
   deleteConfirmId: number | null = null;
   deleteConfirmName = '';
 
-  // Pagination
   pageSize = 6;
   currentPage = 1;
 
-  // 🔹 Filtre : tous / actifs / supprimés
   statusFilter: StatusFilter = 'all';
 
   constructor(private superAdminService: SuperAdminUsersService) {}
@@ -66,7 +62,6 @@ export class SuperAdminUsersPageComponent implements OnInit {
     return !!u.deleted;
   }
 
-  // Liste filtrée avant pagination
   get filteredUsers(): SaUser[] {
     switch (this.statusFilter) {
       case 'active':
@@ -131,11 +126,14 @@ export class SuperAdminUsersPageComponent implements OnInit {
     }
   }
 
-  // 🔹 On ne peut pas modifier un compte désactivé
   canModify(u: SaUser): boolean {
+    // pas de changement de rôle / delete sur un compte désactivé
     if (this.isDeleted(u)) return false;
-    // tu peux ajouter d'autres règles ici si besoin
     return true;
+  }
+
+  canRestore(u: SaUser): boolean {
+    return this.isDeleted(u);
   }
 
   // ---------- changement de rôle ----------
@@ -158,7 +156,7 @@ export class SuperAdminUsersPageComponent implements OnInit {
     });
   }
 
-  // ---------- soft delete avec modale ----------
+  // ---------- soft delete ----------
 
   openDeleteConfirm(user: SaUser): void {
     if (!this.canModify(user) || this.actionLoadingId !== null) return;
@@ -179,12 +177,10 @@ export class SuperAdminUsersPageComponent implements OnInit {
 
     this.superAdminService.softDelete(id).subscribe({
       next: (updated: SaUser) => {
-        // 🔹 on met à jour l'utilisateur (deleted=true) au lieu de le retirer
         this.users = this.users.map(u => (u.id === updated.id ? updated : u));
         this.actionLoadingId = null;
         this.cancelDelete();
 
-        // si plus aucun user sur la page actuelle avec le filtre, on recule d'une page
         const totalAfter = this.filteredUsers.length;
         if (totalAfter === 0 && this.currentPage > 1) {
           this.currentPage--;
@@ -199,7 +195,32 @@ export class SuperAdminUsersPageComponent implements OnInit {
     });
   }
 
-  // ---------- changement de filtre ----------
+  // ---------- restore ----------
+
+  restoreUser(user: SaUser): void {
+    if (!this.canRestore(user) || this.actionLoadingId !== null) return;
+
+    this.actionLoadingId = user.id;
+
+    this.superAdminService.restore(user.id).subscribe({
+      next: (updated: SaUser) => {
+        this.users = this.users.map(u => (u.id === updated.id ? updated : u));
+        this.actionLoadingId = null;
+
+        const totalAfter = this.filteredUsers.length;
+        if (totalAfter === 0 && this.currentPage > 1) {
+          this.currentPage--;
+        }
+      },
+      error: (err: any) => {
+        console.error('Erreur restauration utilisateur', err);
+        alert('Impossible de restaurer cet utilisateur.');
+        this.actionLoadingId = null;
+      },
+    });
+  }
+
+  // ---------- filtre ----------
 
   setStatusFilter(filter: StatusFilter): void {
     this.statusFilter = filter;

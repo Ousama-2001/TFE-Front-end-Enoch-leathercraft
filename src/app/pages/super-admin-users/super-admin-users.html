@@ -5,17 +5,18 @@
     <div class="title-block">
       <h1>Super Admin · Utilisateurs</h1>
       <p>
-        Gérez les rôles (client, admin, super admin) et désactivez les comptes via un soft delete.
+        Gérez les rôles (client, admin, super admin) et désactivez / restaurez les comptes via un soft delete.
       </p>
     </div>
     <div class="stats-chip" *ngIf="users.length">
       <span class="label">Total</span>
-      <span class="value">{{ users.length }}</span>
+      <span class="value">{{ filteredUsers.length }}</span>
       <span class="suffix">utilisateurs</span>
     </div>
+
   </header>
 
-  <!-- 🔹 Filtre d'état -->
+  <!-- Filtre d'état -->
   <div class="status-filters" *ngIf="users.length">
     <button
       type="button"
@@ -109,7 +110,6 @@
             </span>
           </div>
 
-          <!-- 🔹 Statut -->
           <div class="meta-row">
             <span class="label">Statut</span>
             <span class="value">
@@ -153,15 +153,26 @@
           </button>
         </div>
 
-        <!-- soft delete -->
+        <!-- footer : delete / restore -->
         <div class="footer">
           <button
             type="button"
             class="btn-delete"
+            *ngIf="!isDeleted(u)"
             (click)="openDeleteConfirm(u)"
             [disabled]="!canModify(u) || actionLoadingId === u.id"
           >
             Désactiver (soft delete)
+          </button>
+
+          <button
+            type="button"
+            class="btn-restore"
+            *ngIf="isDeleted(u)"
+            (click)="restoreUser(u)"
+            [disabled]="actionLoadingId === u.id"
+          >
+            Réactiver
           </button>
         </div>
       </div>

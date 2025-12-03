@@ -13,8 +13,6 @@ export interface SaUser {
   username: string | null;
   role: UserRole;
   createdAt: string;
-
-  // 🔹 nouveau : statut soft delete
   deleted: boolean;
 }
 
@@ -32,13 +30,16 @@ export class SuperAdminUsersService {
 
   updateRole(id: number, role: UserRole): Observable<SaUser> {
     const url = `${this.baseUrl}/${id}/role`;
-    // 🔹 le back attend un body { "role": "ADMIN" }
     return this.http.patch<SaUser>(url, { role });
   }
 
   softDelete(id: number): Observable<SaUser> {
     const url = `${this.baseUrl}/${id}`;
-    // 🔹 le back renvoie maintenant l'utilisateur soft-deleted
     return this.http.delete<SaUser>(url);
+  }
+
+  restore(id: number): Observable<SaUser> {
+    const url = `${this.baseUrl}/${id}/restore`;
+    return this.http.post<SaUser>(url, null);
   }
 }
