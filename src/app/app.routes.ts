@@ -6,6 +6,7 @@ import { AdminDashboardComponent } from './pages/admin/admin-dashboard';
 import { AdminGuard } from './guards/admin-guard';
 import { OrderSuccessComponent } from './pages/order-sucess/order-sucess';
 import { superAdminGuard } from './guards/super-admin.guard';
+import {CheckoutComponent} from './pages/checkout/checkout';
 
 export const routes: Routes = [
 
@@ -63,6 +64,8 @@ export const routes: Routes = [
       import('./pages/cart/cart')
         .then(m => m.CartComponent),
   },
+  { path: 'checkout', component: CheckoutComponent },
+
 
   // --- Page profil / compte ---
   {

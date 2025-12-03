@@ -49,12 +49,14 @@
           Vider le panier
         </button>
 
+        <!-- 👉 Nouveau : on va sur la page checkout -->
         <button
           type="button"
           class="btn-primary"
-          (click)="checkout()"
+          (click)="goToCheckout()"
+          [disabled]="!cart.items.length"
         >
-          Valider ma commande
+          Passer à la validation de la commande
         </button>
 
         <a routerLink="/products">

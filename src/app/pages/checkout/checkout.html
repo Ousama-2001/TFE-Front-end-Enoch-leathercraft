@@ -1,0 +1,211 @@
+<div class="checkout-page">
+
+  <h1>{{ 'checkout.title' | t }}</h1>
+
+  <p class="subtitle">
+    {{ 'checkout.subtitle' | t }}
+  </p>
+
+  <div class="checkout-grid">
+
+    <!-- ===== FORMULAIRE ===== -->
+    <div class="checkout-form-card">
+
+      <h2>{{ 'checkout.customerInfo.title' | t }}</h2>
+
+      <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+
+        <!-- Prénom / Nom -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">
+              {{ 'checkout.form.firstName.label' | t }} *
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              [class.invalid]="f['firstName'].touched && f['firstName'].invalid"
+            />
+            <div class="error" *ngIf="f['firstName'].touched && f['firstName'].invalid">
+              {{ 'checkout.form.firstName.errorRequired' | t }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">
+              {{ 'checkout.form.lastName.label' | t }} *
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              [class.invalid]="f['lastName'].touched && f['lastName'].invalid"
+            />
+            <div class="error" *ngIf="f['lastName'].touched && f['lastName'].invalid">
+              {{ 'checkout.form.lastName.errorRequired' | t }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Email / Téléphone -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">
+              {{ 'checkout.form.email.label' | t }} *
+            </label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              [class.invalid]="f['email'].touched && f['email'].invalid"
+            />
+            <div class="error" *ngIf="f['email'].touched && f['email'].invalid">
+              {{ 'checkout.form.email.errorInvalid' | t }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">
+              {{ 'checkout.form.phone.label' | t }} *
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              [class.invalid]="f['phone'].touched && f['phone'].invalid"
+            />
+            <div class="error" *ngIf="f['phone'].touched && f['phone'].invalid">
+              {{ 'checkout.form.phone.errorRequired' | t }}
+            </div>
+          </div>
+        </div>
+
+        <h2>{{ 'checkout.shipping.title' | t }}</h2>
+
+        <!-- Rue -->
+        <div class="form-group">
+          <label for="street">
+            {{ 'checkout.form.street.label' | t }} *
+          </label>
+          <input
+            id="street"
+            type="text"
+            formControlName="street"
+            [class.invalid]="f['street'].touched && f['street'].invalid"
+          />
+          <div class="error" *ngIf="f['street'].touched && f['street'].invalid">
+            {{ 'checkout.form.street.errorRequired' | t }}
+          </div>
+        </div>
+
+        <!-- Code postal / Ville -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="postalCode">
+              {{ 'checkout.form.postalCode.label' | t }} *
+            </label>
+            <input
+              id="postalCode"
+              type="text"
+              formControlName="postalCode"
+              [class.invalid]="f['postalCode'].touched && f['postalCode'].invalid"
+            />
+            <div class="error" *ngIf="f['postalCode'].touched && f['postalCode'].invalid">
+              {{ 'checkout.form.postalCode.errorRequired' | t }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="city">
+              {{ 'checkout.form.city.label' | t }} *
+            </label>
+            <input
+              id="city"
+              type="text"
+              formControlName="city"
+              [class.invalid]="f['city'].touched && f['city'].invalid"
+            />
+            <div class="error" *ngIf="f['city'].touched && f['city'].invalid">
+              {{ 'checkout.form.city.errorRequired' | t }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Pays -->
+        <div class="form-group">
+          <label for="country">
+            {{ 'checkout.form.country.label' | t }} *
+          </label>
+          <input
+            id="country"
+            type="text"
+            formControlName="country"
+            [class.invalid]="f['country'].touched && f['country'].invalid"
+          />
+          <div class="error" *ngIf="f['country'].touched && f['country'].invalid">
+            {{ 'checkout.form.country.errorRequired' | t }}
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="notes">
+            {{ 'checkout.form.notes.label' | t }}
+          </label>
+          <textarea
+            id="notes"
+            rows="3"
+            formControlName="notes">
+          </textarea>
+        </div>
+
+        <!-- Erreur globale -->
+        <div *ngIf="error" class="alert alert-error">
+          {{ error }}
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          {{ loading ? ('checkout.form.submit.loading' | t) : ('checkout.form.submit.default' | t) }}
+        </button>
+      </form>
+    </div>
+
+    <!-- ===== RÉCAP PANIER ===== -->
+    <div class="checkout-summary-card">
+
+      <h2>{{ 'checkout.cart.title' | t }}</h2>
+
+      <div *ngIf="!cart.items.length">
+        {{ 'checkout.cart.empty' | t }}
+      </div>
+
+      <div *ngIf="cart.items.length > 0" class="summary-items">
+        <div class="summary-item" *ngFor="let item of cart.items">
+          <div class="summary-item-main">
+            <div class="summary-item-name">
+              {{ item.name }}
+            </div>
+            <div class="summary-item-qty">
+              {{ 'checkout.cart.quantityPrefix' | t }} {{ item.quantity }}
+              <!-- ex: "x 2" ou "Qty: 2" selon la langue -->
+            </div>
+          </div>
+          <div class="summary-item-price">
+            {{ item.lineTotal | currency:'EUR' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-total" *ngIf="cart.items.length > 0">
+        <span>{{ 'checkout.cart.totalLabel' | t }}</span>
+        <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
+      </div>
+
+      <button type="button" class="btn-link" (click)="backToCart()">
+        {{ 'checkout.cart.backToCart' | t }}
+      </button>
+    </div>
+
+  </div>
+</div>

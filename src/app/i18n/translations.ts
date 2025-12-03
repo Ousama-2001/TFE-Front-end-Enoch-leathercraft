@@ -268,6 +268,49 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'contact.info.email': 'Email : contact@enoch-leathercraft.shop',
     'contact.info.instagram': 'Instagram : @enoch.leathercraft',
 
+    // ===== CHECKOUT =====
+    'checkout.title': 'Finaliser ma commande',
+    'checkout.subtitle':
+      'Vérifiez votre panier et remplissez vos informations pour valider la commande.',
+
+    'checkout.customerInfo.title': 'Informations client',
+    'checkout.shipping.title': 'Adresse de livraison',
+
+    'checkout.form.firstName.label': 'Prénom',
+    'checkout.form.firstName.errorRequired': 'Prénom obligatoire.',
+
+    'checkout.form.lastName.label': 'Nom',
+    'checkout.form.lastName.errorRequired': 'Nom obligatoire.',
+
+    'checkout.form.email.label': 'Email',
+    'checkout.form.email.errorInvalid': 'Email valide obligatoire.',
+
+    'checkout.form.phone.label': 'Téléphone',
+    'checkout.form.phone.errorRequired': 'Téléphone obligatoire.',
+
+    'checkout.form.street.label': 'Rue et numéro',
+    'checkout.form.street.errorRequired': 'Adresse obligatoire.',
+
+    'checkout.form.postalCode.label': 'Code postal',
+    'checkout.form.postalCode.errorRequired': 'Code postal obligatoire.',
+
+    'checkout.form.city.label': 'Ville',
+    'checkout.form.city.errorRequired': 'Ville obligatoire.',
+
+    'checkout.form.country.label': 'Pays',
+    'checkout.form.country.errorRequired': 'Pays obligatoire.',
+
+    'checkout.form.notes.label': 'Commentaire / instructions (optionnel)',
+
+    'checkout.form.submit.loading': 'Validation en cours...',
+    'checkout.form.submit.default': 'Valider la commande',
+
+    'checkout.cart.title': 'Mon panier',
+    'checkout.cart.empty': 'Votre panier est vide.',
+    'checkout.cart.quantityPrefix': 'x',
+    'checkout.cart.totalLabel': 'Total',
+    'checkout.cart.backToCart': '← Retour au panier',
+
     // ===== FOOTER =====
     'footer.title': 'Enoch Leathercraft',
     'footer.description':
@@ -558,6 +601,49 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       'Enoch Leathercraft — Workshop based in Brussels.',
     'contact.info.email': 'Email: contact@enoch-leathercraft.shop',
     'contact.info.instagram': 'Instagram: @enoch.leathercraft',
+
+    // ===== CHECKOUT =====
+    'checkout.title': 'Finalize my order',
+    'checkout.subtitle':
+      'Review your cart and fill in your details to confirm your order.',
+
+    'checkout.customerInfo.title': 'Customer information',
+    'checkout.shipping.title': 'Shipping address',
+
+    'checkout.form.firstName.label': 'First name',
+    'checkout.form.firstName.errorRequired': 'First name is required.',
+
+    'checkout.form.lastName.label': 'Last name',
+    'checkout.form.lastName.errorRequired': 'Last name is required.',
+
+    'checkout.form.email.label': 'Email',
+    'checkout.form.email.errorInvalid': 'A valid email is required.',
+
+    'checkout.form.phone.label': 'Phone',
+    'checkout.form.phone.errorRequired': 'Phone number is required.',
+
+    'checkout.form.street.label': 'Street and number',
+    'checkout.form.street.errorRequired': 'Address is required.',
+
+    'checkout.form.postalCode.label': 'Postal code',
+    'checkout.form.postalCode.errorRequired': 'Postal code is required.',
+
+    'checkout.form.city.label': 'City',
+    'checkout.form.city.errorRequired': 'City is required.',
+
+    'checkout.form.country.label': 'Country',
+    'checkout.form.country.errorRequired': 'Country is required.',
+
+    'checkout.form.notes.label': 'Comment / instructions (optional)',
+
+    'checkout.form.submit.loading': 'Submitting...',
+    'checkout.form.submit.default': 'Confirm order',
+
+    'checkout.cart.title': 'My cart',
+    'checkout.cart.empty': 'Your cart is empty.',
+    'checkout.cart.quantityPrefix': 'x',
+    'checkout.cart.totalLabel': 'Total',
+    'checkout.cart.backToCart': '← Back to cart',
 
     // ===== FOOTER =====
     'footer.title': 'Enoch Leathercraft',

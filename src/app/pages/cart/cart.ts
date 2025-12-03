@@ -4,7 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 
 // Services
 import { CartService, CartItem } from '../../services/cart.service';
-import { OrderService } from '../../services/order.service';
 
 @Component({
   selector: 'app-cart',
@@ -20,7 +19,6 @@ export class CartComponent implements OnInit {
 
   constructor(
     public cart: CartService,
-    private orderService: OrderService,
     private router: Router
   ) {}
 
@@ -45,40 +43,22 @@ export class CartComponent implements OnInit {
   }
 
   remove(item: CartItem): void {
-    if(confirm('Voulez-vous retirer cet article ?')) {
+    if (confirm('Voulez-vous retirer cet article ?')) {
       this.cart.removeItem(item.productId).subscribe();
     }
   }
 
   clearCart(): void {
-    if(confirm('Voulez-vous vraiment vider tout le panier ?')) {
+    if (confirm('Voulez-vous vraiment vider tout le panier ?')) {
       this.cart.clear().subscribe();
     }
   }
 
-  // ---------------------------
-  //   VALIDATION DU CHECKOUT
-  // ---------------------------
-  checkout() {
-    this.validating = true;
-    this.error = '';
-
-    this.orderService.checkout().subscribe({
-      next: (order) => {
-        console.log('Commande réussie:', order);
-
-        // 🔥 IMPORTANT : rafraîchir le panier pour vider l’affichage
-        this.cart.loadCart().subscribe();
-
-        this.validating = false;
-
-        this.router.navigate(['/order-success', order.reference]);
-      },
-      error: (err) => {
-        console.error('Erreur checkout:', err);
-        this.error = "Erreur lors de la validation. Êtes-vous bien connecté ?";
-        this.validating = false;
-      }
-    });
+  /** 👉 Nouveau : aller vers la page de checkout */
+  goToCheckout(): void {
+    if (!this.cart.items.length) {
+      return;
+    }
+    this.router.navigate(['/checkout']);
   }
 }
