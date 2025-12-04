@@ -10,6 +10,7 @@ import {
   ProductReviewService,
   ProductReview,
 } from '../../services/product-review.service';
+import { WishlistService } from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -28,6 +29,10 @@ export class ProductDetailComponent implements OnInit {
   stockAvailable = 0;
   isOutOfStock = false;
   stockMessage = '';
+
+  // --- wishlist ---
+  isInWishlist = false;
+  wishlistLoading = false;
 
   // --- avis ---
   reviews: ProductReview[] = [];
@@ -59,7 +64,8 @@ export class ProductDetailComponent implements OnInit {
     private router: Router,
     private productService: ProductService,
     public cartService: CartService,
-    private reviewService: ProductReviewService
+    private reviewService: ProductReviewService,
+    private wishlistService: WishlistService
   ) {}
 
   ngOnInit(): void {
@@ -88,6 +94,11 @@ export class ProductDetailComponent implements OnInit {
 
         // avis
         this.loadReviews(id);
+
+        // wishlist
+        if (this.isLoggedIn) {
+          this.refreshWishlistStatus();
+        }
       },
       error: (err: unknown) => {
         console.error('Erreur chargement produit', err);
@@ -205,6 +216,58 @@ export class ProductDetailComponent implements OnInit {
         setTimeout(() => (this.addedMessage = ''), 2000);
       },
     });
+  }
+
+  // =================== WISHLIST ===================
+
+  private refreshWishlistStatus(): void {
+    if (!this.product || !this.product.id) return;
+    this.wishlistLoading = true;
+
+    this.wishlistService.get().subscribe({
+      next: (items) => {
+        this.isInWishlist = items.some(
+          (it: any) => it.product && it.product.id === this.product!.id
+        );
+        this.wishlistLoading = false;
+      },
+      error: (err) => {
+        console.error('Erreur chargement wishlist', err);
+        this.wishlistLoading = false;
+      },
+    });
+  }
+
+  toggleWishlist(): void {
+    if (!this.product || !this.product.id) return;
+
+    if (!this.isLoggedIn) {
+      // simple redirection vers login si pas connecté
+      this.router.navigate(['/login'], {
+        queryParams: { redirectTo: '/products/' + this.product.id },
+      });
+      return;
+    }
+
+    if (this.isInWishlist) {
+      this.wishlistService.remove(this.product.id).subscribe({
+        next: () => {
+          this.isInWishlist = false;
+        },
+        error: (err) => {
+          console.error('Erreur retrait wishlist', err);
+        },
+      });
+    } else {
+      this.wishlistService.add(this.product.id).subscribe({
+        next: () => {
+          this.isInWishlist = true;
+        },
+        error: (err) => {
+          console.error('Erreur ajout wishlist', err);
+        },
+      });
+    }
   }
 
   // =================== AVIS PRODUIT ===================

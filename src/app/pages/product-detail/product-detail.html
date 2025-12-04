@@ -23,6 +23,27 @@
         {{ product.price | currency: 'EUR' }}
       </p>
 
+      <!-- Ligne wishlist / info rapide -->
+      <div class="wishlist-row">
+        <button
+          type="button"
+          class="wishlist-btn"
+          [class.active]="isInWishlist"
+          (click)="toggleWishlist()"
+        >
+          <span class="icon">
+            {{ isInWishlist ? '❤️' : '🤍' }}
+          </span>
+          <span class="label">
+            {{ isInWishlist ? 'Retirer de ma wishlist' : 'Ajouter à ma wishlist' }}
+          </span>
+        </button>
+
+        <span class="wishlist-hint" *ngIf="!isLoggedIn">
+          (Vous devez être connecté pour utiliser la wishlist)
+        </span>
+      </div>
+
       <div class="meta">
         <p *ngIf="product.material">
           <strong>Matériau :</strong> {{ product.material }}

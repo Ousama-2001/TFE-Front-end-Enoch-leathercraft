@@ -1,12 +1,21 @@
 // src/app/app.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { CartService, CartResponse } from './services/cart.service';
 import { AuthService } from './services/auth.service';
 import { Observable } from 'rxjs';
 import { TranslatePipe } from './pipes/translate.pipe';
 import { LanguageService } from './services/language.service';
+import {
+  WishlistService,
+  WishlistItem,
+} from './services/wishlist.service';
 
 @Component({
   selector: 'app-root',
@@ -16,13 +25,12 @@ import { LanguageService } from './services/language.service';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    TranslatePipe   // 👉 important pour pouvoir utiliser | t dans le template
+    TranslatePipe, // pour | t dans le template
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
 })
 export class AppComponent implements OnInit {
-
   title = 'Enoch Leathercraft';
 
   miniCartOpen = false;
@@ -31,30 +39,46 @@ export class AppComponent implements OnInit {
 
   currentLang: 'fr' | 'en' = 'fr';
 
+  // 🔥 compteur wishlist pour le badge dans le header
+  wishlistCount = 0;
+
   constructor(
     private cartService: CartService,
     private authService: AuthService,
     private router: Router,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private wishlistService: WishlistService
   ) {
     this.cart$ = this.cartService.cart$;
   }
 
   ngOnInit(): void {
     // langue actuelle
-    this.languageService.currentLang$.subscribe(lang => {
+    this.languageService.currentLang$.subscribe((lang) => {
       this.currentLang = lang;
     });
 
+    const isAuth = this.authService.isAuthenticated();
+
     // Charge le panier si l'utilisateur est connecté
-    if (this.authService.isAuthenticated()) {
+    if (isAuth) {
       this.cartService.loadCart().subscribe({
         next: (cart: CartResponse) => {
           this.cartQuantity = cart.totalQuantity;
         },
         error: () => {
           // on ignore les 403 éventuels
-        }
+        },
+      });
+
+      // 🔥 Charge aussi la wishlist pour le badge
+      this.wishlistService.get().subscribe({
+        next: (items: WishlistItem[]) => {
+          this.wishlistCount = items.length;
+        },
+        error: () => {
+          // on ignore les erreurs ici
+        },
       });
     }
 
@@ -74,6 +98,11 @@ export class AppComponent implements OnInit {
 
   goToCart(): void {
     this.router.navigate(['/cart']);
+  }
+
+  // 🔥 nouvelle méthode pour le bouton cœur dans le header
+  goToWishlist(): void {
+    this.router.navigate(['/wishlist']);
   }
 
   logout(): void {

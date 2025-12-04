@@ -4,7 +4,8 @@
   flex-direction: column;
   background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
   color: #e2e8f0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+  sans-serif;
 }
 
 /* ===== TOPBAR / NAVBAR ===== */
@@ -91,7 +92,7 @@
 /* Soulignement fluide */
 
 .nav-item > a::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 12px;
   right: 12px;
@@ -129,7 +130,6 @@
 /* ===== DROPDOWN ===== */
 
 .has-dropdown {
-  /* rien de spécial ici, c’est la classe pour le hover */
 }
 
 .nav-dropdown {
@@ -184,20 +184,154 @@
   color: #f9fafb;
 }
 
-/* affichage au survol de l'item */
-
 .has-dropdown:hover .nav-dropdown {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
 
-/* ===== RIGHT SIDE (cart + account) ===== */
+/* ===== RIGHT SIDE (lang + wishlist + cart + account) ===== */
 
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* ===== LANG SWITCHER ===== */
+
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-label {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* Conteneur du toggle */
+.lang-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 90px;
+  height: 32px;
+  border-radius: 999px;
+  padding: 3px;
+  background: radial-gradient(circle at top left, #4b2d1b, #1a120d);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 8px 18px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+/* Le “curseur” qui glisse */
+.lang-toggle-indicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5e4c3, #d8b48a);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease-out;
+  pointer-events: none;
+}
+
+.lang-toggle-indicator.right {
+  transform: translateX(100%);
+}
+
+/* Boutons FR / EN */
+.lang-option {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  color: #f5f5f5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.15s ease-out,
+    transform 0.1s ease-out;
+}
+
+.lang-option .lang-code {
+  mix-blend-mode: difference;
+}
+
+.lang-option.active {
+  color: #3a2517;
+  transform: translateY(-1px);
+}
+
+.lang-option:not(.active):hover {
+  transform: translateY(-1px);
+  color: #ffffff;
+}
+
+/* ===== WISHLIST BUTTON (header) ===== */
+
+.wishlist-wrapper {
+  position: relative;
+}
+
+.wishlist-button {
+  position: relative;
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  border-radius: 999px;
+  background: radial-gradient(circle at top left, #1f2937, #0b0f19);
+  color: #fecaca;
+  padding: 0.35rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease,
+    background 0.15s ease;
+}
+
+.wishlist-icon {
+  font-size: 1.05rem;
+}
+
+.wishlist-button:hover {
+  border-color: #f97373;
+  background: radial-gradient(circle at top, #b91c1c, #111827);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.6);
+  transform: translateY(-1px);
+}
+
+.wishlist-badge {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #f97373;
+  color: #111827;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== CART BUTTON ===== */
@@ -405,125 +539,4 @@
 .page {
   flex: 1;
   padding: 1.5rem;
-}
-.lang-switcher {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-  gap: 2px;
-  margin-right: 1rem;
-}
-
-.lang-btn {
-  border: none;
-  background: transparent;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  color: #f5f5f5;
-  opacity: 0.7;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease,
-  transform 0.1s ease;
-}
-
-.lang-btn:hover {
-  opacity: 1;
-  transform: translateY(-1px);
-}
-
-.lang-btn.active {
-  background: #f5f5f5;
-  color: #111;
-  opacity: 1;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
-}
-/* ====== LANG SWITCHER ====== */
-
-.lang-switcher {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.lang-label {
-  font-size: 1rem;
-  opacity: 0.8;
-}
-
-/* Conteneur du toggle */
-.lang-toggle {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  width: 90px;
-  height: 32px;
-  border-radius: 999px;
-  padding: 3px;
-  background: radial-gradient(circle at top left, #4b2d1b, #1a120d);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 8px 18px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-}
-
-/* Le “curseur” qui glisse */
-.lang-toggle-indicator {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc(50% - 3px);
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f5e4c3, #d8b48a);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-    0 4px 10px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s ease-out;
-  pointer-events: none;
-}
-
-.lang-toggle-indicator.right {
-  transform: translateX(100%);
-}
-
-/* Boutons FR / EN */
-.lang-option {
-  position: relative;
-  z-index: 1;
-  border: none;
-  background: transparent;
-  color: #f5f5f5;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    color 0.15s ease-out,
-    transform 0.1s ease-out;
-}
-
-.lang-option .lang-code {
-  mix-blend-mode: difference; /* petit effet sur fond clair */
-}
-
-.lang-option.active {
-  color: #3a2517;
-  transform: translateY(-1px);
-}
-
-.lang-option:not(.active):hover {
-  transform: translateY(-1px);
-  color: #ffffff;
 }

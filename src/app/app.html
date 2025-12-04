@@ -1,9 +1,7 @@
 <!-- src/app/app.html -->
 <div class="app-shell">
-
   <!-- ======================= NAVBAR ======================= -->
   <header class="topbar" *ngIf="!isAuthPage()">
-
     <!-- LOGO + NAVIGATION -->
     <div class="topbar-left">
       <a routerLink="/home" class="brand">
@@ -17,7 +15,6 @@
 
       <!-- NAVIGATION PRINCIPALE -->
       <nav class="main-nav">
-
         <!-- Accueil -->
         <div class="nav-item">
           <a
@@ -47,13 +44,19 @@
             <div class="dropdown-links">
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'homme', category: 'sacs-sacoches' }"
+                [queryParams]="{
+                  segment: 'homme',
+                  category: 'sacs-sacoches'
+                }"
               >
                 Sacs &amp; sacoches
               </a>
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'homme', category: 'ceintures' }"
+                [queryParams]="{
+                  segment: 'homme',
+                  category: 'ceintures'
+                }"
               >
                 Ceintures
               </a>
@@ -79,13 +82,19 @@
             <div class="dropdown-links">
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'femme', category: 'sacs-sacoches' }"
+                [queryParams]="{
+                  segment: 'femme',
+                  category: 'sacs-sacoches'
+                }"
               >
                 Sacs &amp; sacoches
               </a>
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'femme', category: 'ceintures' }"
+                [queryParams]="{
+                  segment: 'femme',
+                  category: 'ceintures'
+                }"
               >
                 Ceintures
               </a>
@@ -111,19 +120,28 @@
             <div class="dropdown-links">
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'petite-maroquinerie', category: 'portefeuilles' }"
+                [queryParams]="{
+                  segment: 'petite-maroquinerie',
+                  category: 'portefeuilles'
+                }"
               >
                 Portefeuilles
               </a>
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'petite-maroquinerie', category: 'portes-cartes' }"
+                [queryParams]="{
+                  segment: 'petite-maroquinerie',
+                  category: 'portes-cartes'
+                }"
               >
                 Portes-cartes
               </a>
               <a
                 [routerLink]="['/products']"
-                [queryParams]="{ segment: 'petite-maroquinerie', category: 'sets-de-table' }"
+                [queryParams]="{
+                  segment: 'petite-maroquinerie',
+                  category: 'sets-de-table'
+                }"
               >
                 Sets de table
               </a>
@@ -144,17 +162,18 @@
             {{ 'nav.contact' | t }}
           </a>
         </div>
-
       </nav>
     </div>
 
     <!-- BOUTONS À DROITE -->
     <div class="topbar-right">
-
-      <!-- Sélecteur de langue stylé -->
+      <!-- Sélecteur de langue -->
       <div class="lang-switcher">
         <div class="lang-toggle">
-          <div class="lang-toggle-indicator" [class.right]="currentLang === 'en'"></div>
+          <div
+            class="lang-toggle-indicator"
+            [class.right]="currentLang === 'en'"
+          ></div>
 
           <button
             type="button"
@@ -175,9 +194,22 @@
           </button>
         </div>
 
-        <span class="lang-label">
-    🌍
-  </span>
+        <span class="lang-label">🌍</span>
+      </div>
+
+      <!-- 🔥 WISHLIST ICON (juste avant le panier) -->
+      <div class="wishlist-wrapper">
+        <button
+          class="wishlist-button"
+          type="button"
+          (click)="goToWishlist()"
+          aria-label="Voir ma wishlist"
+        >
+          <span class="wishlist-icon">♥</span>
+          <span class="wishlist-badge" *ngIf="wishlistCount > 0">
+            {{ wishlistCount }}
+          </span>
+        </button>
       </div>
 
       <!-- MINI PANIER -->
@@ -186,7 +218,6 @@
         (mouseenter)="miniCartOpen = true"
         (mouseleave)="miniCartOpen = false"
       >
-
         <!-- BOUTON PANIER -->
         <button class="cart-button" (click)="goToCart()">
           <span class="cart-icon">🧺</span>
@@ -197,13 +228,14 @@
         </button>
 
         <!-- POPOVER DU PANIER -->
-        <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
-
+        <div
+          class="cart-popover"
+          *ngIf="miniCartOpen && (cart$ | async) as cart"
+        >
           <h3 class="cart-popover-title">{{ 'cart.title' | t }}</h3>
 
           <ng-container *ngIf="cart && cart.items.length > 0; else emptyCart">
             <div class="cart-items">
-
               <div class="cart-item" *ngFor="let item of cart.items">
                 <div class="cart-item-left">
                   <div class="cart-thumb" *ngIf="item.imageUrl">
@@ -213,13 +245,14 @@
                   <div class="cart-info">
                     <div class="name">{{ item.name }}</div>
                     <div class="meta">
-                      x{{ item.quantity }} • {{ item.unitPrice | currency:'EUR' }}
+                      x{{ item.quantity }} •
+                      {{ item.unitPrice | currency : 'EUR' }}
                     </div>
                   </div>
                 </div>
 
                 <div class="cart-item-total">
-                  {{ item.lineTotal | currency:'EUR' }}
+                  {{ item.lineTotal | currency : 'EUR' }}
                 </div>
               </div>
             </div>
@@ -229,7 +262,9 @@
                 <span>
                   {{ cart.totalQuantity }} {{ 'cart.itemsCount' | t }}
                 </span>
-                <span class="total">{{ cart.totalAmount | currency:'EUR' }}</span>
+                <span class="total">
+                  {{ cart.totalAmount | currency : 'EUR' }}
+                </span>
               </div>
 
               <button class="view-cart-btn" (click)="goToCart()">
@@ -241,9 +276,7 @@
           <ng-template #emptyCart>
             <p class="empty-text">{{ 'cart.empty' | t }}</p>
           </ng-template>
-
         </div>
-
       </div>
 
       <!-- MON COMPTE -->
@@ -255,7 +288,6 @@
       <button class="logout-button" (click)="logout()">
         {{ 'nav.logout' | t }}
       </button>
-
     </div>
   </header>
 

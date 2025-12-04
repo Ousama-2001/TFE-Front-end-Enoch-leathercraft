@@ -1,9 +1,14 @@
+// src/app/pages/products/products.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
 import { FormsModule } from '@angular/forms';
+import {
+  WishlistService,
+  WishlistItem,
+} from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-products',
@@ -13,7 +18,6 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./products.scss'],
 })
 export class ProductsComponent implements OnInit {
-
   products: Product[] = [];
   filteredProducts: Product[] = [];
   loading = false;
@@ -32,8 +36,10 @@ export class ProductsComponent implements OnInit {
   priceMax: number | null = null;
   sortBy = '';
 
-  // Wishlist locale
-  favorites = new Set<number>();
+  // Wishlist (côté API)
+  wishlistProductIds = new Set<number>();
+  wishlistLoading = false;
+  isLoggedIn = false;
 
   // Skeleton
   skeletonItems = Array(8).fill(0);
@@ -41,19 +47,25 @@ export class ProductsComponent implements OnInit {
   constructor(
     private productService: ProductService,
     public cartService: CartService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private wishlistService: WishlistService
   ) {}
 
   ngOnInit(): void {
     this.loading = true;
 
-    // récupération éventuelle des filtres depuis l'URL
-    this.route.queryParams.subscribe(params => {
+    // Vérifie si l'utilisateur est connecté (même clé que ton interceptor)
+    this.isLoggedIn = !!localStorage.getItem('auth_token');
+
+    // Récupération des filtres depuis l'URL
+    this.route.queryParams.subscribe((params) => {
       this.selectedSegment = params['segment'] || '';
       this.selectedCategory = params['category'] || '';
       this.searchTerm = params['search'] || '';
     });
 
+    // Chargement des produits
     this.productService.getAll().subscribe({
       next: (list) => {
         this.products = list;
@@ -67,7 +79,31 @@ export class ProductsComponent implements OnInit {
       },
     });
 
+    // Chargement du panier
     this.cartService.loadCart().subscribe();
+
+    // Chargement de la wishlist si connecté
+    if (this.isLoggedIn) {
+      this.loadWishlist();
+    }
+  }
+
+  private loadWishlist(): void {
+    this.wishlistLoading = true;
+    this.wishlistService.get().subscribe({
+      next: (items: WishlistItem[]) => {
+        this.wishlistProductIds = new Set(
+          items
+            .filter((it) => !!it.product && !!it.product.id)
+            .map((it) => it.product.id)
+        );
+        this.wishlistLoading = false;
+      },
+      error: (err) => {
+        console.error('Erreur chargement wishlist', err);
+        this.wishlistLoading = false;
+      },
+    });
   }
 
   // ====== FILTRES / TRI ======
@@ -78,36 +114,41 @@ export class ProductsComponent implements OnInit {
     // recherche plein texte
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
-      result = result.filter(p =>
-        (p.name && p.name.toLowerCase().includes(term)) ||
-        (p.description && p.description.toLowerCase().includes(term))
+      result = result.filter(
+        (p) =>
+          (p.name && p.name.toLowerCase().includes(term)) ||
+          (p.description && p.description.toLowerCase().includes(term))
       );
     }
 
     // segment (homme/femme/mixte)
     if (this.selectedSegment) {
-      result = result.filter(p => (p as any).segment === this.selectedSegment);
+      result = result.filter(
+        (p) => (p as any).segment === this.selectedSegment
+      );
     }
 
     // catégorie (sacs, ceintures, etc.)
     if (this.selectedCategory) {
-      result = result.filter(p => (p as any).category === this.selectedCategory);
+      result = result.filter(
+        (p) => (p as any).category === this.selectedCategory
+      );
     }
 
     // matériau
     if (this.selectedMaterial) {
       const mat = this.selectedMaterial.toLowerCase();
-      result = result.filter(p =>
-        p.material && p.material.toLowerCase().includes(mat)
+      result = result.filter(
+        (p) => p.material && p.material.toLowerCase().includes(mat)
       );
     }
 
     // prix min / max
     if (this.priceMin != null) {
-      result = result.filter(p => p.price >= this.priceMin!);
+      result = result.filter((p) => p.price >= this.priceMin!);
     }
     if (this.priceMax != null) {
-      result = result.filter(p => p.price <= this.priceMax!);
+      result = result.filter((p) => p.price <= this.priceMax!);
     }
 
     // tri
@@ -119,7 +160,7 @@ export class ProductsComponent implements OnInit {
         result.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
-        // ici j'utilise l'id comme proxy "nouveauté" (plus grand = plus récent)
+        // approximation de nouveauté par id
         result.sort((a, b) => (b.id || 0) - (a.id || 0));
         break;
     }
@@ -159,7 +200,9 @@ export class ProductsComponent implements OnInit {
 
   getQuantity(p: Product): number {
     if (!p.id) return 0;
-    const item = this.cartService.items.find((i: CartItem) => i.productId === p.id);
+    const item = this.cartService.items.find(
+      (i: CartItem) => i.productId === p.id
+    );
     return item ? item.quantity : 0;
   }
 
@@ -196,18 +239,34 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  // ====== FAVORIS (local uniquement) ======
+  // ====== WISHLIST ======
+
+  isFavorite(p: Product): boolean {
+    return !!p.id && this.wishlistProductIds.has(p.id);
+  }
 
   toggleFavorite(p: Product): void {
     if (!p.id) return;
-    if (this.favorites.has(p.id)) {
-      this.favorites.delete(p.id);
-    } else {
-      this.favorites.add(p.id);
-    }
-  }
 
-  isFavorite(p: Product): boolean {
-    return !!p.id && this.favorites.has(p.id);
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login'], {
+        queryParams: { redirectTo: '/products' },
+      });
+      return;
+    }
+
+    if (this.isFavorite(p)) {
+      this.wishlistService.remove(p.id).subscribe({
+        next: () => this.wishlistProductIds.delete(p.id!),
+        error: (err) =>
+          console.error('Erreur retrait wishlist pour produit', p.id, err),
+      });
+    } else {
+      this.wishlistService.add(p.id).subscribe({
+        next: () => this.wishlistProductIds.add(p.id!),
+        error: (err) =>
+          console.error('Erreur ajout wishlist pour produit', p.id, err),
+      });
+    }
   }
 }

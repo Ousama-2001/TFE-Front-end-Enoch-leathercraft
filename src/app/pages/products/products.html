@@ -1,3 +1,4 @@
+<!-- src/app/pages/products/products.html -->
 <div class="products-page">
 
   <!-- ========= HEADER + SEARCH ========= -->
@@ -119,8 +120,8 @@
           <div class="product-image">
             <img
               [src]="p.imageUrls && p.imageUrls.length > 0
-                    ? ('http://localhost:8080' + p.imageUrls[0])
-                    : 'assets/img/products/placeholder-bag.jpg'"
+                      ? ('http://localhost:8080' + p.imageUrls[0])
+                      : 'assets/img/products/placeholder-bag.jpg'"
               [alt]="p.name"
             />
             <button
@@ -168,8 +169,7 @@
                   class="btn-icon btn-cart"
                   (click)="increase(p)"
                   [disabled]="isAddDisabled(p)"
-                  aria-label="Ajouter au panier"
-                >
+                  aria-label="Ajouter au panier">
                   🛒
                 </button>
               </ng-container>
@@ -182,8 +182,7 @@
                   <button
                     type="button"
                     (click)="increase(p)"
-                    [disabled]="isMaxQuantityReached(p)"
-                  >
+                    [disabled]="isMaxQuantityReached(p)">
                     +
                   </button>
                 </div>
@@ -192,8 +191,7 @@
               <a
                 class="btn-icon btn-eye"
                 [routerLink]="['/products', p.id]"
-                aria-label="Voir le produit"
-              >
+                aria-label="Voir le produit">
                 👁️
               </a>
             </div>
@@ -211,8 +209,7 @@
       <button
         class="page-btn"
         [disabled]="page === 1"
-        (click)="changePage(page - 1)"
-      >
+        (click)="changePage(page - 1)">
         ← Précédent
       </button>
 
@@ -223,8 +220,7 @@
       <button
         class="page-btn"
         [disabled]="page === totalPages"
-        (click)="changePage(page + 1)"
-      >
+        (click)="changePage(page + 1)">
         Suivant →
       </button>
     </div>

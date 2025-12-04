@@ -1,0 +1,80 @@
+<div class="wishlist-page">
+  <div class="wishlist-inner">
+
+    <!-- HEADER -->
+    <div class="wishlist-header">
+      <h1>Ma wishlist</h1>
+      <p class="subtitle">
+        Retrouvez ici les pièces que vous avez ajoutées à vos favoris.
+      </p>
+    </div>
+
+    <!-- Chargement -->
+    <div *ngIf="loading">
+      Chargement de votre wishlist...
+    </div>
+
+    <!-- Erreur -->
+    <div *ngIf="!loading && error" class="wishlist-empty">
+      {{ error }}
+    </div>
+
+    <!-- État vide -->
+    <div
+      *ngIf="!loading && !error && items.length === 0"
+      class="wishlist-empty"
+    >
+      Votre wishlist est vide.
+      <a routerLink="/products">Voir les produits</a>
+    </div>
+
+    <!-- LISTE DES PRODUITS -->
+    <div
+      class="wishlist-grid"
+      *ngIf="!loading && !error && items.length > 0"
+    >
+      <article
+        class="wishlist-card"
+        *ngFor="let w of items"
+      >
+        <!-- IMAGE (même logique que products, mais via méthode TS) -->
+        <div class="wishlist-card-image">
+          <img
+            [src]="getProductImageUrl(w)"
+            [alt]="w.product.name"
+          />
+        </div>
+
+        <!-- CONTENU -->
+        <div class="wishlist-card-body">
+          <h3 class="wishlist-product-name">
+            {{ w.product.name }}
+          </h3>
+
+          <p class="wishlist-product-price">
+            {{ w.product.price | currency : 'EUR' }}
+          </p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="wishlist-card-footer">
+          <button
+            type="button"
+            class="wishlist-remove-btn"
+            (click)="remove(w.product.id)"
+          >
+            Retirer
+          </button>
+
+          <button
+            type="button"
+            class="wishlist-add-cart-btn"
+            (click)="addToCart(w)"
+          >
+            Ajouter au panier
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+</div>
