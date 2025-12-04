@@ -6,7 +6,7 @@ import { AdminDashboardComponent } from './pages/admin/admin-dashboard';
 import { AdminGuard } from './guards/admin-guard';
 import { OrderSuccessComponent } from './pages/order-sucess/order-sucess';
 import { superAdminGuard } from './guards/super-admin.guard';
-import {CheckoutComponent} from './pages/checkout/checkout';
+import { CheckoutComponent } from './pages/checkout/checkout';
 
 export const routes: Routes = [
 
@@ -42,7 +42,7 @@ export const routes: Routes = [
   // --- Page de modération des avis (admin + super admin) ---
   {
     path: 'admin/reviews',
-    canActivate: [AdminGuard],          // ton guard admin actuel (ADMIN + SUPER_ADMIN)
+    canActivate: [AdminGuard],
     loadComponent: () =>
       import('./pages/admin-reviews/admin-reviews').then(
         (m) => m.AdminReviewsPageComponent
@@ -64,8 +64,8 @@ export const routes: Routes = [
       import('./pages/cart/cart')
         .then(m => m.CartComponent),
   },
-  { path: 'checkout', component: CheckoutComponent },
 
+  { path: 'checkout', component: CheckoutComponent },
 
   // --- Page profil / compte ---
   {
@@ -75,7 +75,7 @@ export const routes: Routes = [
         .then(m => m.AccountPageComponent),
   },
 
-  // --- ✅ Commandes client (liste + détail) ---
+  // --- Commandes client ---
   {
     path: 'my-orders',
     loadComponent: () =>
@@ -119,6 +119,16 @@ export const routes: Routes = [
     path: 'contact',
     loadComponent: () =>
       import('./pages/contact/contact').then(m => m.ContactComponent),
+  },
+  {
+    path: 'terms',
+    loadComponent: () =>
+      import('./pages/terms/terms').then(m => m.TermsComponent),
+  },
+  {
+    path: 'privacy',
+    loadComponent: () =>
+      import('./pages/privacy/privacy').then(m => m.PrivacyComponent),
   },
 
   // --- Redirections ---

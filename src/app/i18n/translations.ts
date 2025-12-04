@@ -106,11 +106,23 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ===== COMPTE / ACCOUNT =====
     'account.title': 'Mon compte',
+
+    'account.tabs.overview': 'Vue d’ensemble',
     'account.tabs.profile': '👤 Profil',
     'account.tabs.address': '📍 Adresse',
     'account.tabs.orders': '📦 Commandes',
     'account.tabs.security': '🔒 Sécurité',
 
+    // OVERVIEW
+    'account.overview.totalOrders': 'Commandes',
+    'account.overview.totalSpent': 'Total dépensé',
+    'account.overview.lastOrder': 'Dernière commande',
+    'account.overview.profileShort': 'Profil',
+    'account.overview.addressShort': 'Adresse principale',
+
+    'account.address.missing': 'Aucune adresse enregistrée',
+
+    // PROFIL
     'account.profile.title': 'Informations personnelles',
     'account.profile.firstName': 'Prénom',
     'account.profile.lastName': 'Nom',
@@ -119,6 +131,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.profile.save': 'Mettre à jour',
     'account.profile.saving': '...Enregistrement',
 
+    // ADRESSE
     'account.address.title': 'Adresse de livraison',
     'account.address.address': 'Adresse',
     'account.address.postalCode': 'Code postal',
@@ -127,6 +140,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.address.save': 'Mettre à jour',
     'account.address.saving': '...Enregistrement',
 
+    // COMMANDES
     'account.orders.title': 'Mes commandes',
     'account.orders.loading': 'Chargement...',
     'account.orders.ref': 'Réf',
@@ -135,6 +149,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.orders.status': 'Statut',
     'account.orders.empty': 'Aucune commande.',
 
+    // SÉCURITÉ
     'account.security.title': 'Changer le mot de passe',
     'account.security.oldPassword': 'Ancien mot de passe',
     'account.security.newPassword': 'Nouveau mot de passe',
@@ -243,7 +258,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       "Qu'avez-vous pensé de la qualité, du design...",
     'reviews.form.submit': 'Publier mon avis',
     'reviews.form.submitting': 'Envoi...',
-    'reviews.form.error': 'Une erreur est survenue lors de l’envoi de votre avis.',
+    'reviews.form.error':
+      'Une erreur est survenue lors de l’envoi de votre avis.',
     'reviews.form.success': 'Merci, votre avis a bien été publié.',
 
     'reviews.rating.5': '★★★★★ - Excellent',
@@ -440,11 +456,23 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     // ===== ACCOUNT =====
     'account.title': 'My account',
+
+    'account.tabs.overview': 'Overview',
     'account.tabs.profile': '👤 Profile',
     'account.tabs.address': '📍 Address',
     'account.tabs.orders': '📦 Orders',
     'account.tabs.security': '🔒 Security',
 
+    // OVERVIEW
+    'account.overview.totalOrders': 'Orders',
+    'account.overview.totalSpent': 'Total spent',
+    'account.overview.lastOrder': 'Last order',
+    'account.overview.profileShort': 'Profile',
+    'account.overview.addressShort': 'Main address',
+
+    'account.address.missing': 'No address saved yet',
+
+    // PROFILE
     'account.profile.title': 'Personal information',
     'account.profile.firstName': 'First name',
     'account.profile.lastName': 'Last name',
@@ -453,6 +481,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.profile.save': 'Update',
     'account.profile.saving': '...Saving',
 
+    // ADDRESS
     'account.address.title': 'Shipping address',
     'account.address.address': 'Address',
     'account.address.postalCode': 'Postal code',
@@ -461,6 +490,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.address.save': 'Update',
     'account.address.saving': '...Saving',
 
+    // ORDERS
     'account.orders.title': 'My orders',
     'account.orders.loading': 'Loading...',
     'account.orders.ref': 'Ref',
@@ -469,6 +499,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.orders.status': 'Status',
     'account.orders.empty': 'No orders yet.',
 
+    // SECURITY
     'account.security.title': 'Change password',
     'account.security.oldPassword': 'Current password',
     'account.security.newPassword': 'New password',
@@ -577,7 +608,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
       'What did you think about the quality, design...',
     'reviews.form.submit': 'Publish my review',
     'reviews.form.submitting': 'Sending...',
-    'reviews.form.error': 'An error occurred while submitting your review.',
+    'reviews.form.error':
+      'An error occurred while submitting your review.',
     'reviews.form.success': 'Thank you, your review has been published.',
 
     'reviews.rating.5': '★★★★★ - Excellent',

@@ -47,9 +47,14 @@ export class AccountService {
 
   // -------- SÉCURITÉ : CHANGEMENT DE MOT DE PASSE --------
   changePassword(payload: { oldPassword: string; newPassword: string }): Observable<string> {
-    // ⚠️ ici on précise bien que la réponse est du TEXTE
     return this.http.post(`${this.api}/me/change-password`, payload, {
       responseType: 'text'
     });
   }
+
+  // -------- SUPPRESSION COMPTE --------
+  deleteMyAccount() {
+    return this.http.delete('/api/me');
+  }
+
 }

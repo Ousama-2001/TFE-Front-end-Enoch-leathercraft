@@ -4,20 +4,20 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AccountService, Profile, UserOrder } from '../../services/account.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import {TranslatePipe} from '../../pipes/translate.pipe';
+import { Router } from '@angular/router';
 
-type AccountTab = 'profile' | 'address' | 'orders' | 'security';
+type AccountTab = 'overview' | 'profile' | 'address' | 'orders' | 'security';
 
 @Component({
   selector: 'app-account-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe, TranslatePipe],
+  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
   templateUrl: './account-page.html',
   styleUrls: ['./account-page.scss']
 })
 export class AccountPageComponent implements OnInit {
 
-  activeTab: AccountTab = 'profile';
+  activeTab: AccountTab = 'overview';
 
   profile: Profile = {
     firstName: '',
@@ -31,6 +31,7 @@ export class AccountPageComponent implements OnInit {
   };
 
   myOrders: UserOrder[] = [];
+  totalSpent = 0; // ✅ calculé côté TS
 
   loadingProfile = false;
   loadingOrders = false;
@@ -44,7 +45,10 @@ export class AccountPageComponent implements OnInit {
   newPassword = '';
   confirmPassword = '';
 
-  constructor(private accountService: AccountService) {}
+  constructor(
+    private accountService: AccountService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadProfile();
@@ -96,6 +100,7 @@ export class AccountPageComponent implements OnInit {
     this.accountService.getMyOrders().subscribe({
       next: (orders) => {
         this.myOrders = orders;
+        this.computeTotalSpent();
         this.loadingOrders = false;
       },
       error: () => {
@@ -103,6 +108,10 @@ export class AccountPageComponent implements OnInit {
         this.loadingOrders = false;
       }
     });
+  }
+
+  private computeTotalSpent(): void {
+    this.totalSpent = this.myOrders.reduce((sum, o) => sum + o.totalAmount, 0);
   }
 
   // -------- SÉCURITÉ : CHANGEMENT DE MOT DE PASSE --------
@@ -127,7 +136,6 @@ export class AccountPageComponent implements OnInit {
       newPassword: this.newPassword
     }).subscribe({
       next: (msg: string) => {
-        // msg = "" ou "OK" ou ce que renvoie le back
         this.success = msg && msg.trim().length ? msg : 'Mot de passe mis à jour.';
         this.oldPassword = '';
         this.newPassword = '';
@@ -135,13 +143,31 @@ export class AccountPageComponent implements OnInit {
         this.changingPassword = false;
       },
       error: (err: HttpErrorResponse) => {
-        // ici on évite d’afficher le SyntaxError
         if (typeof err.error === 'string') {
-          this.error = err.error;              // ex : "Ancien mot de passe incorrect"
+          this.error = err.error;
         } else {
           this.error = 'Erreur lors du changement de mot de passe.';
         }
         this.changingPassword = false;
+      }
+    });
+  }
+
+  // -------- SUPPRESSION COMPTE --------
+  deleteAccount(): void {
+    if (!confirm('Voulez-vous vraiment supprimer votre compte ?')) {
+      return;
+    }
+
+    this.accountService.deleteMyAccount().subscribe({
+      next: () => {
+        // On retire le token
+        localStorage.removeItem('auth_token');
+        // Redirection vers /login
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.error = 'Impossible de supprimer le compte.';
       }
     });
   }
