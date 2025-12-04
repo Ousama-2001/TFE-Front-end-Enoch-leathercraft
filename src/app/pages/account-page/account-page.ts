@@ -31,7 +31,7 @@ export class AccountPageComponent implements OnInit {
   };
 
   myOrders: UserOrder[] = [];
-  totalSpent = 0; // ✅ calculé côté TS
+  totalSpent = 0;
 
   loadingProfile = false;
   loadingOrders = false;
@@ -61,7 +61,6 @@ export class AccountPageComponent implements OnInit {
     this.success = '';
   }
 
-  // -------- PROFIL --------
   loadProfile(): void {
     this.loadingProfile = true;
     this.accountService.getProfile().subscribe({
@@ -94,7 +93,6 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
-  // -------- COMMANDES --------
   loadOrders(): void {
     this.loadingOrders = true;
     this.accountService.getMyOrders().subscribe({
@@ -114,7 +112,6 @@ export class AccountPageComponent implements OnInit {
     this.totalSpent = this.myOrders.reduce((sum, o) => sum + o.totalAmount, 0);
   }
 
-  // -------- SÉCURITÉ : CHANGEMENT DE MOT DE PASSE --------
   submitPasswordChange(): void {
     this.error = '';
     this.success = '';
@@ -153,7 +150,6 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
-  // -------- SUPPRESSION COMPTE --------
   deleteAccount(): void {
     if (!confirm('Voulez-vous vraiment supprimer votre compte ?')) {
       return;
@@ -161,9 +157,7 @@ export class AccountPageComponent implements OnInit {
 
     this.accountService.deleteMyAccount().subscribe({
       next: () => {
-        // On retire le token
         localStorage.removeItem('auth_token');
-        // Redirection vers /login
         this.router.navigate(['/login']);
       },
       error: () => {

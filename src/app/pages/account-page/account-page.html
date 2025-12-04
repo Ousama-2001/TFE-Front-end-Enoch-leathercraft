@@ -1,6 +1,14 @@
 <div class="account">
 
-  <h1>Mon compte</h1>
+  <!-- HEADER -->
+  <div class="account-header">
+    <div>
+      <h1>Mon compte</h1>
+      <p class="subtitle">
+        Gérez vos informations personnelles, vos adresses, vos commandes et la sécurité de votre compte.
+      </p>
+    </div>
+  </div>
 
   <!-- TABS -->
   <div class="tabs">
@@ -25,183 +33,207 @@
   <p *ngIf="error" class="alert error">{{ error }}</p>
   <p *ngIf="success" class="alert success">{{ success }}</p>
 
-  <!-- OVERVIEW -->
-  <div *ngIf="activeTab === 'overview'">
-    <h2>Aperçu général</h2>
+  <!-- ========== OVERVIEW ========== -->
+  <section *ngIf="activeTab === 'overview'" class="section">
 
     <div class="overview-grid">
 
-      <!-- Carte identitée -->
-      <div class="card big">
-        <h3>{{ profile.firstName }} {{ profile.lastName }}</h3>
-        <p>{{ profile.email }}</p>
-        <p *ngIf="profile.city || profile.country">
-          {{ profile.city }} <span *ngIf="profile.city && profile.country">-</span> {{ profile.country }}
-        </p>
-        <p *ngIf="!profile.city && !profile.country" class="muted">
-          Complétez votre profil pour une expérience optimale.
-        </p>
+      <!-- Bloc identité -->
+      <div class="card profile-card">
+        <div class="avatar">
+          {{ (profile.firstName || profile.lastName || profile.email || 'U').charAt(0) | uppercase }}
+        </div>
+        <div class="profile-info">
+          <h2>{{ profile.firstName }} {{ profile.lastName }}</h2>
+          <p class="email">{{ profile.email }}</p>
+          <p class="location" *ngIf="profile.city || profile.country">
+            {{ profile.city }}<span *ngIf="profile.city && profile.country"> · </span>{{ profile.country }}
+          </p>
+          <p class="muted" *ngIf="!profile.city && !profile.country">
+            Complétez votre profil pour une expérience optimale.
+          </p>
+        </div>
       </div>
 
-      <!-- Nombre de commandes -->
-      <div class="card">
-        <h3>Total commandes</h3>
-        <p class="big-number">{{ myOrders.length }}</p>
+      <!-- Stat: total commandes -->
+      <div class="card stat-card">
+        <span class="stat-label">Total commandes</span>
+        <span class="stat-value">{{ myOrders.length }}</span>
+        <span class="stat-hint">Depuis la création de votre compte</span>
       </div>
 
-      <!-- Total dépensé -->
-      <div class="card">
-        <h3>Total dépensé</h3>
-        <p class="big-number">
-          {{ totalSpent | currency:'EUR' }}
-        </p>
+      <!-- Stat: total dépensé -->
+      <div class="card stat-card">
+        <span class="stat-label">Total dépensé</span>
+        <span class="stat-value">{{ totalSpent | currency:'EUR' }}</span>
+        <span class="stat-hint">Montant cumulé des commandes</span>
       </div>
 
       <!-- Dernière commande -->
-      <div class="card" *ngIf="myOrders.length; else noOrder">
-        <h3>Dernière commande</h3>
-        <p>Réf : {{ myOrders[0].reference }}</p>
-        <p>{{ myOrders[0].createdAt | date:'dd/MM/yy HH:mm' }}</p>
-        <p>Statut : {{ myOrders[0].status }}</p>
+      <div class="card last-order-card" *ngIf="myOrders.length; else noOrder">
+        <span class="stat-label">Dernière commande</span>
+        <div class="last-order-main">
+          <div>
+            <div class="ref">Réf : {{ myOrders[0].reference }}</div>
+            <div class="meta">
+              {{ myOrders[0].createdAt | date:'dd/MM/yy HH:mm' }} · {{ myOrders[0].status }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <ng-template #noOrder>
-        <div class="card">
-          <h3>Dernière commande</h3>
+        <div class="card last-order-card">
+          <span class="stat-label">Dernière commande</span>
           <p class="muted">Vous n'avez pas encore passé de commande.</p>
         </div>
       </ng-template>
 
     </div>
-  </div>
+  </section>
 
-  <!-- PROFIL -->
-  <div *ngIf="activeTab === 'profile'" class="card">
-    <h2>Informations personnelles</h2>
+  <!-- ========== PROFIL ========== -->
+  <section *ngIf="activeTab === 'profile'" class="section">
+    <div class="card">
+      <h2>Informations personnelles</h2>
 
-    <form (ngSubmit)="saveProfile()">
-      <div class="grid">
+      <form (ngSubmit)="saveProfile()">
+        <div class="grid">
+          <label>
+            Prénom
+            <input [(ngModel)]="profile.firstName" name="fn">
+          </label>
+
+          <label>
+            Nom
+            <input [(ngModel)]="profile.lastName" name="ln">
+          </label>
+
+          <label>
+            Email
+            <input [value]="profile.email" disabled>
+          </label>
+
+          <label>
+            Téléphone
+            <input [(ngModel)]="profile.phone" name="ph">
+          </label>
+        </div>
+
+        <button class="btn primary" [disabled]="savingProfile">
+          {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== ADRESSE ========== -->
+  <section *ngIf="activeTab === 'address'" class="section">
+    <div class="card">
+      <h2>Adresse de livraison</h2>
+
+      <form (ngSubmit)="saveProfile()">
+        <div class="grid">
+          <label>
+            Adresse
+            <input [(ngModel)]="profile.addressLine1" name="ad">
+          </label>
+
+          <label>
+            Code postal
+            <input [(ngModel)]="profile.postalCode" name="pc">
+          </label>
+
+          <label>
+            Ville
+            <input [(ngModel)]="profile.city" name="ct">
+          </label>
+
+          <label>
+            Pays
+            <input [(ngModel)]="profile.country" name="co">
+          </label>
+        </div>
+
+        <button class="btn primary" [disabled]="savingProfile">
+          {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========== COMMANDES ========== -->
+  <section *ngIf="activeTab === 'orders'" class="section">
+    <div class="card">
+      <h2>Mes commandes</h2>
+
+      <p *ngIf="loadingOrders">Chargement...</p>
+
+      <table *ngIf="!loadingOrders && myOrders.length" class="orders">
+        <thead>
+        <tr>
+          <th>Réf</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Statut</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let o of myOrders">
+          <td>{{ o.reference }}</td>
+          <td>{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+          <td>{{ o.totalAmount | currency:'EUR' }}</td>
+          <td>{{ o.status }}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!loadingOrders && !myOrders.length" class="muted">
+        Vous n'avez pas encore de commande.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== SÉCURITÉ ========== -->
+  <section *ngIf="activeTab === 'security'" class="section security-section">
+
+    <div class="card">
+      <h2>Mot de passe</h2>
+
+      <form (ngSubmit)="submitPasswordChange()">
         <label>
-          Prénom :
-          <input [(ngModel)]="profile.firstName" name="fn">
+          Ancien mot de passe
+          <input type="password" [(ngModel)]="oldPassword" name="old">
         </label>
 
         <label>
-          Nom :
-          <input [(ngModel)]="profile.lastName" name="ln">
+          Nouveau mot de passe
+          <input type="password" [(ngModel)]="newPassword" name="new">
         </label>
 
         <label>
-          Email :
-          <input disabled [value]="profile.email">
+          Confirmer le nouveau mot de passe
+          <input type="password" [(ngModel)]="confirmPassword" name="cnf">
         </label>
 
-        <label>
-          Téléphone :
-          <input [(ngModel)]="profile.phone" name="ph">
-        </label>
-      </div>
+        <button class="btn primary" [disabled]="changingPassword">
+          {{ changingPassword ? 'Modification...' : 'Changer le mot de passe' }}
+        </button>
+      </form>
+    </div>
 
-      <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
+    <div class="card danger-card">
+      <h2>Zone sensible</h2>
+      <p class="muted">
+        La suppression de votre compte désactivera votre accès.
+        Vous pourrez le réactiver plus tard en vous reconnectant.
+      </p>
+
+      <button class="btn danger" (click)="deleteAccount()">
+        Supprimer mon compte
       </button>
-    </form>
-  </div>
+    </div>
 
-  <!-- ADRESSE -->
-  <div *ngIf="activeTab === 'address'" class="card">
-    <h2>Adresse</h2>
-
-    <form (ngSubmit)="saveProfile()">
-      <div class="grid">
-        <label>
-          Adresse :
-          <input [(ngModel)]="profile.addressLine1" name="ad">
-        </label>
-
-        <label>
-          Code postal :
-          <input [(ngModel)]="profile.postalCode" name="pc">
-        </label>
-
-        <label>
-          Ville :
-          <input [(ngModel)]="profile.city" name="ct">
-        </label>
-
-        <label>
-          Pays :
-          <input [(ngModel)]="profile.country" name="co">
-        </label>
-      </div>
-
-      <button class="btn" [disabled]="savingProfile">
-        {{ savingProfile ? 'Enregistrement...' : 'Mettre à jour' }}
-      </button>
-    </form>
-  </div>
-
-  <!-- COMMANDES -->
-  <div *ngIf="activeTab === 'orders'" class="card">
-    <h2>Mes commandes</h2>
-
-    <p *ngIf="loadingOrders">Chargement...</p>
-
-    <table *ngIf="!loadingOrders && myOrders.length">
-      <thead>
-      <tr>
-        <th>Réf</th>
-        <th>Date</th>
-        <th>Total</th>
-        <th>Statut</th>
-      </tr>
-      </thead>
-
-      <tbody>
-      <tr *ngFor="let o of myOrders">
-        <td>{{ o.reference }}</td>
-        <td>{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-        <td>{{ o.totalAmount | currency:'EUR' }}</td>
-        <td>{{ o.status }}</td>
-      </tr>
-      </tbody>
-    </table>
-
-    <p *ngIf="!loadingOrders && !myOrders.length">
-      Vous n'avez pas encore de commande.
-    </p>
-  </div>
-
-  <!-- SÉCURITÉ -->
-  <div *ngIf="activeTab === 'security'" class="card">
-    <h2>Sécurité</h2>
-
-    <form (ngSubmit)="submitPasswordChange()">
-      <label>
-        Ancien mot de passe :
-        <input type="password" [(ngModel)]="oldPassword" name="old">
-      </label>
-
-      <label>
-        Nouveau mot de passe :
-        <input type="password" [(ngModel)]="newPassword" name="new">
-      </label>
-
-      <label>
-        Confirmer :
-        <input type="password" [(ngModel)]="confirmPassword" name="cnf">
-      </label>
-
-      <button class="btn" [disabled]="changingPassword">
-        {{ changingPassword ? 'Modification...' : 'Changer le mot de passe' }}
-      </button>
-    </form>
-
-    <hr>
-
-    <button class="btn danger" (click)="deleteAccount()">
-      Supprimer mon compte ❌
-    </button>
-  </div>
+  </section>
 
 </div>
