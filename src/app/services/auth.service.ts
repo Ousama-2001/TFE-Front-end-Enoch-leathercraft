@@ -1,3 +1,4 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -34,28 +35,18 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // ---------- LOGIN ----------
   login(payload: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.api}/auth/login`, payload)
       .pipe(tap((res) => this.setSession(res)));
   }
 
-  // ---------- REGISTER ----------
   register(payload: RegisterRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.api}/auth/register`, payload)
       .pipe(tap((res) => this.setSession(res)));
   }
 
-  // 🔥 DEMANDE DE RÉACTIVATION
-  requestReactivation(email: string): Observable<string> {
-    return this.http.post(`${this.api}/auth/reactivate-request`, { email }, {
-      responseType: 'text'
-    });
-  }
-
-  // ---------- SESSION ----------
   private setSession(res: LoginResponse): void {
     localStorage.setItem(this.tokenKey, res.token);
     localStorage.setItem(this.roleKey, res.role);
@@ -85,7 +76,6 @@ export class AuthService {
     return role === 'SUPER_ADMIN';
   }
 
-  // ---------- MOT DE PASSE OUBLIÉ ----------
   requestPasswordReset(email: string) {
     return this.http.post(`${this.api}/auth/password-reset-request`, { email });
   }
@@ -96,6 +86,15 @@ export class AuthService {
       newPassword,
     });
   }
+
+  // 🔥 nouveau : envoi de la demande de réactivation
+  requestReactivation(email: string, message: string) {
+    return this.http.post(`${this.api}/auth/reactivation-request`, {
+      email,
+      message,
+    });
+  }
+
 
   isAuthPage(): boolean {
     const url = this.router.url;

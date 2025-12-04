@@ -1,50 +1,35 @@
-// src/app/services/super-admin-requests.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export type RequestType = 'CONTACT' | 'REACTIVATION';
-export type RequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
-
-export interface AdminRequest {
+export interface ReactivationRequest {
   id: number;
-  type: RequestType;        // "CONTACT" ou "REACTIVATION"
-  email: string;            // email de l'utilisateur
-  subject?: string;
-  message: string;
-  status: RequestStatus;    // "PENDING" | "IN_PROGRESS" | "RESOLVED"
-  createdAt: string;        // ISO date
-
-  // optionnels si ton back les ajoute plus tard
-  resolvedAt?: string;
-  resolvedByEmail?: string;
+  email: string;
+  createdAt: string;
+  handled: boolean;
+  handledAt?: string | null;
+  handledBy?: string | null;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SuperAdminRequestsService {
-
-  private readonly api = 'http://localhost:8080/api/super-admin/requests';
+  private readonly api =
+    'http://localhost:8080/api/super-admin/reactivation-requests';
 
   constructor(private http: HttpClient) {}
 
-  // Récupérer toutes les demandes
-  getAll(): Observable<AdminRequest[]> {
-    return this.http.get<AdminRequest[]>(this.api);
+  getAll(): Observable<ReactivationRequest[]> {
+    return this.http.get<ReactivationRequest[]>(this.api);
   }
 
-  // Marquer une demande "EN COURS"
-  markInProgress(id: number): Observable<AdminRequest> {
-    return this.http.patch<AdminRequest>(`${this.api}/${id}/status`, {
-      status: 'IN_PROGRESS'
-    });
-  }
-
-  // Marquer une demande "RÉSOLUE"
-  markResolved(id: number): Observable<AdminRequest> {
-    return this.http.patch<AdminRequest>(`${this.api}/${id}/status`, {
-      status: 'RESOLVED'
-    });
+  updateHandled(id: number, value: boolean): Observable<ReactivationRequest> {
+    const params = new HttpParams().set('value', value);
+    return this.http.patch<ReactivationRequest>(
+      `${this.api}/${id}/handled`,
+      null,
+      { params }
+    );
   }
 }

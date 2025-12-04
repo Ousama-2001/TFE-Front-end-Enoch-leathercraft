@@ -1,147 +1,83 @@
-<!-- src/app/pages/super-admin-requests/super-admin-requests.html -->
-<div class="sa-requests">
+<div class="requests-page">
+  <h2>Demandes & réactivations de compte</h2>
+  <p class="subtitle">
+    Vue des demandes envoyées par les utilisateurs dont le compte est
+    désactivé.
+  </p>
 
-  <header class="sa-header">
-    <div>
-      <h2>Demandes & réactivations</h2>
-      <p class="subtitle">
-        Gestion centralisée des messages de contact et demandes de réactivation de compte.
-      </p>
+  <!-- Résumé -->
+  <div class="requests-summary">
+    <div class="summary-card">
+      <span class="label">Total</span>
+      <span class="value">{{ totalCount }}</span>
     </div>
-
-    <!-- Compteurs -->
-    <div class="sa-counters" *ngIf="!loading">
-      <div class="counter pill pill-pending">
-        <span class="label">En attente</span>
-        <span class="value">{{ pendingCount }}</span>
-      </div>
-      <div class="counter pill pill-progress">
-        <span class="label">En cours</span>
-        <span class="value">{{ inProgressCount }}</span>
-      </div>
-      <div class="counter pill pill-resolved">
-        <span class="label">Résolues</span>
-        <span class="value">{{ resolvedCount }}</span>
-      </div>
+    <div class="summary-card pending">
+      <span class="label">En attente</span>
+      <span class="value">{{ pendingCount }}</span>
     </div>
-  </header>
-
-  <!-- Filtres -->
-  <div class="status-filters">
-    <button
-      type="button"
-      class="filter-btn"
-      [class.active]="filterStatus === 'PENDING'"
-      (click)="setFilterStatus('PENDING')">
-      En attente
-    </button>
-
-    <button
-      type="button"
-      class="filter-btn"
-      [class.active]="filterStatus === 'IN_PROGRESS'"
-      (click)="setFilterStatus('IN_PROGRESS')">
-      En cours
-    </button>
-
-    <button
-      type="button"
-      class="filter-btn"
-      [class.active]="filterStatus === 'RESOLVED'"
-      (click)="setFilterStatus('RESOLVED')">
-      Résolues
-    </button>
-
-    <button
-      type="button"
-      class="filter-btn"
-      [class.active]="filterStatus === 'ALL'"
-      (click)="setFilterStatus('ALL')">
-      Toutes
-    </button>
+    <div class="summary-card handled">
+      <span class="label">Traitées</span>
+      <span class="value">{{ handledCount }}</span>
+    </div>
   </div>
 
-  <!-- États globaux -->
   <p class="info" *ngIf="loading">Chargement des demandes...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
-  <p class="info" *ngIf="!loading && !error && !filteredRequests.length">
-    Aucune demande à afficher pour ce filtre.
+  <p class="info" *ngIf="!loading && !requests.length && !error">
+    Aucune demande pour le moment.
   </p>
 
-  <!-- Liste des demandes -->
-  <div class="requests-list" *ngIf="!loading && !error && filteredRequests.length">
-
-    <article class="request-card" *ngFor="let r of filteredRequests">
-      <header class="request-header">
-        <div class="left">
-          <span class="badge" [ngClass]="{ 'contact': r.type === 'CONTACT', 'reactivation': r.type === 'REACTIVATION' }">
-            {{ r.type === 'REACTIVATION' ? 'Réactivation de compte' : 'Contact' }}
+  <table
+    class="requests-table"
+    *ngIf="!loading && requests.length > 0"
+  >
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Email</th>
+      <th>Créée le</th>
+      <th>Statut</th>
+      <th>Traité le / par</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let r of requests">
+      <td>{{ r.id }}</td>
+      <td>{{ r.email }}</td>
+      <td>{{ r.createdAt | date : 'dd/MM/yyyy HH:mm' }}</td>
+      <td>
+          <span
+            class="status-pill"
+            [ngClass]="{ pending: !r.handled, handled: r.handled }"
+          >
+            {{ r.handled ? 'Traité' : 'En attente' }}
           </span>
-
-          <h3>{{ r.subject || (r.type === 'REACTIVATION' ? 'Demande de réactivation' : 'Message de contact') }}</h3>
-
-          <p class="meta">
-            <span class="email">{{ r.email }}</span>
-            ·
-            <span class="date">
-              Reçue le {{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-          </p>
-        </div>
-
-        <div class="right">
-          <span class="status-pill" [ngClass]="{
-            'pending':  r.status === 'PENDING',
-            'progress': r.status === 'IN_PROGRESS',
-            'resolved': r.status === 'RESOLVED'
-          }">
-            {{
-              r.status === 'PENDING' ? 'En attente' :
-                r.status === 'IN_PROGRESS' ? 'En cours' :
-                  'Résolue'
-            }}
-          </span>
-        </div>
-      </header>
-
-      <section class="request-body">
-        <p class="message">
-          {{ r.message }}
-        </p>
-
-        <div class="extra" *ngIf="r.status === 'RESOLVED' && (r.resolvedAt || r.resolvedByEmail)">
-          <p class="resolved-info">
-            Résolue
-            <ng-container *ngIf="r.resolvedAt">
-              le <strong>{{ r.resolvedAt | date:'dd/MM/yyyy HH:mm' }}</strong>
-            </ng-container>
-            <ng-container *ngIf="r.resolvedByEmail">
-              par <strong>{{ r.resolvedByEmail }}</strong>
-            </ng-container>
-          </p>
-        </div>
-      </section>
-
-      <footer class="request-actions">
+      </td>
+      <td>
+        <ng-container *ngIf="r.handled; else notHandled">
+          <div *ngIf="r.handledAt">
+            <strong>{{ r.handledAt | date : 'dd/MM/yyyy HH:mm' }}</strong>
+          </div>
+          <div *ngIf="r.handledBy">
+            par <span class="by">{{ r.handledBy }}</span>
+          </div>
+        </ng-container>
+        <ng-template #notHandled>
+          <span class="muted">—</span>
+        </ng-template>
+      </td>
+      <td>
         <button
+          class="btn-toggle"
           type="button"
-          class="btn secondary"
-          *ngIf="r.status === 'PENDING'"
-          (click)="markInProgress(r)">
-          Marquer comme en cours
+          (click)="toggleHandled(r)"
+        >
+          {{ r.handled ? 'Marquer comme non traité' : 'Marquer comme traité' }}
         </button>
-
-        <button
-          type="button"
-          class="btn primary"
-          *ngIf="r.status !== 'RESOLVED'"
-          (click)="markResolved(r)">
-          Marquer comme résolue
-        </button>
-      </footer>
-    </article>
-
-  </div>
-
+      </td>
+    </tr>
+    </tbody>
+  </table>
 </div>

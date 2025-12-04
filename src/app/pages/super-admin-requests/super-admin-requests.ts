@@ -1,30 +1,25 @@
-// src/app/pages/super-admin-requests/super-admin-requests.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   SuperAdminRequestsService,
-  AdminRequest,
-  RequestStatus
+  ReactivationRequest,
 } from '../../services/super-admin-requests.service';
 
 @Component({
   selector: 'app-super-admin-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, DatePipe],
   templateUrl: './super-admin-requests.html',
-  styleUrls: ['./super-admin-requests.scss']
+  styleUrls: ['./super-admin-requests.scss'],
 })
 export class SuperAdminRequestsPageComponent implements OnInit {
-
-  requests: AdminRequest[] = [];
+  requests: ReactivationRequest[] = [];
   loading = false;
   error = '';
 
-  // filtre courant pour la liste
-  filterStatus: 'ALL' | RequestStatus = 'PENDING';
-
-  constructor(private requestsService: SuperAdminRequestsService) {}
+  constructor(
+    private requestsService: SuperAdminRequestsService
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -35,71 +30,45 @@ export class SuperAdminRequestsPageComponent implements OnInit {
     this.error = '';
 
     this.requestsService.getAll().subscribe({
-      next: (data: AdminRequest[]) => {
-        this.requests = data;
+      next: (list) => {
+        this.requests = list;
         this.loading = false;
       },
-      error: (err: any) => {
+      error: (err) => {
         console.error('Erreur chargement demandes', err);
-        this.error = 'Impossible de charger les demandes pour le moment.';
+        this.error =
+          'Impossible de charger les demandes de réactivation.';
         this.loading = false;
-      }
+      },
     });
   }
 
-  // ---------- GETTERS pour les compteurs ----------
+  get totalCount(): number {
+    return this.requests.length;
+  }
 
   get pendingCount(): number {
-    return this.requests.filter(r => r.status === 'PENDING').length;
+    return this.requests.filter((r) => !r.handled).length;
   }
 
-  get inProgressCount(): number {
-    return this.requests.filter(r => r.status === 'IN_PROGRESS').length;
+  get handledCount(): number {
+    return this.requests.filter((r) => r.handled).length;
   }
 
-  get resolvedCount(): number {
-    return this.requests.filter(r => r.status === 'RESOLVED').length;
-  }
+  toggleHandled(req: ReactivationRequest): void {
+    const newValue = !req.handled;
 
-  // Liste filtrée pour l’affichage
-  get filteredRequests(): AdminRequest[] {
-    if (this.filterStatus === 'ALL') {
-      return this.requests;
-    }
-    return this.requests.filter(r => r.status === this.filterStatus);
-  }
-
-  // ---------- Actions sur les demandes ----------
-
-  setFilterStatus(status: 'ALL' | RequestStatus): void {
-    this.filterStatus = status;
-  }
-
-  markInProgress(req: AdminRequest): void {
-    if (!req.id) return;
-
-    this.requestsService.markInProgress(req.id).subscribe({
-      next: (updated: AdminRequest) => {
-        this.requests = this.requests.map(r => r.id === updated.id ? updated : r);
+    this.requestsService.updateHandled(req.id, newValue).subscribe({
+      next: (updated) => {
+        this.requests = this.requests.map((r) =>
+          r.id === updated.id ? updated : r
+        );
       },
-      error: (err: any) => {
-        console.error('Erreur mise en cours', err);
-        alert("Impossible de marquer cette demande comme 'en cours'.");
-      }
-    });
-  }
-
-  markResolved(req: AdminRequest): void {
-    if (!req.id) return;
-
-    this.requestsService.markResolved(req.id).subscribe({
-      next: (updated: AdminRequest) => {
-        this.requests = this.requests.map(r => r.id === updated.id ? updated : r);
+      error: (err) => {
+        console.error('Erreur update handled', err);
+        this.error =
+          "Impossible de mettre à jour l'état de cette demande.";
       },
-      error: (err: any) => {
-        console.error('Erreur résolution', err);
-        alert("Impossible de marquer cette demande comme résolue.");
-      }
     });
   }
 }
