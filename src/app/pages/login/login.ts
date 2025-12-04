@@ -1,4 +1,3 @@
-// src/app/pages/login/login.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,17 +15,23 @@ export class LoginComponent {
   emailOrUsername = '';
   password = '';
   loading = false;
+
+  // erreur pour la partie "login"
   error = '';
 
-  // 🔥 compte supprimé
+  // Compte supprimé → bloc de réactivation
   deletedAccount = false;
   reactivateEmail = '';
-  reactivationMessage = ''; // 🔥 message optionnel ajouté
+  reactivateMessage = '';
+
+  // erreur spécifique pour la partie "réactivation"
+  reactivationError = '';
 
   constructor(private auth: AuthService, private router: Router) {}
 
   submit(): void {
     this.error = '';
+    this.reactivationError = '';
     this.deletedAccount = false;
 
     if (!this.emailOrUsername || !this.password) {
@@ -56,7 +61,7 @@ export class LoginComponent {
             this.deletedAccount = true;
             this.reactivateEmail = this.emailOrUsername.trim();
             this.error =
-              'Votre compte est désactivé. Vous pouvez demander une réactivation.';
+              'Votre compte est désactivé. Vous pouvez demander une réactivation en confirmant votre email.';
             break;
           case 'BAD_CREDENTIALS':
             this.error = 'Email/pseudo ou mot de passe incorrect.';
@@ -67,6 +72,11 @@ export class LoginComponent {
           case 'EMAIL_REQUIRED':
             this.error = 'Email requis.';
             break;
+          case 'REQUEST_ALREADY_EXISTS':
+            this.deletedAccount = true;
+            this.error =
+              'Vous avez déjà envoyé une demande de réactivation pour cet email.';
+            break;
           default:
             this.error = 'Identifiants invalides. Veuillez réessayer.';
         }
@@ -75,10 +85,11 @@ export class LoginComponent {
   }
 
   requestReactivation(): void {
-    this.error = '';
+    this.reactivationError = '';
 
     if (!this.reactivateEmail || !this.reactivateEmail.includes('@')) {
-      this.error = 'Veuillez indiquer un email valide.';
+      this.reactivationError =
+        'Veuillez indiquer un email valide pour la réactivation.';
       return;
     }
 
@@ -87,21 +98,30 @@ export class LoginComponent {
     this.auth
       .requestReactivation(
         this.reactivateEmail.trim(),
-        this.reactivationMessage.trim()
+        this.reactivateMessage.trim()
       )
       .subscribe({
         next: () => {
           this.loading = false;
           this.deletedAccount = false;
+          this.reactivationError = '';
           this.error = '';
           alert(
-            "Votre demande de réactivation a été envoyée.\nUn super administrateur l'examinera."
+            "Votre demande de réactivation a été envoyée.\nUn super administrateur examinera votre compte."
           );
         },
-        error: () => {
+        error: (err) => {
           this.loading = false;
-          this.error =
-            "Impossible d'envoyer la demande de réactivation pour le moment.";
+          const code = err?.error?.message || err?.error;
+
+          if (err.status === 409 || code === 'REQUEST_ALREADY_EXISTS') {
+            this.reactivationError =
+              'Vous avez déjà envoyé une demande de réactivation pour cet email.';
+            this.deletedAccount = true;
+          } else {
+            this.reactivationError =
+              "Impossible d'envoyer la demande de réactivation pour le moment.";
+          }
         },
       });
   }

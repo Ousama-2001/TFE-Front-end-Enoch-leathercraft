@@ -5,6 +5,8 @@ import {
   ReactivationRequest,
 } from '../../services/super-admin-requests.service';
 
+type FilterMode = 'PENDING' | 'HANDLED' | 'ALL';
+
 @Component({
   selector: 'app-super-admin-requests',
   standalone: true,
@@ -17,30 +19,35 @@ export class SuperAdminRequestsPageComponent implements OnInit {
   loading = false;
   error = '';
 
-  constructor(
-    private requestsService: SuperAdminRequestsService
-  ) {}
+  filter: FilterMode = 'PENDING';
+
+  // pour le modal de message
+  selected: ReactivationRequest | null = null;
+
+  constructor(private requestsService: SuperAdminRequestsService) {}
 
   ngOnInit(): void {
-    this.loadRequests();
+    this.load();
   }
 
-  loadRequests(): void {
+  load(): void {
     this.loading = true;
     this.error = '';
 
     this.requestsService.getAll().subscribe({
-      next: (list) => {
-        this.requests = list;
+      next: (data) => {
+        this.requests = data;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Erreur chargement demandes', err);
-        this.error =
-          'Impossible de charger les demandes de réactivation.';
+      error: () => {
         this.loading = false;
+        this.error = 'Impossible de charger les demandes pour le moment.';
       },
     });
+  }
+
+  setFilter(mode: FilterMode): void {
+    this.filter = mode;
   }
 
   get totalCount(): number {
@@ -55,8 +62,24 @@ export class SuperAdminRequestsPageComponent implements OnInit {
     return this.requests.filter((r) => r.handled).length;
   }
 
+  get filteredRequests(): ReactivationRequest[] {
+    switch (this.filter) {
+      case 'PENDING':
+        return this.requests.filter((r) => !r.handled);
+      case 'HANDLED':
+        return this.requests.filter((r) => r.handled);
+      default:
+        return this.requests;
+    }
+  }
+
   toggleHandled(req: ReactivationRequest): void {
     const newValue = !req.handled;
+    const label = newValue ? 'traitée' : 'en attente';
+
+    if (!confirm(`Marquer la demande de ${req.email} comme ${label} ?`)) {
+      return;
+    }
 
     this.requestsService.updateHandled(req.id, newValue).subscribe({
       next: (updated) => {
@@ -64,11 +87,18 @@ export class SuperAdminRequestsPageComponent implements OnInit {
           r.id === updated.id ? updated : r
         );
       },
-      error: (err) => {
-        console.error('Erreur update handled', err);
-        this.error =
-          "Impossible de mettre à jour l'état de cette demande.";
+      error: () => {
+        this.error = 'Erreur lors de la mise à jour de la demande.';
       },
     });
+  }
+
+  // --------- modal message ---------
+  openMessage(req: ReactivationRequest): void {
+    this.selected = req;
+  }
+
+  closeMessage(): void {
+    this.selected = null;
   }
 }

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 export interface ReactivationRequest {
   id: number;
   email: string;
+  message?: string | null;
   createdAt: string;
   handled: boolean;
   handledAt?: string | null;

@@ -87,13 +87,15 @@ export class AuthService {
     });
   }
 
-  // 🔥 nouveau : envoi de la demande de réactivation
-  requestReactivation(email: string, message: string) {
+
+// 🔥 nouveau : envoi de la demande de réactivation AVEC message
+  requestReactivation(email: string, message?: string) {
     return this.http.post(`${this.api}/auth/reactivation-request`, {
       email,
       message,
     });
   }
+
 
 
   isAuthPage(): boolean {

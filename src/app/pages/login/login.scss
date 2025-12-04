@@ -1,181 +1,173 @@
-/* Fond global (même que register) */
 .auth-page {
   min-height: 100vh;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(circle at top, #1e3a5f, #050814 60%);
-  padding: 1.5rem;
+  padding: 40px 16px;
+  background: radial-gradient(circle at top, #1a2440 0, #050814 55%, #02040b 100%);
+  color: #f8f9ff;
 }
 
-/* Carte centrale */
 .auth-card {
-  width: 480px;
-  background: #0b1220;
+  width: 100%;
+  max-width: 430px;
+  background: rgba(7, 10, 25, 0.96);
   border-radius: 24px;
-  padding: 2.5rem 3rem;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
-  color: #e5e7eb;
+  padding: 32px 28px 24px;
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
 }
 
-/* Titre + sous-titre */
-.auth-card h1 {
+h1 {
   font-size: 1.9rem;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
+  margin: 0 0 6px;
+  color: #ffffff;
 }
 
 .subtitle {
+  margin: 0 0 20px;
   font-size: 0.9rem;
-  color: #9ca3af;
-  margin-bottom: 2rem;
+  color: #98a0c2;
 }
 
-/* Champs */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.3rem;
-}
+  gap: 6px;
 
-.form-group label {
-  font-size: 0.85rem;
-  color: #cbd5e1;
-  margin-bottom: 0.3rem;
-}
+  &.inline {
+    flex-direction: row;
+    gap: 12px;
 
-.form-group input {
-  padding: 0.75rem 0.9rem;
-  border-radius: 12px;
-  border: 1px solid #111827;
-  background: #020617;
-  color: #e5e7eb;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-
-.form-group input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
-  background: #020617;
-}
-
-/* Message d'erreur */
-.error-message {
-  margin-top: -0.3rem;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-  color: #f97373;
-  text-align: center;
-}
-
-/* 🔥 Bloc réactivation */
-.reactivate-box {
-  margin-bottom: 1.2rem;
-  padding: 0.9rem 1rem;
-  border-radius: 16px;
-  background: rgba(249, 115, 22, 0.09);
-  border: 1px solid rgba(249, 115, 22, 0.5);
-}
-
-.reactivate-text {
-  font-size: 0.82rem;
-  color: #fed7aa;
-  margin: 0 0 0.6rem;
-}
-
-.reactivate-label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.8rem;
-  color: #fed7aa;
-  margin-bottom: 0.6rem;
-
-  input {
-    margin-top: 0.25rem;
-    padding: 0.6rem 0.8rem;
-    border-radius: 10px;
-    border: 1px solid #7c2d12;
-    background: #020617;
-    color: #fef3c7;
-
-    &:focus {
-      outline: none;
-      border-color: #fb923c;
-      box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.5);
+    .field {
+      flex: 1;
     }
   }
 }
 
-/* Bouton principal (même style que register) */
-.primary-btn {
-  width: 100%;
-  border: none;
+label {
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #a5add4;
+}
+
+input,
+textarea {
+  background: #0c1024;
   border-radius: 999px;
-  padding: 0.85rem 1rem;
-  margin-top: 0.5rem;
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  background: linear-gradient(135deg, #6366f1, #ec4899);
-  box-shadow: 0 18px 35px rgba(79, 70, 229, 0.5);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  border: 1px solid #252b4b;
+  padding: 10px 14px;
+  color: #f8f9ff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  &::placeholder {
+    color: #666f94;
+  }
+
+  &:focus {
+    border-color: #ff53c0;
+    box-shadow: 0 0 0 1px rgba(255, 83, 192, 0.4);
+    background: #090d1b;
+  }
 }
 
-.primary-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 24px 45px rgba(79, 70, 229, 0.65);
+textarea {
+  border-radius: 16px;
+  resize: vertical;
+  min-height: 96px;
 }
 
-.primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Bouton secondaire pour la réactivation */
+.primary-btn,
 .secondary-btn {
   width: 100%;
   border-radius: 999px;
-  padding: 0.65rem 1rem;
-  border: 1px solid #fb923c;
-  background: transparent;
-  color: #fed7aa;
-  font-size: 0.88rem;
-  font-weight: 500;
+  border: none;
+  padding: 11px 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.15s;
 }
 
-.secondary-btn:hover {
-  background: rgba(251, 146, 60, 0.1);
+.primary-btn {
+  background: linear-gradient(90deg, #ff53c0, #ff9632);
+  color: #050814;
+  box-shadow: 0 10px 25px rgba(255, 83, 192, 0.35);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(255, 83, 192, 0.45);
+  }
 }
 
-/* Footer liens */
+.secondary-btn {
+  margin-top: 4px;
+  background: transparent;
+  color: #ff8adb;
+  border: 1px solid rgba(255, 138, 219, 0.6);
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 138, 219, 0.08);
+  }
+}
+
+.primary-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+.error-message {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #ff7575;
+}
+
+.reactivation-box {
+  margin-top: 18px;
+  padding: 14px 14px 16px;
+  border-radius: 20px;
+  background: rgba(9, 13, 31, 0.95);
+  border: 1px solid rgba(255, 149, 0, 0.32);
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: #ffd38a;
+  }
+
+  p {
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+    color: #c6cbe2;
+  }
+}
+
 .auth-footer {
-  margin-top: 1.8rem;
+  margin-top: 18px;
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-}
 
-.auth-footer a {
-  color: #a5b4fc;
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
+  a {
+    color: #9aa4ff;
+    text-decoration: none;
 
-.auth-footer a:hover {
-  color: #c4b5fd;
-  text-decoration: underline;
-}
-
-/* Responsive léger */
-@media (max-width: 600px) {
-  .auth-card {
-    width: 100%;
-    padding: 2rem 1.5rem;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

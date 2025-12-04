@@ -21,6 +21,36 @@
     </div>
   </div>
 
+  <!-- Filtres -->
+  <div class="filter-bar" *ngIf="totalCount > 0">
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="filter === 'PENDING'"
+      (click)="setFilter('PENDING')"
+    >
+      En attente ({{ pendingCount }})
+    </button>
+
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="filter === 'HANDLED'"
+      (click)="setFilter('HANDLED')"
+    >
+      Traitées ({{ handledCount }})
+    </button>
+
+    <button
+      type="button"
+      class="filter-pill"
+      [class.active]="filter === 'ALL'"
+      (click)="setFilter('ALL')"
+    >
+      Toutes ({{ totalCount }})
+    </button>
+  </div>
+
   <p class="info" *ngIf="loading">Chargement des demandes...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
@@ -28,56 +58,101 @@
     Aucune demande pour le moment.
   </p>
 
-  <table
-    class="requests-table"
-    *ngIf="!loading && requests.length > 0"
-  >
-    <thead>
-    <tr>
-      <th>ID</th>
-      <th>Email</th>
-      <th>Créée le</th>
-      <th>Statut</th>
-      <th>Traité le / par</th>
-      <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let r of requests">
-      <td>{{ r.id }}</td>
-      <td>{{ r.email }}</td>
-      <td>{{ r.createdAt | date : 'dd/MM/yyyy HH:mm' }}</td>
-      <td>
-          <span
-            class="status-pill"
-            [ngClass]="{ pending: !r.handled, handled: r.handled }"
+  <div class="table-wrapper" *ngIf="!loading && requests.length > 0">
+    <table class="requests-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Message</th>
+        <th>Créée le</th>
+        <th>Statut</th>
+        <th>Traité le / par</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let r of filteredRequests">
+        <td class="muted">{{ r.id }}</td>
+
+        <td>
+          <span class="email">{{ r.email }}</span>
+        </td>
+
+        <!-- MESSAGE : tronqué + cliquable -->
+        <td>
+          <button
+            type="button"
+            class="message-btn"
+            (click)="openMessage(r)"
+            [title]="r.message || 'Aucun message fourni'"
           >
-            {{ r.handled ? 'Traité' : 'En attente' }}
-          </span>
-      </td>
-      <td>
-        <ng-container *ngIf="r.handled; else notHandled">
-          <div *ngIf="r.handledAt">
-            <strong>{{ r.handledAt | date : 'dd/MM/yyyy HH:mm' }}</strong>
-          </div>
-          <div *ngIf="r.handledBy">
-            par <span class="by">{{ r.handledBy }}</span>
-          </div>
-        </ng-container>
-        <ng-template #notHandled>
-          <span class="muted">—</span>
-        </ng-template>
-      </td>
-      <td>
-        <button
-          class="btn-toggle"
-          type="button"
-          (click)="toggleHandled(r)"
-        >
-          {{ r.handled ? 'Marquer comme non traité' : 'Marquer comme traité' }}
-        </button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
+            {{ r.message || 'Aucun message fourni' }}
+          </button>
+        </td>
+
+        <td>{{ r.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+
+        <td>
+            <span
+              class="status-pill"
+              [ngClass]="{ pending: !r.handled, handled: r.handled }"
+            >
+              {{ r.handled ? 'Traité' : 'En attente' }}
+            </span>
+        </td>
+
+        <td>
+          <ng-container *ngIf="r.handled; else notHandled">
+            <div *ngIf="r.handledAt">
+              <strong>{{ r.handledAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+            </div>
+            <div *ngIf="r.handledBy">
+              par <span class="by">{{ r.handledBy }}</span>
+            </div>
+          </ng-container>
+          <ng-template #notHandled>
+            <span class="muted">—</span>
+          </ng-template>
+        </td>
+
+        <td>
+          <button
+            class="btn-toggle"
+            type="button"
+            (click)="toggleHandled(r)"
+          >
+            {{
+              r.handled
+                ? 'Marquer comme non traité'
+                : 'Marquer comme traité'
+            }}
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<!-- MODAL d'affichage du message complet -->
+<div class="message-modal-backdrop" *ngIf="selected">
+  <div class="message-modal">
+    <h3>Demande de réactivation de compte</h3>
+
+    <p class="modal-email">{{ selected.email }}</p>
+    <p class="modal-created">
+      Envoyée le
+      {{ selected.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+    </p>
+
+    <div class="modal-message-box">
+      <pre>{{ selected.message || 'Aucun message fourni.' }}</pre>
+    </div>
+
+    <button type="button" class="btn-close" (click)="closeMessage()">
+      Fermer
+    </button>
+  </div>
+</div>
+

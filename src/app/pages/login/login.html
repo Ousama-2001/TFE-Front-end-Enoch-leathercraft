@@ -3,7 +3,7 @@
     <h1>Connexion</h1>
     <p class="subtitle">Rejoins Enoch Leathercraft Shop</p>
 
-    <form (ngSubmit)="submit()" #f="ngForm">
+    <form (ngSubmit)="submit()" #f="ngForm" class="auth-form">
       <div class="form-group">
         <label for="identifier">Email ou pseudo</label>
         <input
@@ -33,44 +33,53 @@
       </button>
     </form>
 
-    <!-- 🔥 Bloc spécial compte supprimé -->
+    <!-- Bloc spécial compte supprimé -->
+    <!-- Bloc spécial compte supprimé -->
     <div class="reactivation-box" *ngIf="deletedAccount">
       <h3>Compte désactivé</h3>
       <p>
-        Votre compte est désactivé. Vous pouvez demander une réactivation en
-        confirmant votre adresse email et en ajoutant un message :
+        Votre compte a été désactivé. Vous pouvez demander une réactivation en
+        confirmant votre adresse email et en expliquant brièvement la raison :
       </p>
 
-      <div class="form-group">
-        <label for="reactivateEmail">Email</label>
-        <input
-          id="reactivateEmail"
-          type="email"
-          [(ngModel)]="reactivateEmail"
-          name="reactivateEmail"
-        />
+      <div class="form-group inline">
+        <div class="field">
+          <label for="reactivateEmail">Email</label>
+          <input
+            id="reactivateEmail"
+            type="email"
+            [(ngModel)]="reactivateEmail"
+            name="reactivateEmail"
+          />
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="reactivationMessage">Message (optionnel)</label>
+        <label for="reactivateMessage">Message (optionnel)</label>
         <textarea
-          id="reactivationMessage"
-          [(ngModel)]="reactivationMessage"
-          name="reactivationMessage"
-          rows="3"
-          placeholder="Expliquez brièvement pourquoi vous souhaitez réactiver votre compte..."
+          id="reactivateMessage"
+          name="reactivateMessage"
+          rows="4"
+          [(ngModel)]="reactivateMessage"
+          placeholder="Exemple : J'ai supprimé mon compte par erreur, j'aimerais le récupérer."
         ></textarea>
       </div>
 
+      <!-- ⬇⬇ erreur spécifique réactivation -->
+      <p *ngIf="reactivationError" class="error-message">
+        {{ reactivationError }}
+      </p>
+
       <button
         type="button"
-        class="primary-btn"
+        class="secondary-btn"
         (click)="requestReactivation()"
         [disabled]="loading"
       >
         Demander la réactivation
       </button>
     </div>
+
 
     <div class="auth-footer">
       <a routerLink="/register">Créer un compte</a>

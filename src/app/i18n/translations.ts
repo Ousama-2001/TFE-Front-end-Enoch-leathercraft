@@ -281,7 +281,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'contact.info.title': 'Informations atelier',
     'contact.info.description':
       'Enoch Leathercraft — Atelier basé à Bruxelles.',
-    'contact.info.email': 'Email : contact@enoch-leathercraft.shop',
+    'contact.info.email': 'Email : saidenoch@gmail.com',
     'contact.info.instagram': 'Instagram : @enoch.leathercraft',
 
     // ===== CHECKOUT =====
@@ -785,7 +785,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'contact.info.title': 'Workshop information',
     'contact.info.description':
       'Enoch Leathercraft — Workshop based in Brussels.',
-    'contact.info.email': 'Email: contact@enoch-leathercraft.shop',
+    'contact.info.email': 'Email: saidenoch@gmail.com',
     'contact.info.instagram': 'Instagram: @enoch.leathercraft',
 
     // ===== CHECKOUT =====
