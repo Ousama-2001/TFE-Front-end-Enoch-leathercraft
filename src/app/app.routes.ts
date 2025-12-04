@@ -131,6 +131,14 @@ export const routes: Routes = [
       import('./pages/privacy/privacy').then(m => m.PrivacyComponent),
   },
 
+  {
+    path: 'super-admin/requests',
+    loadComponent: () =>
+      import('./pages/super-admin-requests/super-admin-requests')
+        .then(m => m.SuperAdminRequestsPageComponent),
+    canActivate: [superAdminGuard],
+  },
+
   // --- Redirections ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: '**', redirectTo: 'home' }

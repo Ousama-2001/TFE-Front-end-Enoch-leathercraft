@@ -4,7 +4,6 @@
     <p class="subtitle">Rejoins Enoch Leathercraft Shop</p>
 
     <form (ngSubmit)="submit()" #f="ngForm">
-
       <!-- IDENTIFIANT -->
       <div class="form-group">
         <label for="identifier">Email ou pseudo</label>
@@ -29,7 +28,34 @@
         />
       </div>
 
+      <!-- Message d'erreur général -->
       <p *ngIf="error" class="error-message">{{ error }}</p>
+
+      <!-- 🔥 Bloc spécial compte supprimé -->
+      <div *ngIf="deletedAccount" class="reactivate-box">
+        <p class="reactivate-text">
+          Votre compte a été désactivé (par vous ou par un administrateur).<br />
+          Confirmez votre adresse email ci-dessous pour demander une
+          réactivation.
+        </p>
+
+        <label class="reactivate-label">
+          Email
+          <input
+            type="email"
+            name="reactivateEmail"
+            [(ngModel)]="reactivateEmail"
+          />
+        </label>
+
+        <button
+          type="button"
+          class="secondary-btn"
+          (click)="requestReactivation()"
+        >
+          Demander la réactivation
+        </button>
+      </div>
 
       <button class="primary-btn" type="submit" [disabled]="loading">
         {{ loading ? 'Connexion...' : 'Se connecter' }}

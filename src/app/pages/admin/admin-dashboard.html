@@ -38,11 +38,19 @@
         Gestion des avis
       </button>
 
-      <!-- 🔹 Nouvel onglet : gestion des utilisateurs -->
+      <!-- 🔐 Onglets réservés au SUPER ADMIN -->
       <button class="tab-btn"
+              *ngIf="isSuperAdmin"
               [class.active]="activeTab === 'users'"
               (click)="setTab('users')">
         Gestion des utilisateurs
+      </button>
+
+      <button class="tab-btn"
+              *ngIf="isSuperAdmin"
+              [class.active]="activeTab === 'requests'"
+              (click)="setTab('requests')">
+        Demandes & réactivations
       </button>
     </div>
   </div>
@@ -471,8 +479,13 @@
   </section>
 
   <!-- ========= ONGLET 6 : GESTION DES UTILISATEURS (SUPER ADMIN) ========= -->
-  <section *ngIf="activeTab === 'users'" class="users-tab">
+  <section *ngIf="activeTab === 'users' && isSuperAdmin" class="users-tab">
     <app-super-admin-users></app-super-admin-users>
+  </section>
+
+  <!-- ========= ONGLET 7 : DEMANDES & RÉACTIVATIONS (SUPER ADMIN) ========= -->
+  <section *ngIf="activeTab === 'requests' && isSuperAdmin" class="requests-tab">
+    <app-super-admin-requests></app-super-admin-requests>
   </section>
 
 </div>

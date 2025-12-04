@@ -1,11 +1,10 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 export interface LoginRequest {
-  identifier: string;   // email OU pseudo
+  identifier: string;
   password: string;
 }
 
@@ -17,7 +16,6 @@ export interface RegisterRequest {
   password: string;
 }
 
-// ➜ On ajoute SUPER_ADMIN ici
 export type UserRole = 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN';
 
 export interface LoginResponse {
@@ -50,6 +48,13 @@ export class AuthService {
       .pipe(tap((res) => this.setSession(res)));
   }
 
+  // 🔥 DEMANDE DE RÉACTIVATION
+  requestReactivation(email: string): Observable<string> {
+    return this.http.post(`${this.api}/auth/reactivate-request`, { email }, {
+      responseType: 'text'
+    });
+  }
+
   // ---------- SESSION ----------
   private setSession(res: LoginResponse): void {
     localStorage.setItem(this.tokenKey, res.token);
@@ -70,13 +75,11 @@ export class AuthService {
     return !!this.getToken();
   }
 
-  // ➜ ADMIN + SUPER_ADMIN ont accès à l'admin
   isAdmin(): boolean {
     const role = localStorage.getItem(this.roleKey) as UserRole | null;
     return role === 'ADMIN' || role === 'SUPER_ADMIN';
   }
 
-  // ➜ strictement super admin
   isSuperAdmin(): boolean {
     const role = localStorage.getItem(this.roleKey) as UserRole | null;
     return role === 'SUPER_ADMIN';

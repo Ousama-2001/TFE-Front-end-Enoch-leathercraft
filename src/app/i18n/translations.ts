@@ -327,6 +327,160 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'checkout.cart.totalLabel': 'Total',
     'checkout.cart.backToCart': '← Retour au panier',
 
+    // ===== TERMS (CGV Belgique) =====
+    'terms.title': 'Conditions Générales de Vente',
+    'terms.lastUpdate.label': 'Dernière mise à jour',
+
+    'terms.section1.title': '1. Informations légales',
+    'terms.section1.body':
+      'Le site Enoch Leathercraft est exploité par un artisan basé en Belgique. Les présentes Conditions Générales de Vente (CGV) s’appliquent à toutes les commandes passées via le site et encadrent les relations contractuelles entre Enoch Leathercraft et ses clients.',
+
+    'terms.section2.title': '2. Produits',
+    'terms.section2.body':
+      'Les articles proposés sont fabriqués à la main. Chaque pièce étant unique, de légères variations peuvent exister. Les photos présentées sur le site sont non contractuelles mais représentent le plus fidèlement possible les produits.',
+
+    'terms.section3.title': '3. Commandes',
+    'terms.section3.body':
+      'Toute commande vaut acceptation pleine et entière des présentes CGV. Le vendeur se réserve le droit d’annuler toute commande en cas de litige existant avec le client ou en cas de suspicion de fraude.',
+
+    'terms.section4.title': '4. Prix',
+    'terms.section4.body':
+      'Les prix affichés sont en euros (€) TTC. Enoch Leathercraft n’est pas assujetti à la TVA en tant qu’artisan (régime franchise – article 56bis CTVA). Les frais de livraison sont indiqués lors du passage en caisse.',
+
+    'terms.section5.title': '5. Paiement',
+    'terms.section5.body1':
+      'Les paiements sont sécurisés via un prestataire externe (par exemple Stripe). Les moyens acceptés peuvent inclure : carte bancaire, Visa, Mastercard, Apple Pay, Google Pay (selon disponibilité).',
+    'terms.section5.body2':
+      'La commande n’est confirmée qu’après validation définitive du paiement.',
+
+    'terms.section6.title': '6. Livraison',
+    'terms.section6.intro':
+      'Les envois sont effectués depuis la Belgique, avec numéro de suivi. Les délais indicatifs sont :',
+    'terms.section6.item1': 'Belgique : 2 à 4 jours ouvrables',
+    'terms.section6.item2': 'Europe : 4 à 7 jours ouvrables',
+    'terms.section6.item3': 'International : 7 à 14 jours ouvrables',
+    'terms.section6.outro':
+      'Enoch Leathercraft ne peut être tenu responsable des retards liés au transporteur.',
+
+    'terms.section7.title': '7. Droit de rétractation (Belgique & UE)',
+    'terms.section7.body1':
+      'Conformément au droit européen, vous disposez d’un délai de 14 jours à compter de la réception du produit pour exercer votre droit de rétractation, sans devoir motiver votre décision.',
+    'terms.section7.body2':
+      'Le produit doit être renvoyé dans son état d’origine, non utilisé, et correctement emballé. Les frais de retour sont à charge du client, sauf erreur de la part du vendeur.',
+
+    'terms.section8.title': '8. Produits personnalisés',
+    'terms.section8.body':
+      'Conformément à la loi, les produits fabriqués sur mesure ou personnalisés ne sont pas éligibles au droit de rétractation.',
+
+    'terms.section9.title': '9. Garanties',
+    'terms.section9.body':
+      'Tous les produits bénéficient de la garantie légale de conformité prévue par le droit belge et européen (2 ans). En cas de défaut constaté, merci de nous contacter dans les plus brefs délais avec une description et des photos du problème.',
+
+    'terms.section10.title': '10. Responsabilité',
+    'terms.section10.body':
+      'Le vendeur n’est pas responsable des dommages indirects, pertes de données ou mauvaise utilisation des produits. L’utilisation des produits se fait sous la responsabilité du client.',
+
+    'terms.section11.title': '11. Données personnelles',
+    'terms.section11.body':
+      'Les données collectées sont nécessaires à la gestion des commandes et à la relation client. Elles ne sont en aucun cas revendues à des tiers. Vous disposez d’un droit d’accès, de rectification et de suppression de vos données, sur simple demande ou via la page de contact.',
+
+    'terms.section12.title': '12. Litiges',
+    'terms.section12.body':
+      'En cas de litige, une solution à l’amiable sera privilégiée. À défaut, les tribunaux compétents seront ceux de Bruxelles (Belgique).',
+
+    'terms.section13.title': '13. Contact',
+    'terms.section13.body':
+      'Pour toute question concernant ces Conditions Générales de Vente, vous pouvez nous contacter via le formulaire de contact ou à l’adresse indiquée sur le site.',
+
+    // ===== PRIVACY (Politique de confidentialité) =====
+    'privacy.title': 'Politique de confidentialité',
+    'privacy.intro':
+      'Cette politique explique comment Enoch Leathercraft collecte, utilise et protège vos données personnelles lorsque vous utilisez notre site et nos services.',
+
+    'privacy.section1.title': '1. Responsable du traitement',
+    'privacy.section1.body':
+      'Le responsable du traitement des données est l’atelier Enoch Leathercraft, basé en Belgique. Pour toute question liée à la protection de vos données, vous pouvez nous contacter via la page Contact.',
+
+    'privacy.section2.title': '2. Données collectées',
+    'privacy.section2.intro':
+      'Nous collectons uniquement les données nécessaires au bon fonctionnement du site :',
+    'privacy.section2.item1':
+      'Données de compte : prénom, nom, adresse e-mail, mot de passe (haché), numéro de téléphone (facultatif).',
+    'privacy.section2.item2':
+      'Données de commande / livraison : adresse postale, pays, informations liées à vos commandes et à votre historique d’achats.',
+    'privacy.section2.item3':
+      'Données techniques : adresses IP, logs techniques, informations de navigation (via notamment des cookies techniques).',
+    'privacy.section2.item4':
+      'Données de paiement : les paiements sont traités par un prestataire externe (par exemple Stripe) ; nous ne stockons pas vos numéros de carte bancaire sur ce site.',
+
+    'privacy.section3.title': '3. Finalités du traitement',
+    'privacy.section3.intro': 'Vos données sont utilisées uniquement pour :',
+    'privacy.section3.item1': 'Créer et gérer votre compte client.',
+    'privacy.section3.item2':
+      'Traiter vos commandes et assurer la livraison des produits.',
+    'privacy.section3.item3':
+      'Gérer le service après-vente et répondre à vos demandes via le formulaire de contact.',
+    'privacy.section3.item4':
+      'Assurer la sécurité du site (logs techniques, prévention de la fraude) et réaliser des statistiques internes.',
+
+    'privacy.section4.title': '4. Base légale',
+    'privacy.section4.intro':
+      'Conformément au RGPD, le traitement de vos données repose sur :',
+    'privacy.section4.item1':
+      'L’exécution du contrat : traitement et livraison de vos commandes.',
+    'privacy.section4.item2':
+      'Votre consentement : lorsque vous créez un compte ou acceptez certains cookies.',
+    'privacy.section4.item3':
+      'L’intérêt légitime : amélioration du site, lutte contre la fraude, statistiques internes.',
+
+    'privacy.section5.title': '5. Durée de conservation',
+    'privacy.section5.item1':
+      'Les données de compte et d’achats sont conservées pendant la durée de vie de votre compte, puis archivées pendant les délais légaux applicables (par exemple en matière comptable).',
+    'privacy.section5.item2':
+      'Les logs techniques sont conservés pour une durée limitée, uniquement pour la sécurité et la maintenance du site.',
+
+    'privacy.section6.title': '6. Destinataires des données',
+    'privacy.section6.intro':
+      'Vos données sont accessibles uniquement aux personnes et prestataires qui en ont besoin :',
+    'privacy.section6.item1':
+      'L’atelier Enoch Leathercraft (gestion des commandes, support client).',
+    'privacy.section6.item2':
+      'Le prestataire de paiement (ex. Stripe) pour le traitement sécurisé des paiements.',
+    'privacy.section6.item3':
+      'Les éventuels prestataires techniques (hébergement, e-mail, etc.) agissant en tant que sous-traitants.',
+    'privacy.section6.outro':
+      'Nous ne vendons pas vos données personnelles à des tiers.',
+
+    'privacy.section7.title': '7. Vos droits (RGPD)',
+    'privacy.section7.intro':
+      'Conformément au Règlement Général sur la Protection des Dononnées (RGPD), vous disposez notamment des droits suivants :',
+    'privacy.section7.item1':
+      'Droit d’accès : obtenir une copie des données personnelles vous concernant.',
+    'privacy.section7.item2':
+      'Droit de rectification : corriger des données inexactes ou incomplètes.',
+    'privacy.section7.item3':
+      'Droit à l’effacement : demander la suppression de vos données, dans les limites prévues par la loi.',
+    'privacy.section7.item4':
+      'Droit à la limitation : demander la suspension temporaire du traitement de certaines données.',
+    'privacy.section7.item5':
+      'Droit d’opposition : vous opposer à certains traitements fondés sur l’intérêt légitime.',
+    'privacy.section7.item6':
+      'Droit à la portabilité : recevoir vos données dans un format structuré, lorsque cela s’applique.',
+    'privacy.section7.outro':
+      'Pour exercer vos droits, vous pouvez nous contacter via la page Contact. Vous disposez également du droit d’introduire une réclamation auprès de l’Autorité de protection des données en Belgique.',
+
+    'privacy.section8.title': '8. Cookies',
+    'privacy.section8.body':
+      'Le site utilise principalement des cookies techniques nécessaires au fonctionnement (session, panier, connexion). Des cookies de mesure d’audience ou de suivi peuvent également être utilisés, sous réserve de votre consentement lorsque cela est requis.',
+
+    'privacy.section9.title': '9. Sécurité',
+    'privacy.section9.body':
+      'Nous mettons en œuvre des mesures techniques et organisationnelles raisonnables pour protéger vos données contre l’accès non autorisé, la perte, la destruction ou l’altération.',
+
+    'privacy.section10.title': '10. Mise à jour de la politique',
+    'privacy.section10.body':
+      'Cette politique de confidentialité peut être mise à jour en fonction de l’évolution du site ou de la législation. La version en vigueur est celle affichée sur cette page.',
+
     // ===== FOOTER =====
     'footer.title': 'Enoch Leathercraft',
     'footer.description':
@@ -676,6 +830,160 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'checkout.cart.quantityPrefix': 'x',
     'checkout.cart.totalLabel': 'Total',
     'checkout.cart.backToCart': '← Back to cart',
+
+    // ===== TERMS (CGV) =====
+    'terms.title': 'Terms & Conditions of Sale',
+    'terms.lastUpdate.label': 'Last updated',
+
+    'terms.section1.title': '1. Legal information',
+    'terms.section1.body':
+      'The Enoch Leathercraft website is operated by an artisan based in Belgium. These Terms & Conditions of Sale apply to all orders placed via the site and govern the contractual relationship between Enoch Leathercraft and its customers.',
+
+    'terms.section2.title': '2. Products',
+    'terms.section2.body':
+      'The items offered are handmade. Because each piece is unique, slight variations may exist. The photos shown on the website are not contractual but are intended to represent the products as faithfully as possible.',
+
+    'terms.section3.title': '3. Orders',
+    'terms.section3.body':
+      'Any order implies full acceptance of these Terms & Conditions. The seller reserves the right to cancel any order in the event of an existing dispute with the customer or in case of suspected fraud.',
+
+    'terms.section4.title': '4. Prices',
+    'terms.section4.body':
+      'Prices are displayed in euros (€), all taxes included. Enoch Leathercraft is not subject to VAT as an artisan (small business exemption). Shipping costs are indicated during checkout.',
+
+    'terms.section5.title': '5. Payment',
+    'terms.section5.body1':
+      'Payments are processed securely through an external provider (for example Stripe). Accepted methods may include: bank card, Visa, Mastercard, Apple Pay, Google Pay (depending on availability).',
+    'terms.section5.body2':
+      'The order is only confirmed after final validation of the payment.',
+
+    'terms.section6.title': '6. Delivery',
+    'terms.section6.intro':
+      'Shipments are made from Belgium, with tracking number. Estimated delivery times are:',
+    'terms.section6.item1': 'Belgium: 2 to 4 business days',
+    'terms.section6.item2': 'Europe: 4 to 7 business days',
+    'terms.section6.item3': 'International: 7 to 14 business days',
+    'terms.section6.outro':
+      'Enoch Leathercraft cannot be held responsible for delays caused by the carrier.',
+
+    'terms.section7.title': '7. Right of withdrawal (Belgium & EU)',
+    'terms.section7.body1':
+      'In accordance with European law, you have 14 days from receipt of the product to exercise your right of withdrawal, without having to justify your decision.',
+    'terms.section7.body2':
+      'The product must be returned in its original condition, unused, and properly packaged. Return costs are borne by the customer, except in the case of an error on the part of the seller.',
+
+    'terms.section8.title': '8. Custom products',
+    'terms.section8.body':
+      'In accordance with the law, made-to-measure or personalised products are not eligible for the right of withdrawal.',
+
+    'terms.section9.title': '9. Warranty',
+    'terms.section9.body':
+      'All products benefit from the legal guarantee of conformity provided for by Belgian and European law (2 years). In case of a defect, please contact us as soon as possible with a description and photos of the issue.',
+
+    'terms.section10.title': '10. Liability',
+    'terms.section10.body':
+      'The seller is not liable for indirect damage, data loss or misuse of the products. The use of the products is under the customer’s responsibility.',
+
+    'terms.section11.title': '11. Personal data',
+    'terms.section11.body':
+      'The data collected are necessary for order management and customer relations. They are never sold to third parties. You have the right to access, rectify and delete your data, on simple request or via the contact page.',
+
+    'terms.section12.title': '12. Disputes',
+    'terms.section12.body':
+      'In the event of a dispute, an amicable solution will always be sought first. Failing that, the competent courts will be those of Brussels (Belgium).',
+
+    'terms.section13.title': '13. Contact',
+    'terms.section13.body':
+      'For any question regarding these Terms & Conditions of Sale, you can contact us via the contact form or at the address indicated on the website.',
+
+    // ===== PRIVACY (Privacy policy) =====
+    'privacy.title': 'Privacy policy',
+    'privacy.intro':
+      'This policy explains how Enoch Leathercraft collects, uses and protects your personal data when you use our website and services.',
+
+    'privacy.section1.title': '1. Data controller',
+    'privacy.section1.body':
+      'The data controller is the Enoch Leathercraft workshop, based in Belgium. For any question related to the protection of your data, you can contact us via the Contact page.',
+
+    'privacy.section2.title': '2. Data collected',
+    'privacy.section2.intro':
+      'We only collect the data necessary for the proper functioning of the site:',
+    'privacy.section2.item1':
+      'Account data: first name, last name, email address, password (hashed), phone number (optional).',
+    'privacy.section2.item2':
+      'Order / shipping data: postal address, country, and information related to your orders and purchase history.',
+    'privacy.section2.item3':
+      'Technical data: IP addresses, technical logs, browsing information (in particular via technical cookies).',
+    'privacy.section2.item4':
+      'Payment data: payments are processed by an external provider (for example Stripe); we do not store your card numbers on this site.',
+
+    'privacy.section3.title': '3. Purposes of processing',
+    'privacy.section3.intro': 'Your data are used only to:',
+    'privacy.section3.item1': 'Create and manage your customer account.',
+    'privacy.section3.item2':
+      'Process your orders and ensure product delivery.',
+    'privacy.section3.item3':
+      'Provide after-sales service and answer your requests via the contact form.',
+    'privacy.section3.item4':
+      'Ensure the security of the website (technical logs, fraud prevention) and produce internal statistics.',
+
+    'privacy.section4.title': '4. Legal basis',
+    'privacy.section4.intro':
+      'In accordance with the GDPR, the processing of your data is based on:',
+    'privacy.section4.item1':
+      'Performance of the contract: processing and delivery of your orders.',
+    'privacy.section4.item2':
+      'Your consent: for example when you create an account or accept certain cookies.',
+    'privacy.section4.item3':
+      'Legitimate interest: website improvement, fraud prevention, internal statistics.',
+
+    'privacy.section5.title': '5. Data retention period',
+    'privacy.section5.item1':
+      'Account and purchase data are kept for as long as your account is active, then archived for the legally required periods (for example for accounting purposes).',
+    'privacy.section5.item2':
+      'Technical logs are kept for a limited time, only for security and maintenance purposes.',
+
+    'privacy.section6.title': '6. Recipients of the data',
+    'privacy.section6.intro':
+      'Your data are only accessible to people and service providers who need them:',
+    'privacy.section6.item1':
+      'The Enoch Leathercraft workshop (order management, customer support).',
+    'privacy.section6.item2':
+      'The payment provider (e.g. Stripe) for secure payment processing.',
+    'privacy.section6.item3':
+      'Any technical providers (hosting, email, etc.) acting as processors.',
+    'privacy.section6.outro':
+      'We do not sell your personal data to third parties.',
+
+    'privacy.section7.title': '7. Your rights (GDPR)',
+    'privacy.section7.intro':
+      'In accordance with the General Data Protection Regulation (GDPR), you have the following rights:',
+    'privacy.section7.item1':
+      'Right of access: obtain a copy of the personal data concerning you.',
+    'privacy.section7.item2':
+      'Right to rectification: correct inaccurate or incomplete data.',
+    'privacy.section7.item3':
+      'Right to erasure: request the deletion of your data, within the limits provided by law.',
+    'privacy.section7.item4':
+      'Right to restriction: request temporary suspension of the processing of certain data.',
+    'privacy.section7.item5':
+      'Right to object: object to certain processing operations based on legitimate interest.',
+    'privacy.section7.item6':
+      'Right to data portability: receive your data in a structured format, when applicable.',
+    'privacy.section7.outro':
+      'To exercise your rights, you can contact us via the Contact page. You also have the right to lodge a complaint with the Data Protection Authority in your country of residence, in particular the Belgian Data Protection Authority for Belgium.',
+
+    'privacy.section8.title': '8. Cookies',
+    'privacy.section8.body':
+      'The website mainly uses technical cookies that are necessary for operation (session, cart, login). Audience measurement or tracking cookies may also be used, subject to your consent when required.',
+
+    'privacy.section9.title': '9. Security',
+    'privacy.section9.body':
+      'We implement reasonable technical and organisational measures to protect your data against unauthorised access, loss, destruction or alteration.',
+
+    'privacy.section10.title': '10. Updates to this policy',
+    'privacy.section10.body':
+      'This privacy policy may be updated as the website or legislation evolves. The version in force is the one displayed on this page.',
 
     // ===== FOOTER =====
     'footer.title': 'Enoch Leathercraft',

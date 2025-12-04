@@ -1,0 +1,210 @@
+// src/app/pages/super-admin-requests/super-admin-requests.scss
+.sa-requests {
+  padding: 1.5rem;
+  color: #e2e8f0;
+  background: #020617;
+}
+
+.sa-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: #9ca3af;
+    font-size: 0.9rem;
+  }
+}
+
+.sa-counters {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.counter {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  .label {
+    opacity: 0.8;
+  }
+
+  .value {
+    font-weight: 700;
+  }
+}
+
+.pill-pending {
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+}
+
+.pill-progress {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.pill-resolved {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.status-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-btn {
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  background: #020617;
+  color: #9ca3af;
+  cursor: pointer;
+
+  &.active {
+    border-color: #6366f1;
+    color: #e5e7eb;
+    background: rgba(79, 70, 229, 0.12);
+  }
+}
+
+.info {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.request-card {
+  background: #0b1120;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  padding: 1rem 1.2rem;
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+
+  h3 {
+    margin: 0.15rem 0 0.3rem;
+    font-size: 1rem;
+  }
+
+  .meta {
+    font-size: 0.8rem;
+    color: #9ca3af;
+
+    .email {
+      font-weight: 500;
+    }
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+
+  &.contact {
+    background: rgba(59, 130, 246, 0.12);
+    color: #bfdbfe;
+  }
+
+  &.reactivation {
+    background: rgba(249, 115, 22, 0.12);
+    color: #fed7aa;
+  }
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+
+  &.pending {
+    background: rgba(234, 179, 8, 0.12);
+    color: #facc15;
+  }
+  &.progress {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+  }
+  &.resolved {
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+  }
+}
+
+.request-body {
+  margin-top: 0.4rem;
+
+  .message {
+    font-size: 0.9rem;
+    color: #e5e7eb;
+    white-space: pre-line;
+  }
+
+  .resolved-info {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #bbf7d0;
+  }
+}
+
+.request-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  border-radius: 999px;
+  border: none;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &.primary {
+    background: #22c55e;
+    color: #022c22;
+  }
+
+  &.secondary {
+    background: #020617;
+    border: 1px solid #334155;
+    color: #e5e7eb;
+  }
+}

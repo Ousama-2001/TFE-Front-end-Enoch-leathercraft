@@ -1,3 +1,4 @@
+// src/app/pages/admin-dashboard/admin-dashboard.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +19,8 @@ import {
 import { AdminReviewsPageComponent } from '../admin-reviews/admin-reviews';
 // Gestion des utilisateurs (super admin)
 import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-users';
+// 🔥 Nouveau : gestion des demandes / réactivations (super admin)
+import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -28,7 +31,8 @@ import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-u
     CurrencyPipe,
     DatePipe,
     AdminReviewsPageComponent,
-    SuperAdminUsersPageComponent
+    SuperAdminUsersPageComponent,
+    SuperAdminRequestsPageComponent
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
@@ -36,7 +40,10 @@ import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-u
 export class AdminDashboardComponent implements OnInit {
 
   // ------- Onglet actif -------
-  activeTab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' = 'stats';
+  activeTab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' | 'requests' = 'stats';
+
+  // ------- Flag super admin (pour afficher certains onglets) -------
+  isSuperAdmin = false;
 
   // ------- Mode produits (actifs / archivés) -------
   productsMode: 'active' | 'archived' = 'active';
@@ -104,6 +111,9 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // 🔐 détermine si l'utilisateur connecté est SUPER_ADMIN
+    this.isSuperAdmin = this.auth.isSuperAdmin();
+
     this.loadStats();
     this.loadOrders();
     this.loadLowStock();
@@ -111,7 +121,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // ========= Onglets =========
-  setTab(tab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users'): void {
+  setTab(tab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' | 'requests'): void {
     this.activeTab = tab;
 
     if (tab === 'stats') {
@@ -123,7 +133,7 @@ export class AdminDashboardComponent implements OnInit {
     } else if (tab === 'products') {
       this.loadProducts();
     }
-    // 'reviews' et 'users' → les composants enfants gèrent leurs propres chargements
+    // 'reviews', 'users' et 'requests' → les composants enfants gèrent leurs propres chargements
   }
 
   // ========= STATS =========
@@ -405,7 +415,6 @@ export class AdminDashboardComponent implements OnInit {
     this.productService.restore(p.id).subscribe({
       next: () => {
         this.isSubmitting = false;
-        // On recharge la liste des archivés
         this.loadProducts();
       },
       error: (err) => {

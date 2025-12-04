@@ -71,6 +71,44 @@
   text-align: center;
 }
 
+/* 🔥 Bloc réactivation */
+.reactivate-box {
+  margin-bottom: 1.2rem;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  background: rgba(249, 115, 22, 0.09);
+  border: 1px solid rgba(249, 115, 22, 0.5);
+}
+
+.reactivate-text {
+  font-size: 0.82rem;
+  color: #fed7aa;
+  margin: 0 0 0.6rem;
+}
+
+.reactivate-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+  color: #fed7aa;
+  margin-bottom: 0.6rem;
+
+  input {
+    margin-top: 0.25rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+    border: 1px solid #7c2d12;
+    background: #020617;
+    color: #fef3c7;
+
+    &:focus {
+      outline: none;
+      border-color: #fb923c;
+      box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.5);
+    }
+  }
+}
+
 /* Bouton principal (même style que register) */
 .primary-btn {
   width: 100%;
@@ -95,6 +133,24 @@
 .primary-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Bouton secondaire pour la réactivation */
+.secondary-btn {
+  width: 100%;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  border: 1px solid #fb923c;
+  background: transparent;
+  color: #fed7aa;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(251, 146, 60, 0.1);
 }
 
 /* Footer liens */
