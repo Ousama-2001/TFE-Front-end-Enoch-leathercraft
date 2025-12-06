@@ -14,7 +14,7 @@ import { TranslatePipe } from './pipes/translate.pipe';
 import { LanguageService } from './services/language.service';
 import {
   WishlistService,
-  WishlistItem,
+  WishlistItemResponse,
 } from './services/wishlist.service';
 
 @Component({
@@ -72,8 +72,8 @@ export class AppComponent implements OnInit {
       });
 
       // 🔥 Charge aussi la wishlist pour le badge
-      this.wishlistService.get().subscribe({
-        next: (items: WishlistItem[]) => {
+      this.wishlistService.load().subscribe({
+        next: (items: WishlistItemResponse[]) => {
           this.wishlistCount = items.length;
         },
         error: () => {
@@ -85,6 +85,11 @@ export class AppComponent implements OnInit {
     // Met à jour le badge du panier en live
     this.cart$.subscribe((cart) => {
       this.cartQuantity = cart ? cart.totalQuantity : 0;
+    });
+
+    // Met à jour le badge wishlist en live (quand on toggle ailleurs)
+    this.wishlistService.wishlist$.subscribe((items) => {
+      this.wishlistCount = items.length;
     });
   }
 

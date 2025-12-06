@@ -1,6 +1,6 @@
+<!-- src/app/pages/wishlist/wishlist.html -->
 <div class="wishlist-page">
   <div class="wishlist-inner">
-
     <!-- HEADER -->
     <div class="wishlist-header">
       <h1>Ma wishlist</h1>
@@ -37,11 +37,14 @@
         class="wishlist-card"
         *ngFor="let w of items"
       >
-        <!-- IMAGE (même logique que products, mais via méthode TS) -->
-        <div class="wishlist-card-image">
+        <!-- IMAGE -->
+        <div
+          class="wishlist-card-image"
+          (click)="goToProduct(w.product.id)"
+        >
           <img
             [src]="getProductImageUrl(w)"
-            [alt]="w.product.name"
+            [alt]="w.product.name || 'Produit Enoch Leathercraft'"
           />
         </div>
 
@@ -70,6 +73,7 @@
             type="button"
             class="wishlist-add-cart-btn"
             (click)="addToCart(w)"
+            [disabled]="!canAddToCart(w)"
           >
             Ajouter au panier
           </button>

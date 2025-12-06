@@ -1,40 +1,66 @@
 // src/app/services/wishlist.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
+import { Product } from './products.service';
 
-export interface WishlistProduct {
+export interface WishlistItemResponse {
   id: number;
-  name: string;
-  price: number;
-  imageUrls?: string[];
+  product: Product;
+  createdAt: string;
 }
 
-export interface WishlistItem {
-  id: number;
-  product: WishlistProduct;
-}
-
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class WishlistService {
-  private readonly api = 'http://localhost:8080/api/wishlist';
+  private baseUrl = 'http://localhost:8080/api/wishlist';
+
+  private wishlistSubject = new BehaviorSubject<WishlistItemResponse[]>([]);
+  wishlist$ = this.wishlistSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
-  /** Récupère la wishlist de l'utilisateur connecté */
-  get(): Observable<WishlistItem[]> {
-    return this.http.get<WishlistItem[]>(this.api);
+  /** Charge la wishlist depuis le back */
+  load(): Observable<WishlistItemResponse[]> {
+    return this.http
+      .get<WishlistItemResponse[]>(this.baseUrl)
+      .pipe(tap((items) => this.wishlistSubject.next(items)));
   }
 
-  /** Ajoute un produit à la wishlist (par id) */
-  add(productId: number): Observable<void> {
-    return this.http.post<void>(`${this.api}/${productId}`, {});
+  /** Toggle like/unlike */
+  toggle(productId: number): Observable<WishlistItemResponse[]> {
+    return this.http
+      .post<WishlistItemResponse>(`${this.baseUrl}/${productId}`, {})
+      .pipe(
+        tap((item) => {
+          const current = this.wishlistSubject.value;
+          const exists = current.some((w) => w.product.id === productId);
+          const updated = exists
+            ? current.filter((w) => w.product.id !== productId)
+            : [...current, item];
+
+          this.wishlistSubject.next(updated);
+        }),
+        map(() => this.wishlistSubject.value)
+      );
   }
 
-  /** Retire un produit de la wishlist */
-  remove(productId: number): Observable<void> {
-    return this.http.delete<void>(`${this.api}/${productId}`);
+  /** Supprime un produit de la wishlist */
+  remove(productId: number): Observable<WishlistItemResponse[]> {
+    return this.http
+      .delete<void>(`${this.baseUrl}/${productId}`)
+      .pipe(
+        tap(() => {
+          const updated = this.wishlistSubject.value.filter(
+            (w) => w.product.id !== productId
+          );
+          this.wishlistSubject.next(updated);
+        }),
+        map(() => this.wishlistSubject.value)
+      );
+  }
+
+  /** Nombre d’items pour le badge */
+  getCount(): number {
+    return this.wishlistSubject.value.length;
   }
 }

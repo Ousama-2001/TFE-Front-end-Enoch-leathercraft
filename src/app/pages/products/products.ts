@@ -7,7 +7,7 @@ import { CartService, CartItem } from '../../services/cart.service';
 import { FormsModule } from '@angular/forms';
 import {
   WishlistService,
-  WishlistItem,
+  WishlistItemResponse,
 } from '../../services/wishlist.service';
 
 @Component({
@@ -55,7 +55,7 @@ export class ProductsComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
 
-    // Vérifie si l'utilisateur est connecté (même clé que ton interceptor)
+    // Vérifie si l'utilisateur est connecté (même clé que ton interceptor si tu veux)
     this.isLoggedIn = !!localStorage.getItem('auth_token');
 
     // Récupération des filtres depuis l'URL
@@ -86,12 +86,21 @@ export class ProductsComponent implements OnInit {
     if (this.isLoggedIn) {
       this.loadWishlist();
     }
+
+    // Reste synchronisé si la wishlist change ailleurs
+    this.wishlistService.wishlist$.subscribe((items) => {
+      this.wishlistProductIds = new Set(
+        items
+          .filter((it) => !!it.product && !!it.product.id)
+          .map((it) => it.product.id)
+      );
+    });
   }
 
   private loadWishlist(): void {
     this.wishlistLoading = true;
-    this.wishlistService.get().subscribe({
-      next: (items: WishlistItem[]) => {
+    this.wishlistService.load().subscribe({
+      next: (items: WishlistItemResponse[]) => {
         this.wishlistProductIds = new Set(
           items
             .filter((it) => !!it.product && !!it.product.id)
@@ -255,18 +264,16 @@ export class ProductsComponent implements OnInit {
       return;
     }
 
-    if (this.isFavorite(p)) {
-      this.wishlistService.remove(p.id).subscribe({
-        next: () => this.wishlistProductIds.delete(p.id!),
-        error: (err) =>
-          console.error('Erreur retrait wishlist pour produit', p.id, err),
-      });
-    } else {
-      this.wishlistService.add(p.id).subscribe({
-        next: () => this.wishlistProductIds.add(p.id!),
-        error: (err) =>
-          console.error('Erreur ajout wishlist pour produit', p.id, err),
-      });
-    }
+    this.wishlistService.toggle(p.id).subscribe({
+      next: (items: WishlistItemResponse[]) => {
+        this.wishlistProductIds = new Set(
+          items
+            .filter((it) => !!it.product && !!it.product.id)
+            .map((it) => it.product.id)
+        );
+      },
+      error: (err) =>
+        console.error('Erreur toggle wishlist pour produit', p.id, err),
+    });
   }
 }

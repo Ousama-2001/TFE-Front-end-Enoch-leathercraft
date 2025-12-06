@@ -1,3 +1,4 @@
+// src/app/services/products.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -59,7 +60,11 @@ export class ProductService {
   }
 
   // ------- MISE À JOUR AVEC IMAGE OPTIONNELLE -------
-  update(id: number, body: ProductCreateRequest, file?: File | null): Observable<Product> {
+  update(
+    id: number,
+    body: ProductCreateRequest,
+    file?: File | null
+  ): Observable<Product> {
     const formData = new FormData();
     formData.append('product', JSON.stringify(body));
 
@@ -67,7 +72,10 @@ export class ProductService {
       formData.append('file', file, file.name);
     }
 
-    return this.http.put<Product>(`${this.baseUrl}/admin/products/${id}`, formData);
+    return this.http.put<Product>(
+      `${this.baseUrl}/admin/products/${id}`,
+      formData
+    );
   }
 
   // ------- SOFT DELETE (passe en "archivé") -------
@@ -77,20 +85,31 @@ export class ProductService {
 
   // ------- RESTAURER UN PRODUIT ARCHIVÉ -------
   restore(id: number): Observable<Product> {
-    return this.http.patch<Product>(`${this.baseUrl}/admin/products/${id}/restore`, {});
+    return this.http.patch<Product>(
+      `${this.baseUrl}/admin/products/${id}/restore`,
+      {}
+    );
   }
 
+  /** 🔍 URL principale de l’image du produit */
   getMainImageUrl(product: Product): string {
-    if (!product.imageUrls || product.imageUrls.length === 0) {
-      return 'assets/images/placeholder-product.jpg';
+    // 1) Si on a des URLs en base
+    if (product.imageUrls && product.imageUrls.length > 0) {
+      const first = product.imageUrls[0];
+
+      // déjà une URL complète
+      if (first.startsWith('http://') || first.startsWith('https://')) {
+        return first;
+      }
+
+      // URL relative vers /uploads/products/... -> on préfixe par le back
+      if (first.startsWith('/')) {
+        return `http://localhost:8080${first}`;
+      }
+      return `http://localhost:8080/${first}`;
     }
 
-    const first = product.imageUrls[0];
-
-    if (first.startsWith('http://') || first.startsWith('https://')) {
-      return first;
-    }
-
-    return `http://localhost:8080/${first}`;
+    // 2) Sinon, placeholder (le même que tu utilises dans product-detail)
+    return 'assets/img/products/placeholder-bag.jpg';
   }
 }

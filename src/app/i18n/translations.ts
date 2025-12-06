@@ -1006,5 +1006,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'footer.follow.facebook': 'Facebook',
 
     'footer.bottom': 'Enoch Leathercraft — All rights reserved.',
+
   },
 };

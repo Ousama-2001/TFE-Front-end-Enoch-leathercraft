@@ -10,7 +10,10 @@ import {
   ProductReviewService,
   ProductReview,
 } from '../../services/product-review.service';
-import { WishlistService } from '../../services/wishlist.service';
+import {
+  WishlistService,
+  WishlistItemResponse,
+} from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -224,10 +227,10 @@ export class ProductDetailComponent implements OnInit {
     if (!this.product || !this.product.id) return;
     this.wishlistLoading = true;
 
-    this.wishlistService.get().subscribe({
-      next: (items) => {
+    this.wishlistService.load().subscribe({
+      next: (items: WishlistItemResponse[]) => {
         this.isInWishlist = items.some(
-          (it: any) => it.product && it.product.id === this.product!.id
+          (it) => it.product && it.product.id === this.product!.id
         );
         this.wishlistLoading = false;
       },
@@ -249,25 +252,16 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    if (this.isInWishlist) {
-      this.wishlistService.remove(this.product.id).subscribe({
-        next: () => {
-          this.isInWishlist = false;
-        },
-        error: (err) => {
-          console.error('Erreur retrait wishlist', err);
-        },
-      });
-    } else {
-      this.wishlistService.add(this.product.id).subscribe({
-        next: () => {
-          this.isInWishlist = true;
-        },
-        error: (err) => {
-          console.error('Erreur ajout wishlist', err);
-        },
-      });
-    }
+    this.wishlistService.toggle(this.product.id).subscribe({
+      next: (items: WishlistItemResponse[]) => {
+        this.isInWishlist = items.some(
+          (it) => it.product && it.product.id === this.product!.id
+        );
+      },
+      error: (err) => {
+        console.error('Erreur toggle wishlist', err);
+      },
+    });
   }
 
   // =================== AVIS PRODUIT ===================

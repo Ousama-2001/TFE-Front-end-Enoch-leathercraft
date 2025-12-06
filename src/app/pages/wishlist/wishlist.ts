@@ -1,92 +1,111 @@
 // src/app/pages/wishlist/wishlist.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+
+import { CartService } from '../../services/cart.service';
 import {
   WishlistService,
-  WishlistItem,
+  WishlistItemResponse,
 } from '../../services/wishlist.service';
-import { CartService } from '../../services/cart.service';
+import { ProductService } from '../../services/products.service';
 
 @Component({
   selector: 'app-wishlist',
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyPipe],
   templateUrl: './wishlist.html',
-  styleUrls: ['./wishlist.scss'],
+  styleUrls: ['./wishlist.scss'], // ✅ correspond bien à ton fichier
 })
 export class WishlistComponent implements OnInit {
-  items: WishlistItem[] = [];
+  items: WishlistItemResponse[] = [];
   loading = false;
   error = '';
 
   constructor(
     private wishlistService: WishlistService,
-    private cartService: CartService
+    private cartService: CartService,
+    private productService: ProductService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadWishlist();
-  }
-
-  private loadWishlist(): void {
     this.loading = true;
-    this.error = '';
 
-    this.wishlistService.get().subscribe({
+    // Charge une fois depuis le back
+    this.wishlistService.load().subscribe({
       next: (items) => {
-        this.items = items || [];
+        this.items = items;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Erreur chargement wishlist', err);
-        this.error = "Impossible de charger votre wishlist.";
+      error: () => {
+        this.error = 'Impossible de charger votre wishlist.';
         this.loading = false;
       },
     });
+
+    // Reste synchronisé si la wishlist change ailleurs
+    this.wishlistService.wishlist$.subscribe((items) => {
+      this.items = items;
+    });
   }
 
+  /** 🔍 URL d’image : même logique que les produits */
+  getProductImageUrl(w: WishlistItemResponse): string {
+    return this.productService.getMainImageUrl(w.product);
+  }
+
+  /** 🔗 Aller sur la fiche produit */
+  goToProduct(productId: number): void {
+    this.router.navigate(['/products', productId]);
+  }
+
+  /** ❌ Retirer de la wishlist */
   remove(productId: number): void {
     this.wishlistService.remove(productId).subscribe({
-      next: () => {
-        this.items = this.items.filter(
-          (it) => it.product.id !== productId
-        );
-      },
       error: (err) => {
-        console.error('Erreur suppression wishlist', err);
+        console.error('Erreur lors du retrait de la wishlist', err);
       },
     });
   }
 
-  addToCart(item: WishlistItem): void {
-    const p = item.product;
-    if (!p || !p.id) {
-      return;
+  /** ✅ Vérifie si on peut ajouter au panier (stock respecté) */
+  canAddToCart(w: WishlistItemResponse): boolean {
+    const p = w.product;
+    if (!p || !p.id) return false;
+
+    // Pas de stock configuré → on autorise
+    if (p.stockQuantity == null) return true;
+
+    const currentQty = this.cartService.getQuantity(p.id);
+    return p.stockQuantity > 0 && currentQty < p.stockQuantity;
+  }
+
+  /** 🧺 Ajouter au panier depuis la wishlist (avec contrôle de stock) */
+  addToCart(w: WishlistItemResponse): void {
+    const p = w.product;
+    if (!p || !p.id) return;
+
+    const stock = p.stockQuantity;
+    const currentQty = this.cartService.getQuantity(p.id);
+
+    if (stock != null) {
+      if (stock <= 0) {
+        alert('Ce produit est en rupture de stock.');
+        return;
+      }
+      if (currentQty >= stock) {
+        alert(
+          'Vous avez déjà atteint le stock maximum pour ce produit dans votre panier.'
+        );
+        return;
+      }
     }
 
     this.cartService.addProduct(p.id, 1).subscribe({
-      next: () => {
-        // Optionnel : petit log ou toast
-        console.log('Produit ajouté au panier depuis la wishlist');
-      },
       error: (err) => {
         console.error('Erreur ajout panier depuis wishlist', err);
       },
     });
-  }
-
-  /**
-   * Même logique que dans products.html :
-   * si imageUrls existe et a au moins 1 élément,
-   * on prend http://localhost:8080 + imageUrls[0],
-   * sinon placeholder.
-   */
-  getProductImageUrl(item: WishlistItem): string {
-    const imgs = item.product.imageUrls;
-    if (imgs && imgs.length > 0) {
-      return 'http://localhost:8080' + imgs[0];
-    }
-    return 'assets/img/products/placeholder-bag.jpg';
   }
 }
