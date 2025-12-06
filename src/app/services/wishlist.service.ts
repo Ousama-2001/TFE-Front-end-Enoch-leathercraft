@@ -63,4 +63,10 @@ export class WishlistService {
   getCount(): number {
     return this.wishlistSubject.value.length;
   }
+  clear(): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/clear`).pipe(
+      tap(() => this.wishlistSubject.next([]))
+    );
+  }
+
 }

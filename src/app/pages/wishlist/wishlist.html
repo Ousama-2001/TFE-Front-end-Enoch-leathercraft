@@ -1,4 +1,3 @@
-<!-- src/app/pages/wishlist/wishlist.html -->
 <div class="wishlist-page">
   <div class="wishlist-inner">
     <!-- HEADER -->
@@ -10,7 +9,7 @@
     </div>
 
     <!-- Chargement -->
-    <div *ngIf="loading">
+    <div *ngIf="loading" class="wishlist-loading">
       Chargement de votre wishlist...
     </div>
 
@@ -27,16 +26,19 @@
       Votre wishlist est vide.
       <a routerLink="/products">Voir les produits</a>
     </div>
+    <div class="wishlist-actions" *ngIf="items.length > 0">
+      <button class="btn-clear" (click)="clearWishlist()">
+        Vider ma wishlist
+      </button>
+    </div>
+
 
     <!-- LISTE DES PRODUITS -->
     <div
       class="wishlist-grid"
       *ngIf="!loading && !error && items.length > 0"
     >
-      <article
-        class="wishlist-card"
-        *ngFor="let w of items"
-      >
+      <article class="wishlist-card" *ngFor="let w of paginatedItems">
         <!-- IMAGE -->
         <div
           class="wishlist-card-image"
@@ -73,12 +75,43 @@
             type="button"
             class="wishlist-add-cart-btn"
             (click)="addToCart(w)"
-            [disabled]="!canAddToCart(w)"
+            [disabled]="isAddDisabled(w)"
           >
             Ajouter au panier
           </button>
         </div>
+
+        <!-- ✅ MESSAGE STOCK -->
+        <p class="wishlist-stock-warning" *ngIf="isMaxQuantityReached(w)">
+          Stock maximum atteint pour ce produit.
+        </p>
       </article>
+    </div>
+
+    <!-- PAGINATION -->
+    <div
+      class="wishlist-pagination"
+      *ngIf="!loading && !error && items.length > pageSize"
+    >
+      <button
+        class="wishlist-page-btn"
+        [disabled]="page === 1"
+        (click)="changePage(page - 1)"
+      >
+        ← Précédent
+      </button>
+
+      <span class="wishlist-page-info">
+        Page {{ page }} / {{ totalPages }}
+      </span>
+
+      <button
+        class="wishlist-page-btn"
+        [disabled]="page === totalPages"
+        (click)="changePage(page + 1)"
+      >
+        Suivant →
+      </button>
     </div>
   </div>
 </div>
