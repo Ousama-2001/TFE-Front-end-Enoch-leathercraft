@@ -4,14 +4,20 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AccountService, Profile, UserOrder } from '../../services/account.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';  // ⭐ import RouterModule
 
 type AccountTab = 'overview' | 'profile' | 'address' | 'orders' | 'security';
 
 @Component({
   selector: 'app-account-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CurrencyPipe,
+    DatePipe,
+    RouterModule           // ⭐ pour que routerLink fonctionne
+  ],
   templateUrl: './account-page.html',
   styleUrls: ['./account-page.scss']
 })

@@ -1,65 +1,91 @@
+/* src/app/pages/my-orders/my-orders.scss */
+
 .my-orders-page {
-  padding: 2rem 1.5rem;
-  color: #e5e7eb;
-  font-family: system-ui, sans-serif;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: #e2e8f0;
 
   h1 {
-    font-size: 1.6rem;
-    margin-bottom: 0.25rem;
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
   }
 
   .subtitle {
-    color: #9ca3af;
-    margin-bottom: 1.5rem;
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
   }
 }
 
-.info {
-  font-size: 0.9rem;
-  color: #9ca3af;
+/* Messages */
+.alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.7rem;
+  font-size: 0.86rem;
+  margin-bottom: 1rem;
+
+  &.info {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    color: #bfdbfe;
+  }
+
+  &.error {
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    color: #fecaca;
+  }
 }
 
+.info,
 .error {
   font-size: 0.9rem;
-  color: #fecaca;
+  margin-bottom: 1rem;
 }
 
 .empty {
   margin-top: 1rem;
-  font-size: 0.95rem;
+  padding: 1.2rem 1rem;
+  border-radius: 0.9rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #1e293b;
   color: #9ca3af;
 }
 
+/* Liste des commandes */
 .orders-list {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
-  margin-top: 0.5rem;
+  gap: 1rem;
 }
 
+/* Carte commande */
 .order-card {
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.9);
+  background: #020617;
+  border-radius: 1rem;
+  border: 1px solid rgba(30, 64, 175, 0.5);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+  padding: 1rem 1.2rem;
 }
 
+/* Header de la carte */
 .order-main {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
+  margin-bottom: 0.4rem;
 
   h2 {
     font-size: 1rem;
-    margin: 0;
+    margin: 0 0 0.2rem;
   }
 
   .date {
+    margin: 0;
     font-size: 0.8rem;
-    color: #9ca3af;
-    margin: 0.2rem 0 0;
+    color: #94a3b8;
   }
 }
 
@@ -75,63 +101,105 @@
   }
 }
 
-.order-footer {
-  margin-top: 0.7rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Résumé */
+.order-summary {
   font-size: 0.85rem;
-
-  .items {
-    color: #9ca3af;
-    margin: 0;
-  }
-
-  .link-detail {
-    color: #60a5fa;
-    text-decoration: none;
-    font-weight: 500;
-  }
-
-  .link-detail:hover {
-    text-decoration: underline;
-  }
+  color: #9ca3af;
+  margin-bottom: 0.6rem;
 }
 
-/* Badges statut réutilisés */
+/* Actions */
+.order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
-.status-pill {
+/* Boutons */
+.btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.65rem;
+  justify-content: center;
   border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease-out;
+  white-space: nowrap;
+
+  &.primary {
+    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+    color: #f9fafb;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(79, 70, 229, 0.65);
+    }
+  }
+
+  &.secondary {
+    background: #111827;
+    color: #e5e7eb;
+    border: 1px solid #1f2937;
+
+    &:hover:not(:disabled) {
+      background: #0b1120;
+    }
+  }
+
+  &.ghost {
+    background: transparent;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+
+    &:hover:not(:disabled) {
+      background: rgba(148, 163, 184, 0.12);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
 }
 
-.status-pill.pending {
-  background: rgba(250, 204, 21, 0.15);
-  color: #facc15;
+/* Status pill */
+.status-pill {
+  padding: 0.18rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+
+  &.pending {
+    background: rgba(251, 191, 36, 0.12);
+    color: #facc15;
+  }
+
+  &.paid {
+    background: rgba(22, 163, 74, 0.12);
+    color: #4ade80;
+  }
+
+  &.shipped,
+  &.delivered {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+  }
+
+  &.cancelled {
+    background: rgba(248, 113, 113, 0.15);
+    color: #fecaca;
+  }
 }
 
-.status-pill.paid {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
+/* Responsive */
+@media (max-width: 640px) {
+  .my-orders-page {
+    padding-inline: 1rem;
+  }
 
-.status-pill.shipped {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-}
-
-.status-pill.cancelled {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-}
-
-@media (max-width: 700px) {
   .order-main {
     flex-direction: column;
     align-items: flex-start;

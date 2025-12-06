@@ -327,3 +327,51 @@ label {
     flex-wrap: wrap;
   }
 }
+
+/* Mini-liste de commandes dans le profil */
+.mini-orders-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.86rem;
+    padding: 0.5rem 0.4rem;
+    border-bottom: 1px solid #111827;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .mini-order-main {
+    .ref {
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+  }
+
+  .mini-status {
+    font-size: 0.78rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.12);
+    color: #e5e7eb;
+  }
+}
+
+.orders-link-wrapper {
+  margin-top: 0.9rem;
+}
+

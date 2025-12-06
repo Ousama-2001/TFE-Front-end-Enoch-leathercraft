@@ -169,30 +169,37 @@
 
       <p *ngIf="loadingOrders">Chargement...</p>
 
-      <table *ngIf="!loadingOrders && myOrders.length" class="orders">
-        <thead>
-        <tr>
-          <th>Réf</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Statut</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let o of myOrders">
-          <td>{{ o.reference }}</td>
-          <td>{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-          <td>{{ o.totalAmount | currency:'EUR' }}</td>
-          <td>{{ o.status }}</td>
-        </tr>
-        </tbody>
-      </table>
-
+      <!-- Aucun historique -->
       <p *ngIf="!loadingOrders && !myOrders.length" class="muted">
-        Vous n'avez pas encore de commande.
+        Vous n'avez pas encore passé de commande.
       </p>
+
+      <!-- Mini-liste des 3 dernières commandes -->
+      <ul *ngIf="!loadingOrders && myOrders.length" class="mini-orders-list">
+        <li *ngFor="let o of myOrders | slice:0:3">
+          <div class="mini-order-main">
+            <div class="ref">Réf : {{ o.reference }}</div>
+            <div class="meta">
+              {{ o.createdAt | date:'dd/MM/yy HH:mm' }} ·
+              {{ o.totalAmount | currency:'EUR' }}
+            </div>
+          </div>
+          <span class="mini-status">
+          {{ o.status }}
+        </span>
+        </li>
+      </ul>
+
+      <!-- Lien vers la vraie page commandes -->
+      <div class="orders-link-wrapper" *ngIf="myOrders.length">
+        <a routerLink="/my-orders" class="btn primary">
+          Voir toutes mes commandes →
+        </a>
+      </div>
     </div>
   </section>
+
+
 
   <!-- ========== SÉCURITÉ ========== -->
   <section *ngIf="activeTab === 'security'" class="section security-section">

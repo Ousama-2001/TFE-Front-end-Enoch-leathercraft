@@ -1,3 +1,4 @@
+// src/app/services/order.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -15,6 +16,11 @@ export interface OrderResponse {
   status: string;
   createdAt: string;
   items: OrderItemResponse[];
+}
+
+export interface StripeCheckoutResponse {
+  checkoutUrl: string;
+  orderReference: string;
 }
 
 @Injectable({
@@ -53,5 +59,32 @@ export class OrderService {
       `${this.baseUrl}/${id}`,
       { headers }
     );
+  }
+
+  cancelOrder(id: number): Observable<OrderResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<OrderResponse>(
+      `${this.baseUrl}/${id}/cancel`,
+      {},
+      { headers }
+    );
+  }
+
+  // 🔥 maintenant on récupère l'URL Stripe
+  payOrder(id: number): Observable<StripeCheckoutResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<StripeCheckoutResponse>(
+      `${this.baseUrl}/${id}/pay`,
+      {},
+      { headers }
+    );
+  }
+
+  downloadInvoice(id: number): Observable<Blob> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.baseUrl}/${id}/invoice`, {
+      headers,
+      responseType: 'blob'
+    });
   }
 }

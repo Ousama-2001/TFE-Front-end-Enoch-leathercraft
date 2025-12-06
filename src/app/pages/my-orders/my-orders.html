@@ -1,16 +1,24 @@
+<!-- src/app/pages/my-orders/my-orders.html -->
 <div class="my-orders-page">
   <h1>Mes commandes</h1>
   <p class="subtitle">
     Retrouvez ici l’historique de vos commandes Enoch Leathercraft.
   </p>
 
+  <!-- Messages globaux -->
+  <p class="alert info" *ngIf="infoMessage">{{ infoMessage }}</p>
+  <p class="alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <!-- Chargement / erreurs -->
   <p class="info" *ngIf="loading">Chargement de vos commandes...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
+  <!-- État vide -->
   <div *ngIf="!loading && !error && orders.length === 0" class="empty">
     Vous n’avez encore passé aucune commande.
   </div>
 
+  <!-- LISTE DES COMMANDES -->
   <div class="orders-list" *ngIf="!loading && !error && orders.length > 0">
     <article class="order-card" *ngFor="let o of orders">
       <div class="order-main">
@@ -22,7 +30,7 @@
         </div>
 
         <div class="order-meta">
-          <span class="status-pill" [ngClass]="o.status.toLowerCase()">
+          <span [class]="getStatusClass(o.status)">
             {{ getStatusLabel(o.status) }}
           </span>
           <div class="amount">
@@ -31,13 +39,53 @@
         </div>
       </div>
 
-      <div class="order-footer">
-        <p class="items">
-          {{ o.items.length }} article(s)
-        </p>
-        <a [routerLink]="['/account/orders', o.id]" class="link-detail">
+      <!-- petit résumé -->
+      <div class="order-summary">
+        {{ o.items.length }} article(s)
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="order-actions">
+        <!-- ✅ lien vers /my-orders/:id -->
+        <a
+          [routerLink]="['/my-orders', o.id]"
+          class="btn ghost"
+        >
           Voir le détail →
         </a>
+
+        <!-- Annuler -->
+        <button
+          type="button"
+          class="btn secondary"
+          *ngIf="canCancel(o)"
+          (click)="cancelOrder(o)"
+          [disabled]="actionLoading[o.id]"
+        >
+          Annuler
+        </button>
+
+        <!-- Payer -->
+        <button
+          type="button"
+          class="btn primary"
+          *ngIf="canPay(o)"
+          (click)="payOrder(o)"
+          [disabled]="actionLoading[o.id]"
+        >
+          {{ actionLoading[o.id] ? 'Traitement...' : 'Payer maintenant' }}
+        </button>
+
+        <!-- Facture -->
+        <button
+          type="button"
+          class="btn ghost"
+          *ngIf="canDownloadInvoice(o)"
+          (click)="downloadInvoice(o)"
+          [disabled]="actionLoading[o.id]"
+        >
+          Télécharger la facture
+        </button>
       </div>
     </article>
   </div>

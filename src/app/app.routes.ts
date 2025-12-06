@@ -8,6 +8,8 @@ import { AdminGuard } from './guards/admin-guard';
 import { OrderSuccessComponent } from './pages/order-sucess/order-sucess';
 import { superAdminGuard } from './guards/super-admin.guard';
 import { CheckoutComponent } from './pages/checkout/checkout';
+import {MyOrdersComponent} from './pages/my-orders/my-orders';
+import {OrderDetailComponent} from './pages/order-detail/order-detail';
 
 export const routes: Routes = [
 
@@ -146,6 +148,9 @@ export const routes: Routes = [
         .then(m => m.SuperAdminRequestsPageComponent),
     canActivate: [superAdminGuard],
   },
+  // ✅ liste & détail des commandes
+  { path: 'my-orders', component: MyOrdersComponent },
+  { path: 'my-orders/:id', component: OrderDetailComponent },
 
   // --- Redirections ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
