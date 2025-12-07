@@ -23,6 +23,11 @@ export interface StripeCheckoutResponse {
   orderReference: string;
 }
 
+export interface ReturnRequestPayload {
+  reason: string;
+  comment?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -70,12 +75,20 @@ export class OrderService {
     );
   }
 
-  // 🔥 maintenant on récupère l'URL Stripe
   payOrder(id: number): Observable<StripeCheckoutResponse> {
     const headers = this.getAuthHeaders();
     return this.http.post<StripeCheckoutResponse>(
       `${this.baseUrl}/${id}/pay`,
       {},
+      { headers }
+    );
+  }
+
+  requestReturn(id: number, payload: ReturnRequestPayload): Observable<OrderResponse> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<OrderResponse>(
+      `${this.baseUrl}/${id}/return`,
+      payload,
       { headers }
     );
   }

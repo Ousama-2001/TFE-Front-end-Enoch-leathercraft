@@ -1,3 +1,4 @@
+// src/app/pages/order-detail/order-detail.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -15,6 +16,9 @@ export class OrderDetailComponent implements OnInit {
   order: OrderResponse | null = null;
   loading = false;
   error: string | null = null;
+
+  currentLang: 'fr' | 'en' =
+    (localStorage.getItem('lang') === 'en' ? 'en' : 'fr');
 
   constructor(
     private route: ActivatedRoute,
@@ -51,19 +55,28 @@ export class OrderDetailComponent implements OnInit {
     return this.order.items.reduce((sum, item) => sum + item.quantity, 0);
   }
 
-  // ↪ Utilisé dans ton template : {{ getStatusLabel(order.status) }}
   getStatusLabel(status: string): string {
-    switch (status) {
-      case 'PENDING':
-        return 'En attente';
-      case 'PAID':
-        return 'Payée';
-      case 'SHIPPED':
-        return 'Expédiée';
-      case 'CANCELLED':
-        return 'Annulée';
-      default:
-        return status;
-    }
+    const labels = {
+      fr: {
+        PENDING: 'En attente',
+        PAID: 'Payée',
+        SHIPPED: 'Expédiée',
+        DELIVERED: 'Livrée',
+        CANCELLED: 'Annulée',
+        RETURN_REQUESTED: 'Retour demandé'
+      },
+      en: {
+        PENDING: 'Pending',
+        PAID: 'Paid',
+        SHIPPED: 'Shipped',
+        DELIVERED: 'Delivered',
+        CANCELLED: 'Cancelled',
+        RETURN_REQUESTED: 'Return requested'
+      }
+    } as const;
+
+    const lang = this.currentLang;
+    // @ts-ignore
+    return labels[lang][status] ?? status;
   }
 }

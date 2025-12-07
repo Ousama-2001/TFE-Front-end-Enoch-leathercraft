@@ -5,20 +5,16 @@
     Retrouvez ici l’historique de vos commandes Enoch Leathercraft.
   </p>
 
-  <!-- Messages globaux -->
   <p class="alert info" *ngIf="infoMessage">{{ infoMessage }}</p>
   <p class="alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-  <!-- Chargement / erreurs -->
   <p class="info" *ngIf="loading">Chargement de vos commandes...</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
-  <!-- État vide -->
   <div *ngIf="!loading && !error && orders.length === 0" class="empty">
     Vous n’avez encore passé aucune commande.
   </div>
 
-  <!-- LISTE DES COMMANDES -->
   <div class="orders-list" *ngIf="!loading && !error && orders.length > 0">
     <article class="order-card" *ngFor="let o of orders">
       <div class="order-main">
@@ -39,14 +35,11 @@
         </div>
       </div>
 
-      <!-- petit résumé -->
       <div class="order-summary">
         {{ o.items.length }} article(s)
       </div>
 
-      <!-- ACTIONS -->
       <div class="order-actions">
-        <!-- ✅ lien vers /my-orders/:id -->
         <a
           [routerLink]="['/my-orders', o.id]"
           class="btn ghost"
@@ -54,7 +47,6 @@
           Voir le détail →
         </a>
 
-        <!-- Annuler -->
         <button
           type="button"
           class="btn secondary"
@@ -65,7 +57,6 @@
           Annuler
         </button>
 
-        <!-- Payer -->
         <button
           type="button"
           class="btn primary"
@@ -76,7 +67,16 @@
           {{ actionLoading[o.id] ? 'Traitement...' : 'Payer maintenant' }}
         </button>
 
-        <!-- Facture -->
+        <button
+          type="button"
+          class="btn secondary"
+          *ngIf="canRequestReturn(o) && !showReturnForm[o.id]"
+          (click)="openReturnForm(o)"
+          [disabled]="actionLoading[o.id]"
+        >
+          Demander un retour
+        </button>
+
         <button
           type="button"
           class="btn ghost"
@@ -87,6 +87,50 @@
           Télécharger la facture
         </button>
       </div>
+
+      <!-- Formulaire de retour -->
+      <div class="return-form" *ngIf="showReturnForm[o.id]">
+        <h3>Motif du retour</h3>
+
+        <label>
+          Sélectionnez un motif
+          <select [(ngModel)]="selectedReason[o.id]">
+            <option *ngFor="let r of returnReasons" [ngValue]="r">
+              {{ r }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Commentaire (optionnel)
+          <textarea
+            rows="3"
+            [(ngModel)]="returnComment[o.id]"
+            placeholder="Ajoutez un détail sur le problème rencontré...">
+          </textarea>
+        </label>
+
+        <div class="return-actions">
+          <button
+            type="button"
+            class="btn primary"
+            (click)="submitReturn(o)"
+            [disabled]="actionLoading[o.id]"
+          >
+            Confirmer la demande de retour
+          </button>
+
+          <button
+            type="button"
+            class="btn ghost"
+            (click)="cancelReturnForm(o)"
+            [disabled]="actionLoading[o.id]"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+
     </article>
   </div>
 </div>
