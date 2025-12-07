@@ -1,5 +1,3 @@
-/* src/app/pages/admin/admin-dashboard.scss */
-
 .admin-dashboard {
   padding: 2rem;
   color: #e2e8f0;
@@ -205,6 +203,11 @@
   margin-top: 0.5rem;
 }
 
+/* juste au cas où on veut styliser différemment */
+.returns-page {
+  /* styles spécifiques aux retours si besoin */
+}
+
 .orders-header {
   display: flex;
   flex-direction: column;
@@ -283,6 +286,12 @@
 .status-pill.delivered {
   background: rgba(148, 163, 184, 0.2);
   color: #e5e7eb;
+}
+
+/* 🆕 statut retour demandé */
+.status-pill.return-requested {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fed7aa;
 }
 
 /* bouton lien pour détail commande */

@@ -20,6 +20,13 @@
         Commandes
       </button>
 
+      <!-- 🆕 Onglet retours -->
+      <button class="tab-btn"
+              [class.active]="activeTab === 'returns'"
+              (click)="setTab('returns')">
+        Retours
+      </button>
+
       <button class="tab-btn"
               [class.active]="activeTab === 'products'"
               (click)="setTab('products')">
@@ -210,6 +217,49 @@
       </div>
     </div>
 
+  </section>
+
+  <!-- ========= ONGLET 2bis : RETOURS ========= -->
+  <section *ngIf="activeTab === 'returns'" class="orders-page returns-page">
+
+    <div class="orders-header">
+      <div>
+        <h2>Gestion des retours</h2>
+        <p class="hint">
+          Liste des commandes pour lesquelles un client a demandé un retour (statut RETURN_REQUESTED).
+        </p>
+      </div>
+    </div>
+
+    <p class="info" *ngIf="ordersLoading">Chargement des retours...</p>
+    <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
+
+    <table class="orders-table" *ngIf="!ordersLoading && returnOrders.length > 0">
+      <thead>
+      <tr>
+        <th>Référence</th>
+        <th>Date</th>
+        <th>Statut</th>
+        <th>Montant</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let o of returnOrders">
+        <td>{{ o.reference }}</td>
+        <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <span class="status-pill" [ngClass]="getStatusClass(o.status)">
+            {{ o.status }}
+          </span>
+        </td>
+        <td>{{ o.totalAmount | currency:'EUR' }}</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <p class="info" *ngIf="!ordersLoading && returnOrders.length === 0">
+      Aucun retour demandé pour le moment.
+    </p>
   </section>
 
   <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->

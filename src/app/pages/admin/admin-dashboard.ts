@@ -1,4 +1,3 @@
-// src/app/pages/admin-dashboard/admin-dashboard.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +18,7 @@ import {
 import { AdminReviewsPageComponent } from '../admin-reviews/admin-reviews';
 // Gestion des utilisateurs (super admin)
 import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-users';
-// 🔥 Nouveau : gestion des demandes / réactivations (super admin)
+// Gestion des demandes & réactivations (super admin)
 import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
 
 @Component({
@@ -40,9 +39,17 @@ import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-a
 export class AdminDashboardComponent implements OnInit {
 
   // ------- Onglet actif -------
-  activeTab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' | 'requests' = 'stats';
+  activeTab:
+    | 'stats'
+    | 'orders'
+    | 'returns'
+    | 'products'
+    | 'stock'
+    | 'reviews'
+    | 'users'
+    | 'requests' = 'stats';
 
-  // ------- Flag super admin (pour afficher certains onglets) -------
+  // ------- Flag super admin -------
   isSuperAdmin = false;
 
   // ------- Mode produits (actifs / archivés) -------
@@ -121,19 +128,29 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   // ========= Onglets =========
-  setTab(tab: 'stats' | 'orders' | 'products' | 'stock' | 'reviews' | 'users' | 'requests'): void {
+  setTab(
+    tab:
+      | 'stats'
+      | 'orders'
+      | 'returns'
+      | 'products'
+      | 'stock'
+      | 'reviews'
+      | 'users'
+      | 'requests'
+  ): void {
     this.activeTab = tab;
 
     if (tab === 'stats') {
       if (!this.stats) this.loadStats();
-    } else if (tab === 'orders') {
+    } else if (tab === 'orders' || tab === 'returns') {
       if (!this.orders.length) this.loadOrders();
     } else if (tab === 'stock') {
       this.loadLowStock();
     } else if (tab === 'products') {
       this.loadProducts();
     }
-    // 'reviews', 'users' et 'requests' → les composants enfants gèrent leurs propres chargements
+    // 'reviews', 'users' et 'requests' → géré par les composants enfants
   }
 
   // ========= STATS =========
@@ -172,14 +189,20 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  // 🔁 commandes avec demande de retour
+  get returnOrders(): AdminOrderResponse[] {
+    return this.orders.filter(o => o.status === 'RETURN_REQUESTED');
+  }
+
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PENDING':   return 'pending';
-      case 'PAID':      return 'paid';
-      case 'SHIPPED':   return 'shipped';
-      case 'DELIVERED': return 'delivered';
-      case 'CANCELLED': return 'cancelled';
-      default:          return '';
+      case 'PENDING':           return 'pending';
+      case 'PAID':              return 'paid';
+      case 'SHIPPED':           return 'shipped';
+      case 'DELIVERED':         return 'delivered';
+      case 'CANCELLED':         return 'cancelled';
+      case 'RETURN_REQUESTED':  return 'return-requested';
+      default:                  return '';
     }
   }
 
