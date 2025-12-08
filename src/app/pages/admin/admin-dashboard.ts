@@ -1,3 +1,4 @@
+// src/app/pages/admin/admin-dashboard.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -102,6 +103,51 @@ export class AdminDashboardComponent implements OnInit {
   deleteTargetId: number | null = null;
   deleteTargetName = '';
 
+  // 🔥 options de segments (ids fixés par la migration Flyway)
+  segmentOptions = [
+    { id: 1, label: 'Homme' },
+    { id: 2, label: 'Femme' },
+    { id: 3, label: 'Petite maroquinerie' },
+  ];
+
+  // 🔥 options de types de produits
+  typeOptions = [
+    { id: 4, label: 'Sacs & sacoches' },
+    { id: 5, label: 'Ceintures' },
+    { id: 6, label: 'Portefeuilles' },
+    { id: 7, label: 'Portes-cartes' },
+    { id: 8, label: 'Sets de table' },
+  ];
+
+  // 🔥 types filtrés selon le segment choisi
+  get filteredTypeOptions() {
+    const seg = this.newProduct.segmentCategoryId;
+
+    if (seg === 1 || seg === 2) {
+      // Homme ou Femme → sacs & sacoches + ceintures
+      return this.typeOptions.filter(t => t.id === 4 || t.id === 5);
+    }
+
+    if (seg === 3) {
+      // Petite maroquinerie → portefeuilles, portes-cartes, sets de table
+      return this.typeOptions.filter(t => t.id === 6 || t.id === 7 || t.id === 8);
+    }
+
+    // Si rien choisi, on montre tout (ou tu peux retourner [] si tu préfères)
+    return this.typeOptions;
+  }
+
+  // Quand on change de segment, si le type actuel n'est plus valide on le remet à null
+  onSegmentChange(): void {
+    const allowedIds = this.filteredTypeOptions.map(t => t.id);
+    if (
+      this.newProduct.typeCategoryId != null &&
+      !allowedIds.includes(this.newProduct.typeCategoryId)
+    ) {
+      this.newProduct.typeCategoryId = null;
+    }
+  }
+
   newProduct: ProductCreateRequest = {
     sku: '',
     name: '',
@@ -112,6 +158,8 @@ export class AdminDashboardComponent implements OnInit {
     isActive: true,
     currency: 'EUR',
     slug: '',
+    segmentCategoryId: null,
+    typeCategoryId: null,
   };
 
   // ------- RETOURS (modales) -------
@@ -361,6 +409,12 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // 🔥 on impose le choix d’un segment + type
+    if (!this.newProduct.segmentCategoryId || !this.newProduct.typeCategoryId) {
+      this.error = 'Merci de choisir un segment et un type de produit.';
+      return;
+    }
+
     if (this.editingProductId === null && !this.selectedFile) {
       this.error = 'Veuillez sélectionner une image pour créer un nouveau produit.';
       return;
@@ -429,6 +483,8 @@ export class AdminDashboardComponent implements OnInit {
       isActive: p.isActive ?? true,
       currency: p.currency ?? 'EUR',
       slug: p.slug ?? '',
+      segmentCategoryId: p.segmentCategoryId ?? null,
+      typeCategoryId: p.typeCategoryId ?? null,
     };
   }
 
@@ -475,6 +531,8 @@ export class AdminDashboardComponent implements OnInit {
       isActive: true,
       currency: 'EUR',
       slug: '',
+      segmentCategoryId: null,
+      typeCategoryId: null,
     };
   }
 

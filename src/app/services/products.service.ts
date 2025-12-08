@@ -16,6 +16,10 @@ export interface Product {
   isActive?: boolean;
   imageUrls?: string[];
   stockQuantity?: number;
+
+  // 🔥 nouveaux champs pour les catégories
+  segmentCategoryId?: number | null;
+  typeCategoryId?: number | null;
 }
 
 export interface ProductCreateRequest {
@@ -29,6 +33,10 @@ export interface ProductCreateRequest {
   weightGrams?: number;
   isActive?: boolean;
   stockQuantity?: number;
+
+  // 🔥 nouveaux champs pour les catégories
+  segmentCategoryId?: number | null;
+  typeCategoryId?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -109,7 +117,7 @@ export class ProductService {
       return `http://localhost:8080/${first}`;
     }
 
-    // 2) Sinon, placeholder (le même que tu utilises dans product-detail)
+    // 2) Sinon, placeholder
     return 'assets/img/products/placeholder-bag.jpg';
   }
 }

@@ -38,7 +38,9 @@
         <option value="">{{ 'products.filters.segment.all' | t }}</option>
         <option value="homme">{{ 'products.filters.segment.men' | t }}</option>
         <option value="femme">{{ 'products.filters.segment.women' | t }}</option>
-        <option value="mixte">{{ 'products.filters.segment.mixte' | t }}</option>
+        <option value="petite-maroquinerie">
+          {{ 'products.filters.segment.smallLeather' | t }}
+        </option>
       </select>
     </div>
 
@@ -46,10 +48,20 @@
       <label>{{ 'products.filters.category' | t }}</label>
       <select [(ngModel)]="selectedCategory" (ngModelChange)="onFiltersChange()">
         <option value="">{{ 'products.filters.category.all' | t }}</option>
-        <option value="sacs">{{ 'products.filters.category.bags' | t }}</option>
-        <option value="ceintures">{{ 'products.filters.category.belts' | t }}</option>
-        <option value="petite-maroquinerie">
-          {{ 'products.filters.category.smallLeather' | t }}
+        <option value="sacs-sacoches">
+          {{ 'products.filters.category.bags' | t }}
+        </option>
+        <option value="ceintures">
+          {{ 'products.filters.category.belts' | t }}
+        </option>
+        <option value="portefeuilles">
+          Portefeuilles
+        </option>
+        <option value="portes-cartes">
+          Portes-cartes
+        </option>
+        <option value="sets-de-table">
+          Sets de table
         </option>
       </select>
     </div>

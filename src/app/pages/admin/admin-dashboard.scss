@@ -1,3 +1,4 @@
+// src/app/pages/admin/admin-dashboard.scss
 .admin-dashboard {
   padding: 2rem;
   color: #e2e8f0;
@@ -461,8 +462,10 @@
   color: #cbd5e1;
 }
 
+/* 🔥 inputs + textarea + selects (segment / type) harmonisés */
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   border-radius: 10px;
   border: 1px solid rgba(148, 163, 184, 0.4);
   padding: 0.45rem 0.6rem;
@@ -470,6 +473,13 @@
   color: #e2e8f0;
   font-size: 0.85rem;
 }
+
+.form-group select {
+  cursor: pointer;
+}
+
+/* Optionnel : léger hint pour les selects de segment/type */
+/* Si tu veux plus tard, tu peux ajouter une classe .segment-row sur la row concernée */
 
 .form-group textarea {
   resize: vertical;
@@ -828,7 +838,7 @@
   border: 1px solid rgba(148, 163, 184, 0.5);
   padding: 0.75rem 0.9rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-  "Liberation Mono", "Courier New", monospace;
+  'Liberation Mono', 'Courier New', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
 }

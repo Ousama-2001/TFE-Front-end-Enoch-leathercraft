@@ -1,3 +1,4 @@
+<!-- src/app/pages/admin/admin-dashboard.html -->
 <div class="admin-dashboard">
 
   <!-- HEADER + ONGLET -->
@@ -436,6 +437,36 @@
               type="number"
               [(ngModel)]="newProduct.weightGrams"
               name="weightGrams" />
+          </div>
+        </div>
+
+        <!-- 🔥 Segment + type filtré -->
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label for="segmentCategory">Segment *</label>
+            <select
+              id="segmentCategory"
+              [(ngModel)]="newProduct.segmentCategoryId"
+              name="segmentCategoryId"
+              (ngModelChange)="onSegmentChange()">
+              <option [ngValue]="null">-- Choisir un segment --</option>
+              <option *ngFor="let s of segmentOptions" [ngValue]="s.id">
+                {{ s.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="typeCategory">Type de produit *</label>
+            <select
+              id="typeCategory"
+              [(ngModel)]="newProduct.typeCategoryId"
+              name="typeCategoryId">
+              <option [ngValue]="null">-- Choisir un type --</option>
+              <option *ngFor="let t of filteredTypeOptions" [ngValue]="t.id">
+                {{ t.label }}
+              </option>
+            </select>
           </div>
         </div>
 

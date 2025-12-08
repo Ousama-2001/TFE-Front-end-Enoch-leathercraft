@@ -9,7 +9,7 @@ import {
   WishlistService,
   WishlistItemResponse,
 } from '../../services/wishlist.service';
-import {TranslatePipe} from '../../pipes/translate.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-products',
@@ -64,6 +64,7 @@ export class ProductsComponent implements OnInit {
       this.selectedSegment = params['segment'] || '';
       this.selectedCategory = params['category'] || '';
       this.searchTerm = params['search'] || '';
+      this.sortBy = params['sort'] || this.sortBy || '';
     });
 
     // Chargement des produits
@@ -116,6 +117,38 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  // ====== Helpers segments / catégories ======
+
+  private getSegmentSlug(p: Product): string | null {
+    switch (p.segmentCategoryId) {
+      case 1:
+        return 'homme';
+      case 2:
+        return 'femme';
+      case 3:
+        return 'petite-maroquinerie';
+      default:
+        return null;
+    }
+  }
+
+  private getTypeSlug(p: Product): string | null {
+    switch (p.typeCategoryId) {
+      case 4:
+        return 'sacs-sacoches';
+      case 5:
+        return 'ceintures';
+      case 6:
+        return 'portefeuilles';
+      case 7:
+        return 'portes-cartes';
+      case 8:
+        return 'sets-de-table';
+      default:
+        return null;
+    }
+  }
+
   // ====== FILTRES / TRI ======
 
   applyFilters(): void {
@@ -131,17 +164,17 @@ export class ProductsComponent implements OnInit {
       );
     }
 
-    // segment (homme/femme/mixte)
+    // segment (homme / femme / petite-maroquinerie)
     if (this.selectedSegment) {
       result = result.filter(
-        (p) => (p as any).segment === this.selectedSegment
+        (p) => this.getSegmentSlug(p) === this.selectedSegment
       );
     }
 
-    // catégorie (sacs, ceintures, etc.)
+    // catégorie (sacs-sacoches, ceintures, portefeuilles, etc.)
     if (this.selectedCategory) {
       result = result.filter(
-        (p) => (p as any).category === this.selectedCategory
+        (p) => this.getTypeSlug(p) === this.selectedCategory
       );
     }
 

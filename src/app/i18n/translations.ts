@@ -1,3 +1,4 @@
+// src/app/i18n/translations.ts
 export type Lang = 'fr' | 'en';
 
 export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
@@ -14,6 +15,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'nav.logout': 'Déconnexion',
     'nav.login': 'Connexion',
     'nav.register': "S'inscrire",
+    'nav.new': 'Nouveautés',
 
     // ===== CART (général + mini-cart) =====
     'cart.title': 'Votre panier',
@@ -453,7 +455,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
 
     'privacy.section7.title': '7. Vos droits (RGPD)',
     'privacy.section7.intro':
-      'Conformément au Règlement Général sur la Protection des Dononnées (RGPD), vous disposez notamment des droits suivants :',
+      'Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez notamment des droits suivants :',
     'privacy.section7.item1':
       'Droit d’accès : obtenir une copie des données personnelles vous concernant.',
     'privacy.section7.item2':
@@ -517,6 +519,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'nav.logout': 'Logout',
     'nav.login': 'Login',
     'nav.register': 'Sign up',
+    'nav.new': 'New arrivals',
 
     // ===== CART =====
     'cart.title': 'Your cart',
@@ -617,6 +620,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.tabs.orders': '📦 Orders',
     'account.tabs.security': '🔒 Security',
 
+
     // OVERVIEW
     'account.overview.totalOrders': 'Orders',
     'account.overview.totalSpent': 'Total spent',
@@ -661,6 +665,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'account.security.change': 'Change password',
     'account.security.changing': '...',
 
+
     // ===== ORDERS PAGE =====
     'orders.title': 'My orders',
     'orders.subtitle':
@@ -671,6 +676,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'orders.datePrefix': 'Placed on',
     'orders.itemsSuffix': 'item(s)',
     'orders.detailLink': 'View details →',
+
 
     // ===== PRODUCT GENERIC =====
     'product.material': 'Material',
@@ -1006,6 +1012,5 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'footer.follow.facebook': 'Facebook',
 
     'footer.bottom': 'Enoch Leathercraft — All rights reserved.',
-
   },
 };
