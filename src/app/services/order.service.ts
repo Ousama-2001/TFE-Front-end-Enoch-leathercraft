@@ -15,6 +15,7 @@ export interface OrderResponse {
   totalAmount: number;
   status: string;
   createdAt: string;
+  notes?: string;               // 🆕 motif / décisions (retour) si besoin
   items: OrderItemResponse[];
 }
 

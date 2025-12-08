@@ -66,30 +66,35 @@ export class MyOrdersComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'PENDING':          return 'En attente';
-      case 'PAID':             return 'Payée';
-      case 'SHIPPED':          return 'Expédiée';
-      case 'DELIVERED':        return 'Livrée';
-      case 'CANCELLED':        return 'Annulée';
-      case 'RETURN_REQUESTED': return 'Retour demandé';
-      default:                 return status;
+      case 'PENDING':           return 'En attente';
+      case 'PAID':              return 'Payée';
+      case 'SHIPPED':           return 'Expédiée';
+      case 'DELIVERED':         return 'Livrée';
+      case 'CANCELLED':         return 'Annulée';
+      case 'RETURN_REQUESTED':  return 'Retour demandé';
+      case 'RETURN_APPROVED':   return 'Retour accepté';
+      case 'RETURN_REJECTED':   return 'Retour refusé';
+      default:                  return status;
     }
   }
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PENDING':          return 'status-pill pending';
-      case 'PAID':             return 'status-pill paid';
-      case 'SHIPPED':          return 'status-pill shipped';
-      case 'DELIVERED':        return 'status-pill delivered';
-      case 'CANCELLED':        return 'status-pill cancelled';
-      case 'RETURN_REQUESTED': return 'status-pill return-requested';
-      default:                 return 'status-pill';
+      case 'PENDING':           return 'status-pill pending';
+      case 'PAID':              return 'status-pill paid';
+      case 'SHIPPED':           return 'status-pill shipped';
+      case 'DELIVERED':         return 'status-pill delivered';
+      case 'CANCELLED':         return 'status-pill cancelled';
+      case 'RETURN_REQUESTED':  return 'status-pill return-requested';
+      case 'RETURN_APPROVED':   return 'status-pill return-approved';
+      case 'RETURN_REJECTED':   return 'status-pill return-rejected';
+      default:                  return 'status-pill';
     }
   }
 
+  // ✅ Annulation autorisée quand PENDING ou PAID
   canCancel(o: OrderResponse): boolean {
-    return o.status === 'PENDING';
+    return o.status === 'PENDING' || o.status === 'PAID';
   }
 
   canPay(o: OrderResponse): boolean {
@@ -102,6 +107,10 @@ export class MyOrdersComponent implements OnInit {
 
   canRequestReturn(o: OrderResponse): boolean {
     return o.status === 'DELIVERED';
+  }
+
+  hasReturnLabel(o: OrderResponse): boolean {
+    return o.status === 'RETURN_APPROVED';
   }
 
   cancelOrder(o: OrderResponse): void {
@@ -227,5 +236,33 @@ export class MyOrdersComponent implements OnInit {
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
+  }
+
+  // 🔖 Étiquette de retour : fichier texte simple avec l’adresse + ref commande
+  downloadReturnLabel(o: OrderResponse): void {
+    if (!this.hasReturnLabel(o)) return;
+
+    const content = `ETIQUETTE DE RETOUR - Enoch Leathercraft Shop
+
+Référence commande : ${o.reference}
+
+Expéditeur :
+${/* tu peux personnaliser plus tard avec le profil */ ''}_________________________
+
+Destinataire :
+Enoch Leathercraft – Service Retours
+Rue de la Maroquinerie 42
+1000 Bruxelles
+Belgique
+
+Merci d'insérer cette étiquette dans le colis ou de la coller à l'extérieur.`;
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `retour-${o.reference}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }

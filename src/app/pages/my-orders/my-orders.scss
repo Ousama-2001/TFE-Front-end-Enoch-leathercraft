@@ -1,4 +1,4 @@
-// src/app/pages/my-orders/my-orders.scss
+/* src/app/pages/my-orders/my-orders.scss */
 .my-orders-page {
   max-width: 900px;
   margin: 0 auto;
@@ -93,6 +93,38 @@
   color: #9ca3af;
 }
 
+/* Bloc infos retour */
+.return-info {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.7rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: #e5e7eb;
+
+  &.success {
+    border-color: rgba(34, 197, 94, 0.7);
+    background: rgba(22, 163, 74, 0.18);
+  }
+
+  &.danger {
+    border-color: rgba(248, 113, 113, 0.7);
+    background: rgba(127, 29, 29, 0.25);
+  }
+
+  .reason-text {
+    margin-top: 0.35rem;
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+  }
+}
+
 .order-actions {
   margin-top: 0.7rem;
   display: flex;
@@ -135,6 +167,16 @@
   &.return-requested {
     background: rgba(244, 114, 182, 0.15);
     color: #f472b6;
+  }
+
+  &.return-approved {
+    background: rgba(34, 197, 94, 0.18);
+    color: #bbf7d0;
+  }
+
+  &.return-rejected {
+    background: rgba(248, 113, 113, 0.18);
+    color: #fecaca;
   }
 }
 

@@ -71,11 +71,14 @@ export class AdminDashboardComponent implements OnInit {
   modalStatus: string = 'PENDING';
 
   statusOptions = [
-    { value: 'PENDING',   label: 'En attente' },
-    { value: 'PAID',      label: 'Payée' },
-    { value: 'SHIPPED',   label: 'Expédiée' },
-    { value: 'DELIVERED', label: 'Livrée' },
-    { value: 'CANCELLED', label: 'Annulée' },
+    { value: 'PENDING',           label: 'En attente' },
+    { value: 'PAID',              label: 'Payée' },
+    { value: 'SHIPPED',           label: 'Expédiée' },
+    { value: 'DELIVERED',         label: 'Livrée' },
+    { value: 'CANCELLED',         label: 'Annulée' },
+    { value: 'RETURN_REQUESTED',  label: 'Retour demandé' },
+    { value: 'RETURN_APPROVED',   label: 'Retour accepté (manuel)' },
+    { value: 'RETURN_REJECTED',   label: 'Retour refusé (manuel)' },
   ];
 
   // ------- STOCK -------
@@ -111,6 +114,12 @@ export class AdminDashboardComponent implements OnInit {
     slug: '',
   };
 
+  // ------- RETOURS (modales) -------
+  showReturnDetailsModal = false;
+  showRejectModal = false;
+  selectedReturnOrder: AdminOrderResponse | null = null;
+  rejectReason: string = '';
+
   constructor(
     private adminStatsService: AdminStatsService,
     private productService: ProductService,
@@ -118,7 +127,6 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 🔐 détermine si l'utilisateur connecté est SUPER_ADMIN
     this.isSuperAdmin = this.auth.isSuperAdmin();
 
     this.loadStats();
@@ -150,7 +158,6 @@ export class AdminDashboardComponent implements OnInit {
     } else if (tab === 'products') {
       this.loadProducts();
     }
-    // 'reviews', 'users' et 'requests' → géré par les composants enfants
   }
 
   // ========= STATS =========
@@ -189,7 +196,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // 🔁 commandes avec demande de retour
   get returnOrders(): AdminOrderResponse[] {
     return this.orders.filter(o => o.status === 'RETURN_REQUESTED');
   }
@@ -202,6 +208,8 @@ export class AdminDashboardComponent implements OnInit {
       case 'DELIVERED':         return 'delivered';
       case 'CANCELLED':         return 'cancelled';
       case 'RETURN_REQUESTED':  return 'return-requested';
+      case 'RETURN_APPROVED':   return 'return-approved';
+      case 'RETURN_REJECTED':   return 'return-rejected';
       default:                  return '';
     }
   }
@@ -273,13 +281,12 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // ========= MODE PRODUITS (actifs / archivés) =========
+  // ========= MODE PRODUITS =========
   setProductsMode(mode: 'active' | 'archived'): void {
     if (this.productsMode === mode) return;
 
     this.productsMode = mode;
 
-    // En mode archivés, on ferme le formulaire d’édition/création
     if (mode === 'archived') {
       this.showCreateForm = false;
       this.editingProductId = null;
@@ -321,7 +328,7 @@ export class AdminDashboardComponent implements OnInit {
 
   toggleCreateForm(): void {
     if (this.productsMode === 'archived') {
-      return; // pas de création en mode archivés
+      return;
     }
 
     if (this.editingProductId !== null) {
@@ -370,7 +377,6 @@ export class AdminDashboardComponent implements OnInit {
     this.isSubmitting = true;
 
     if (this.editingProductId === null) {
-      // Création
       if (this.selectedFile) {
         this.productService.create(payload, this.selectedFile).subscribe({
           next: (created: Product) => {
@@ -384,7 +390,6 @@ export class AdminDashboardComponent implements OnInit {
         });
       }
     } else {
-      // Edition
       this.productService.update(this.editingProductId, payload, this.selectedFile).subscribe({
         next: (updated: Product) => {
           this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
@@ -400,7 +405,7 @@ export class AdminDashboardComponent implements OnInit {
 
   startEdit(p: Product): void {
     if (this.productsMode === 'archived') {
-      return; // pas d’édition en mode archivés
+      return;
     }
 
     this.showCreateForm = true;
@@ -477,10 +482,9 @@ export class AdminDashboardComponent implements OnInit {
     this.auth.logout();
   }
 
-  // ---------- suppression produit (soft delete) ----------
   openDeleteConfirm(p: Product): void {
     if (this.productsMode === 'archived') {
-      return; // pas de delete depuis archivés (restauration uniquement)
+      return;
     }
 
     this.deleteTargetId = p.id ?? null;
@@ -509,6 +513,65 @@ export class AdminDashboardComponent implements OnInit {
         this.error = 'Impossible d’archiver ce produit.';
         this.cancelDelete();
       },
+    });
+  }
+
+  // ------- RETOURS (modales) -------
+  openReturnDetails(order: AdminOrderResponse): void {
+    this.selectedReturnOrder = order;
+    this.showReturnDetailsModal = true;
+  }
+
+  closeReturnDetails(): void {
+    this.showReturnDetailsModal = false;
+    this.selectedReturnOrder = null;
+  }
+
+  approveReturn(order: AdminOrderResponse): void {
+    if (!order.id) return;
+
+    this.adminStatsService.approveReturn(order.id).subscribe({
+      next: updated => {
+        this.orders = this.orders.map(o => o.id === updated.id ? updated : o);
+      },
+      error: err => {
+        console.error('Erreur acceptation retour', err);
+        this.ordersError = 'Impossible d’accepter ce retour.';
+      }
+    });
+  }
+
+  openRejectModal(order: AdminOrderResponse): void {
+    this.selectedReturnOrder = order;
+    this.rejectReason = '';
+    this.showRejectModal = true;
+  }
+
+  closeRejectModal(): void {
+    this.showRejectModal = false;
+    this.selectedReturnOrder = null;
+  }
+
+  confirmReject(): void {
+    if (!this.selectedReturnOrder?.id) return;
+
+    const id = this.selectedReturnOrder.id;
+    const reason = this.rejectReason.trim();
+
+    if (!reason) {
+      alert('Merci de saisir une raison de refus.');
+      return;
+    }
+
+    this.adminStatsService.rejectReturn(id, reason).subscribe({
+      next: updated => {
+        this.orders = this.orders.map(o => o.id === updated.id ? updated : o);
+        this.closeRejectModal();
+      },
+      error: err => {
+        console.error('Erreur refus retour', err);
+        this.ordersError = 'Impossible de refuser ce retour.';
+      }
     });
   }
 }

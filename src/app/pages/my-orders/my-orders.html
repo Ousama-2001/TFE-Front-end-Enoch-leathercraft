@@ -39,6 +39,25 @@
         {{ o.items.length }} article(s)
       </div>
 
+      <!-- Infos retour -->
+      <div class="return-info" *ngIf="o.status === 'RETURN_REQUESTED'">
+        Votre demande de retour a bien été envoyée. Elle est en cours d’étude par notre équipe.
+      </div>
+
+      <div class="return-info success" *ngIf="o.status === 'RETURN_APPROVED'">
+        Votre demande de retour a été acceptée.
+        Vous pouvez utiliser l’étiquette de retour ci-dessous et renvoyer le colis à notre adresse.
+      </div>
+
+      <div class="return-info danger" *ngIf="o.status === 'RETURN_REJECTED'">
+        Votre demande de retour a été refusée.
+        <ng-container *ngIf="o.notes">
+          <br />
+          <strong>Motif :</strong>
+          <pre class="reason-text">{{ o.notes }}</pre>
+        </ng-container>
+      </div>
+
       <div class="order-actions">
         <a
           [routerLink]="['/my-orders', o.id]"
@@ -47,6 +66,7 @@
           Voir le détail →
         </a>
 
+        <!-- Annulation : PENDING ou PAID -->
         <button
           type="button"
           class="btn secondary"
@@ -57,6 +77,7 @@
           Annuler
         </button>
 
+        <!-- Paiement : seulement si PENDING -->
         <button
           type="button"
           class="btn primary"
@@ -67,6 +88,7 @@
           {{ actionLoading[o.id] ? 'Traitement...' : 'Payer maintenant' }}
         </button>
 
+        <!-- Demander un retour : seulement si DELIVERED -->
         <button
           type="button"
           class="btn secondary"
@@ -77,6 +99,7 @@
           Demander un retour
         </button>
 
+        <!-- Facture : PAID ou DELIVERED -->
         <button
           type="button"
           class="btn ghost"
@@ -85,6 +108,17 @@
           [disabled]="actionLoading[o.id]"
         >
           Télécharger la facture
+        </button>
+
+        <!-- Étiquette de retour si retour accepté -->
+        <button
+          type="button"
+          class="btn secondary"
+          *ngIf="hasReturnLabel(o)"
+          (click)="downloadReturnLabel(o)"
+          [disabled]="actionLoading[o.id]"
+        >
+          Télécharger l’étiquette de retour
         </button>
       </div>
 

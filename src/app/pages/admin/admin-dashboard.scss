@@ -62,10 +62,6 @@
   border-bottom-color: transparent;
 }
 
-.tab-btn.tab-superadmin {
-  border-color: rgba(249, 115, 22, 0.5);
-}
-
 /* Contenu d’onglet générique */
 
 .tab-content {
@@ -110,10 +106,10 @@
   color: #9ca3af;
 }
 
-/* ================== STOCK (onglet stats) ================== */
+/* ================== STOCK (onglet stock) ================== */
 
 .stock-section {
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
 .stock-header {
@@ -205,7 +201,6 @@
 
 /* juste au cas où on veut styliser différemment */
 .returns-page {
-  /* styles spécifiques aux retours si besoin */
 }
 
 .orders-header {
@@ -288,10 +283,20 @@
   color: #e5e7eb;
 }
 
-/* 🆕 statut retour demandé */
+/* statut retours */
 .status-pill.return-requested {
   background: rgba(249, 115, 22, 0.2);
   color: #fed7aa;
+}
+
+.status-pill.return-approved {
+  background: rgba(34, 197, 94, 0.2);
+  color: #bbf7d0;
+}
+
+.status-pill.return-rejected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fecaca;
 }
 
 /* bouton lien pour détail commande */
@@ -306,6 +311,42 @@
 
 .link-btn:hover {
   text-decoration: underline;
+}
+
+/* Actions retours */
+.returns-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-return {
+  font-size: 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.9);
+  transition: all 0.12s ease-out;
+}
+
+.btn-return.accept {
+  border-color: rgba(34, 197, 94, 0.7);
+  color: #bbf7d0;
+}
+
+.btn-return.accept:hover {
+  background: rgba(22, 163, 74, 0.2);
+}
+
+.btn-return.reject {
+  border-color: rgba(239, 68, 68, 0.7);
+  color: #fecaca;
+}
+
+.btn-return.reject:hover {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 /* ================== ONGLET "GESTION DES PRODUITS" ================== */
@@ -477,7 +518,7 @@
   accent-color: #6366f1;
 }
 
-/* 🔀 Switch actifs / archivés */
+/* Switch actifs / archivés */
 
 .products-mode-switch {
   display: flex;
@@ -766,6 +807,44 @@
 
 .order-items .line-price {
   color: #cbd5e1;
+}
+
+/* Bloc raison de retour en grand */
+
+.return-reason-block {
+  margin-top: 0.8rem;
+}
+
+.return-reason-block h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+}
+
+.reason-text {
+  max-height: 260px;
+  overflow: auto;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  padding: 0.75rem 0.9rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+  "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+/* textarea du refus */
+
+.reject-textarea {
+  width: 100%;
+  margin-top: 0.45rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  background: #020617;
+  color: #e5e7eb;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+  resize: vertical;
 }
 
 /* ================== SUPER ADMIN – USERS ================== */

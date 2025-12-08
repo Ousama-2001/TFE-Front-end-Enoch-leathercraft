@@ -20,7 +20,7 @@
         Commandes
       </button>
 
-      <!-- 🆕 Onglet retours -->
+      <!-- Onglet retours -->
       <button class="tab-btn"
               [class.active]="activeTab === 'returns'"
               (click)="setTab('returns')">
@@ -241,6 +241,8 @@
         <th>Date</th>
         <th>Statut</th>
         <th>Montant</th>
+        <th>Détails</th>
+        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
@@ -253,6 +255,19 @@
           </span>
         </td>
         <td>{{ o.totalAmount | currency:'EUR' }}</td>
+        <td>
+          <button class="link-btn" type="button" (click)="openReturnDetails(o)">
+            Voir la demande
+          </button>
+        </td>
+        <td class="actions">
+          <button class="btn-edit" type="button" (click)="approveReturn(o)">
+            ✅ Accepter
+          </button>
+          <button class="btn-delete" type="button" (click)="openRejectModal(o)">
+            ❌ Refuser
+          </button>
+        </td>
       </tr>
       </tbody>
     </table>
@@ -262,213 +277,345 @@
     </p>
   </section>
 
+  <!-- MODALE DÉTAIL DEMANDE DE RETOUR -->
+  <div class="modal-overlay"
+       *ngIf="showReturnDetailsModal"
+       (click)="closeReturnDetails()">
+    <div class="modal order-modal return-modal"
+         (click)="$event.stopPropagation()">
+
+      <div class="order-modal-header">
+        <div>
+          <h3>Demande de retour – {{ selectedReturnOrder?.reference }}</h3>
+          <p class="order-subtitle">
+            Créée le {{ selectedReturnOrder?.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </p>
+        </div>
+        <button class="close-btn" type="button" (click)="closeReturnDetails()">✕</button>
+      </div>
+
+      <div class="order-meta">
+        <div class="meta-line">
+          <span class="label">Statut actuel :</span>
+          <span class="status-pill"
+                [ngClass]="getStatusClass(selectedReturnOrder?.status || '')">
+            {{ selectedReturnOrder?.status }}
+          </span>
+        </div>
+        <div class="meta-line">
+          <span class="label">Montant :</span>
+          <span class="value">
+            {{ selectedReturnOrder?.totalAmount | currency:'EUR' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="return-reason-block">
+        <h4>Raison du retour (client)</h4>
+        <pre class="reason-text">
+{{ selectedReturnOrder?.notes || 'Aucun motif enregistré.' }}
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE REFUS RETOUR -->
+  <div class="modal-overlay"
+       *ngIf="showRejectModal"
+       (click)="closeRejectModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Refuser ce retour</h3>
+      <p>Expliquez pourquoi le retour est refusé. Ce message sera envoyé au client.</p>
+
+      <textarea
+        rows="4"
+        [(ngModel)]="rejectReason"
+        class="reject-textarea"
+        placeholder="Exemple : délai de retour dépassé, article utilisé, conditions non respectées...">
+      </textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" type="button" (click)="closeRejectModal()">Annuler</button>
+        <button class="btn-confirm" type="button" (click)="confirmReject()">Confirmer le refus</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->
   <section *ngIf="activeTab === 'products'" class="admin-page">
 
     <div class="admin-header-row">
       <div>
         <h2>Gestion des produits</h2>
-        <p class="subtitle">Création, édition, archivage et restauration des produits.</p>
+        <p class="hint">
+          Crée, modifie ou archive les produits de la boutique.
+        </p>
       </div>
 
-      <div class="admin-actions" *ngIf="productsMode === 'active'">
-        <button class="primary" (click)="toggleCreateForm()">
-          {{ showCreateForm ? 'Fermer le formulaire' : '+ Ajouter un produit' }}
+      <!-- Switch actifs / archivés -->
+      <div class="products-mode-switch">
+        <button
+          type="button"
+          class="mode-btn"
+          [class.active]="productsMode === 'active'"
+          (click)="setProductsMode('active')">
+          Produits actifs
+        </button>
+        <button
+          type="button"
+          class="mode-btn"
+          [class.active]="productsMode === 'archived'"
+          (click)="setProductsMode('archived')">
+          Produits archivés
         </button>
       </div>
     </div>
 
-    <!-- 🔀 Switch actifs / archivés -->
-    <div class="products-mode-switch">
+    <!-- Bouton créer (uniquement en mode actifs) -->
+    <div class="admin-actions" *ngIf="productsMode === 'active'">
       <button
         type="button"
-        class="mode-btn"
-        [class.active]="productsMode === 'active'"
-        (click)="setProductsMode('active')">
-        Produits actifs
-      </button>
-
-      <button
-        type="button"
-        class="mode-btn"
-        [class.active]="productsMode === 'archived'"
-        (click)="setProductsMode('archived')">
-        Produits archivés
+        class="primary"
+        (click)="toggleCreateForm()">
+        {{ showCreateForm ? 'Fermer le formulaire' : 'Créer un produit' }}
       </button>
     </div>
 
-    <div class="state-messages">
-      <p *ngIf="loading" class="loading-message">
-        <span class="spinner">⏳</span> Chargement des produits...
-      </p>
+    <!-- Formulaire création / édition -->
+    <section class="panel create-panel" *ngIf="showCreateForm">
+      <h3 class="section-title">
+        {{ editingProductId === null ? 'Nouveau produit' : 'Modifier le produit' }}
+      </h3>
 
-      <p *ngIf="error" class="error-message">
-        ⚠️ Erreur : {{ error }}
-      </p>
-    </div>
+      <form class="create-form" (ngSubmit)="submitForm()">
 
-    <!-- Formulaire création / édition (UNIQUEMENT mode actifs) -->
-    <div class="panel create-panel" *ngIf="showCreateForm && productsMode === 'active'">
-
-      <h2>{{ editingProductId ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
-
-      <form (ngSubmit)="submitForm()" class="create-form">
         <div class="form-row two-cols">
           <div class="form-group">
-            <label>Nom *</label>
-            <input type="text" [(ngModel)]="newProduct.name" name="name" required />
+            <label for="sku">SKU *</label>
+            <input
+              id="sku"
+              type="text"
+              [(ngModel)]="newProduct.sku"
+              name="sku" />
           </div>
 
           <div class="form-group">
-            <label>SKU *</label>
-            <input type="text" [(ngModel)]="newProduct.sku" name="sku" required />
+            <label for="name">Nom *</label>
+            <input
+              id="name"
+              type="text"
+              [(ngModel)]="newProduct.name"
+              name="name" />
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>Image principale {{ editingProductId ? '(Laisser vide pour garder l\'actuelle)' : '*' }}</label>
-
-          <div class="current-img-preview" *ngIf="currentImagePreview && !selectedFile">
-            <p class="preview-label">Image actuelle :</p>
-            <img [src]="currentImagePreview" alt="Aperçu produit">
-          </div>
-
-          <input
-            type="file"
-            name="image"
-            (change)="onFileSelected($event)"
-            [required]="editingProductId === null"
-            accept="image/jpeg, image/png"
-          />
-
-          <p class="file-info" *ngIf="selectedFile">
-            Fichier sélectionné (remplacera l'actuelle) :
-            <strong>{{ selectedFile.name }}</strong>
-          </p>
         </div>
 
         <div class="form-row three-cols">
           <div class="form-group">
-            <label>Prix (€)</label>
-            <input type="number" step="0.01" [(ngModel)]="newProduct.price" name="price" />
+            <label for="price">Prix (€) *</label>
+            <input
+              id="price"
+              type="number"
+              step="0.01"
+              [(ngModel)]="newProduct.price"
+              name="price" />
           </div>
 
           <div class="form-group">
-            <label>Poids (g)</label>
-            <input type="number" [(ngModel)]="newProduct.weightGrams" name="weightGrams" />
+            <label for="material">Matériau</label>
+            <input
+              id="material"
+              type="text"
+              [(ngModel)]="newProduct.material"
+              name="material" />
           </div>
 
           <div class="form-group">
-            <label>Matériau</label>
-            <input type="text" [(ngModel)]="newProduct.material" name="material" />
+            <label for="weight">Poids (g)</label>
+            <input
+              id="weight"
+              type="number"
+              [(ngModel)]="newProduct.weightGrams"
+              name="weightGrams" />
           </div>
         </div>
 
         <div class="form-group">
-          <label>Description</label>
-          <textarea rows="3" [(ngModel)]="newProduct.description" name="description"></textarea>
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            rows="3"
+            [(ngModel)]="newProduct.description"
+            name="description">
+          </textarea>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <!-- Aperçu image actuelle (en édition) -->
+            <div class="current-img-preview" *ngIf="currentImagePreview">
+              <div class="preview-label">Image actuelle</div>
+              <img [src]="currentImagePreview" alt="Image produit" />
+            </div>
+
+            <label for="image">Image du produit {{ editingProductId === null ? '*' : '' }}</label>
+            <input
+              id="image"
+              type="file"
+              (change)="onFileSelected($event)" />
+            <p class="file-info">
+              JPG / PNG, taille raisonnable.
+            </p>
+          </div>
+
+          <div class="form-footer">
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="newProduct.isActive"
+                name="isActive" />
+              Produit visible sur le site
+            </label>
+          </div>
         </div>
 
         <div class="form-footer">
-          <label>
-            <input type="checkbox" [(ngModel)]="newProduct.isActive" name="isActive" />
-            Produit actif
-          </label>
+          <span class="info">
+            Les champs marqués d’une * sont obligatoires.
+          </span>
 
-          <button type="submit" class="primary" [disabled]="isSubmitting">
-            <span *ngIf="isSubmitting">⏳ Traitement en cours...</span>
-            <span *ngIf="!isSubmitting">
-              {{ editingProductId ? 'Mettre à jour le produit' : 'Créer le produit' }}
-            </span>
+          <button
+            type="submit"
+            class="primary small"
+            [disabled]="isSubmitting">
+            {{ editingProductId === null ? 'Créer le produit' : 'Enregistrer les modifications' }}
           </button>
         </div>
+
+        <p class="error" *ngIf="error">{{ error }}</p>
       </form>
-    </div>
+    </section>
 
     <!-- Liste des produits -->
-    <div class="panel">
-      <h2 class="section-title">
-        {{ productsMode === 'active' ? 'Produits existants' : 'Produits archivés' }}
-      </h2>
+    <section class="panel">
+      <h3 class="section-title">
+        Produits {{ productsMode === 'active' ? 'actifs' : 'archivés' }}
+      </h3>
 
-      <p *ngIf="!loading && products.length === 0 && !error" class="empty-message">
-        Aucun produit trouvé dans ce mode.
-      </p>
+      <div class="state-messages">
+        <p class="loading-message" *ngIf="loading">
+          <span class="spinner">⏳</span> Chargement des produits...
+        </p>
+        <p class="error-message" *ngIf="!loading && error">
+          {{ error }}
+        </p>
+      </div>
 
-      <table class="product-table" *ngIf="products.length > 0">
+      <table class="product-table" *ngIf="!loading && products.length > 0">
         <thead>
         <tr>
-          <th>ID</th>
-          <th>IMAGE</th>
-          <th>NOM</th>
-          <th>PRIX</th>
+          <th>Image</th>
+          <th>Nom</th>
           <th>SKU</th>
-          <th>ACTIF</th>
-          <th>ACTIONS</th>
+          <th>Prix</th>
+          <th>Stock</th>
+          <th>Actif</th>
+          <th>Actions</th>
         </tr>
         </thead>
-
         <tbody>
-        <tr *ngFor="let p of products" [class.editing-row]="editingProductId === p.id">
-          <td>{{ p.id }}</td>
+        <tr
+          *ngFor="let p of products"
+          [class.editing-row]="editingProductId === p.id">
 
           <td class="product-thumb">
             <img
-              [src]="p.imageUrls && p.imageUrls.length > 0
-                       ? ('http://localhost:8080' + p.imageUrls[0])
-                       : 'assets/img/products/placeholder-thumb.jpg'"
-              [alt]="p.name"
-            />
+              *ngIf="p.imageUrls && p.imageUrls.length > 0"
+              [src]="'http://localhost:8080' + p.imageUrls[0]"
+              [alt]="p.name" />
           </td>
 
           <td>{{ p.name }}</td>
-          <td>{{ p.price | currency:'EUR' }}</td>
           <td>{{ p.sku }}</td>
+          <td>{{ p.price | currency:'EUR' }}</td>
+          <td>{{ p.stockQuantity ?? 0 }}</td>
           <td>{{ p.isActive ? 'Oui' : 'Non' }}</td>
 
           <td class="actions">
-            <!-- Mode actifs : modifier / supprimer -->
-            <ng-container *ngIf="productsMode === 'active'; else archivedActions">
-              <button class="btn-edit" (click)="startEdit(p)">✏️ Modifier</button>
-              <button class="btn-delete" (click)="openDeleteConfirm(p)">🗑️ Supprimer</button>
-            </ng-container>
+            <!-- Edition uniquement en mode actifs -->
+            <button
+              type="button"
+              class="btn-edit"
+              *ngIf="productsMode === 'active'"
+              (click)="startEdit(p)">
+              Éditer
+            </button>
 
-            <!-- Mode archivés : restaurer -->
-            <ng-template #archivedActions>
-              <button class="btn-restore" type="button" (click)="restoreProduct(p)">
-                ↩ Restaurer
-              </button>
-            </ng-template>
+            <!-- Archivage -->
+            <button
+              type="button"
+              class="btn-delete"
+              *ngIf="productsMode === 'active'"
+              (click)="openDeleteConfirm(p)">
+              Archiver
+            </button>
+
+            <!-- Restauration -->
+            <button
+              type="button"
+              class="btn-restore"
+              *ngIf="productsMode === 'archived'"
+              (click)="restoreProduct(p)">
+              Restaurer
+            </button>
           </td>
         </tr>
         </tbody>
       </table>
-    </div>
 
-    <!-- Modale suppression produit -->
-    <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
-      <div class="modal" (click)="$event.stopPropagation()">
-        <h3>Confirmer la suppression</h3>
-        <p>Archiver (soft delete) <strong>{{ deleteTargetName }}</strong> ?</p>
-
-        <div class="modal-actions">
-          <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
-          <button class="btn-confirm-delete" (click)="confirmDelete()">Oui, archiver</button>
-        </div>
-      </div>
-    </div>
+      <p class="empty-message" *ngIf="!loading && !products.length">
+        Aucun produit {{ productsMode === 'active' ? 'actif' : 'archivé' }} pour le moment.
+      </p>
+    </section>
   </section>
 
-  <!-- ========= ONGLET 4 : GESTION DU STOCK ========= -->
-  <section *ngIf="activeTab === 'stock'" class="stock-page">
+  <!-- MODALE CONFIRMATION SUPPRESSION PRODUIT -->
+  <div
+    class="modal-overlay"
+    *ngIf="showDeleteConfirm"
+    (click)="cancelDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Archiver ce produit ?</h3>
+      <p>
+        Le produit <strong>{{ deleteTargetName }}</strong> sera retiré du catalogue
+        public, mais restera disponible dans la liste des produits archivés.
+      </p>
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cancelDelete()">
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn-confirm-delete"
+          (click)="confirmDelete()">
+          Confirmer l’archivage
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <h2>Gestion du stock</h2>
-    <p class="subtitle">
-      Surveillez les produits en stock faible et mettez à jour les quantités.
-    </p>
+  <!-- ========= ONGLET 4 : GESTION DU STOCK ========= -->
+  <section *ngIf="activeTab === 'stock'" class="stock-section">
 
     <div class="stock-header">
-      <h3>Produits en stock faible</h3>
+      <div>
+        <h2>Gestion du stock</h2>
+        <p class="hint">
+          Surveille les produits en quantité faible et mets à jour le stock.
+        </p>
+      </div>
 
       <div class="threshold-control">
         <label for="threshold">Seuil d’alerte :</label>
@@ -477,8 +624,8 @@
           type="number"
           min="0"
           [(ngModel)]="lowStockThreshold"
-          (ngModelChange)="onThresholdChange()"
-        />
+          (change)="onThresholdChange()"
+          [ngModelOptions]="{ standalone: true }" />
       </div>
     </div>
 
@@ -490,7 +637,6 @@
       <tr>
         <th>Produit</th>
         <th>SKU</th>
-        <th>Prix</th>
         <th>Stock actuel</th>
         <th>Mettre à jour</th>
       </tr>
@@ -499,19 +645,19 @@
       <tr *ngFor="let p of lowStockProducts">
         <td>{{ p.name }}</td>
         <td>{{ p.sku }}</td>
-        <td>{{ p.price | currency:'EUR' }}</td>
+        <td>{{ p.stockQuantity ?? 0 }}</td>
         <td>
           <input
             type="number"
             min="0"
             [(ngModel)]="p.stockQuantity"
-            style="width: 80px; padding: 0.15rem 0.35rem; border-radius: 8px;
-                   border: 1px solid rgba(148,163,184,0.5); background:#020617; color:#e5e7eb;"
-          />
-        </td>
-        <td>
-          <button class="btn-edit" (click)="saveStock(p)">
-            Sauvegarder
+            [ngModelOptions]="{ standalone: true }"
+            style="width: 80px; margin-right: 0.4rem;" />
+          <button
+            type="button"
+            class="primary small"
+            (click)="saveStock(p)">
+            Enregistrer
           </button>
         </td>
       </tr>
@@ -519,7 +665,7 @@
     </table>
 
     <p class="info" *ngIf="!lowStockLoading && !lowStockProducts.length">
-      Aucun produit en dessous du seuil de {{ lowStockThreshold }} unités.
+      Aucun produit n’est en dessous du seuil de {{ lowStockThreshold }} unités.
     </p>
   </section>
 
