@@ -9,11 +9,12 @@ import {
   WishlistService,
   WishlistItemResponse,
 } from '../../services/wishlist.service';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule],
+  imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, TranslatePipe],
   templateUrl: './products.html',
   styleUrls: ['./products.scss'],
 })

@@ -27,6 +27,14 @@ export class LanguageService {
 
   t(key: string): string {
     const dict = TRANSLATIONS[this.currentLang] || {};
-    return dict[key] || key;
+
+    // On renvoie la valeur même si c'est une chaîne vide
+    if (Object.prototype.hasOwnProperty.call(dict, key)) {
+      return dict[key];
+    }
+
+    // fallback si la clé n'existe pas
+    return key;
   }
+
 }
