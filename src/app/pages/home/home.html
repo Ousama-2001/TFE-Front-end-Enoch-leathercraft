@@ -2,81 +2,101 @@
 
   <!-- ============================ HERO ============================ -->
   <section class="hero">
-    <div class="hero-left">
+    <div class="hero-overlay"></div>
 
-      <div class="hero-logo">
-        <img [src]="logoUrl" alt="Logo">
-      </div>
+    <div class="hero-content">
+      <!-- COLONNE GAUCHE -->
+      <div class="hero-left">
 
-      <h1>{{ 'home.hero.title' | t }}</h1>
+        <div class="hero-logo">
+          <img [src]="logoUrl" alt="Logo">
+        </div>
 
-      <p class="subtitle">
-        {{ 'home.hero.subtitle' | t }}
-      </p>
+        <h1 class="hero-main-title">
+          Enoch LeatherCraft
+        </h1>
 
-      <div class="hero-actions">
-        <button class="btn-primary" (click)="goToProducts()">
-          {{ 'home.hero.cta' | t }}
-        </button>
-      </div>
-
-      <div class="hero-tags">
-        <span>{{ 'home.hero.tag.artisanal' | t }}</span>
-        <span>{{ 'home.hero.tag.unique' | t }}</span>
-        <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
-      </div>
-    </div>
-
-    <div class="hero-right">
-      <div class="highlight-card" *ngIf="latestProducts.length > 0">
-        <h4>{{ 'home.highlight.newSelection' | t }}</h4>
-        <h3>{{ latestProducts[0].name }}</h3>
-
-        <p class="highlight-desc" *ngIf="latestProducts[0].description">
-          {{ latestProducts[0].description }}
+        <p class="hero-subtitle">
+          {{ 'home.hero.title' | t }}
         </p>
 
-        <p class="highlight-price">
-          {{ latestProducts[0].price | currency:'EUR' }}
+        <p class="hero-subtext">
+          {{ 'home.hero.subtitle' | t }}
         </p>
 
-        <button class="btn-highlight" (click)="goToProductDetail(latestProducts[0])">
-          {{ 'home.highlight.cta' | t }}
-        </button>
+        <div class="hero-actions">
+          <button class="btn-primary" (click)="goToProducts()">
+            {{ 'home.hero.cta' | t }}
+          </button>
+
+          <div class="hero-tags">
+            <span>{{ 'home.hero.tag.artisanal' | t }}</span>
+            <span>{{ 'home.hero.tag.unique' | t }}</span>
+            <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE : HIGHLIGHT CARD -->
+      <div class="hero-right">
+        <div class="highlight-card" *ngIf="latestProducts.length > 0">
+          <h4>{{ 'home.highlight.newSelection' | t }}</h4>
+          <h3>{{ latestProducts[0].name }}</h3>
+
+          <p class="highlight-desc" *ngIf="latestProducts[0].description">
+            {{ latestProducts[0].description }}
+          </p>
+
+          <p class="highlight-price">
+            {{ latestProducts[0].price | currency:'EUR' }}
+          </p>
+
+          <button class="btn-highlight" (click)="goToProductDetail(latestProducts[0])">
+            {{ 'home.highlight.cta' | t }}
+          </button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ============================ CATÉGORIES ============================ -->
   <section class="categories">
-    <h2>{{ 'home.categories.title' | t }}</h2>
+    <h2 class="section-title">{{ 'home.categories.title' | t }}</h2>
 
     <div class="categories-grid">
-      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'homme' }">
+      <div
+        class="cat-card"
+        routerLink="/products"
+        [queryParams]="{ segment: 'homme' }">
         <h3>{{ 'home.categories.men.title' | t }}</h3>
         <p>{{ 'home.categories.men.text' | t }}</p>
-        <span>{{ 'home.categories.men.cta' | t }}</span>
+        <span class="cat-link">{{ 'home.categories.men.cta' | t }}</span>
       </div>
 
-      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'femme' }">
+      <div
+        class="cat-card"
+        routerLink="/products"
+        [queryParams]="{ segment: 'femme' }">
         <h3>{{ 'home.categories.women.title' | t }}</h3>
         <p>{{ 'home.categories.women.text' | t }}</p>
-        <span>{{ 'home.categories.women.cta' | t }}</span>
+        <span class="cat-link">{{ 'home.categories.women.cta' | t }}</span>
       </div>
 
-      <div class="cat-card" routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">
+      <div
+        class="cat-card"
+        routerLink="/products"
+        [queryParams]="{ segment: 'petite-maroquinerie' }">
         <h3>{{ 'home.categories.smallLeather.title' | t }}</h3>
         <p>{{ 'home.categories.smallLeather.text' | t }}</p>
-        <span>{{ 'home.categories.smallLeather.cta' | t }}</span>
+        <span class="cat-link">{{ 'home.categories.smallLeather.cta' | t }}</span>
       </div>
     </div>
   </section>
 
-
   <!-- ============================ NOUVEAUTÉS ============================ -->
   <section class="latest">
     <div class="latest-header">
-      <h2>{{ 'home.latest.title' | t }}</h2>
+      <h2 class="section-title">{{ 'home.latest.title' | t }}</h2>
       <a class="see-all" (click)="goToProducts()">
         {{ 'home.latest.seeAll' | t }}
       </a>
@@ -89,7 +109,6 @@
 
     <div class="latest-grid" *ngIf="latestProducts.length > 0">
       <article class="product-card" *ngFor="let p of latestProducts">
-
         <div class="product-image">
           <img [src]="getImage(p)" [alt]="p.name" />
         </div>
@@ -107,10 +126,9 @@
     </div>
   </section>
 
-
   <!-- ============================ AVIS CLIENTS ============================ -->
   <section class="reviews">
-    <h2>{{ 'home.reviews.title' | t }}</h2>
+    <h2 class="section-title">{{ 'home.reviews.title' | t }}</h2>
 
     <div class="reviews-grid">
       <div class="review">
@@ -133,10 +151,9 @@
     </div>
   </section>
 
-
   <!-- ============================ QUI SOMMES-NOUS ============================ -->
   <section class="about">
-    <h2>{{ 'home.about.title' | t }}</h2>
+    <h2 class="section-title">{{ 'home.about.title' | t }}</h2>
 
     <p>
       {{ 'home.about.p1' | t }}
@@ -163,13 +180,13 @@
     <div class="footer-col">
       <h4>{{ 'footer.shop' | t }}</h4>
       <a routerLink="/products">{{ 'footer.shop.all' | t }}</a>
-      <a routerLink="/products" [queryParams]="{ category: 'homme' }">
+      <a routerLink="/products" [queryParams]="{ segment: 'homme' }">
         {{ 'footer.shop.men' | t }}
       </a>
-      <a routerLink="/products" [queryParams]="{ category: 'femme' }">
+      <a routerLink="/products" [queryParams]="{ segment: 'femme' }">
         {{ 'footer.shop.women' | t }}
       </a>
-      <a routerLink="/products" [queryParams]="{ category: 'petite-maroquinerie' }">
+      <a routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }">
         {{ 'footer.shop.smallLeather' | t }}
       </a>
     </div>
@@ -182,22 +199,19 @@
       <a routerLink="/privacy">{{ 'footer.info.privacy' | t }}</a>
     </div>
 
-
     <div class="footer-col">
       <h4>{{ 'footer.follow' | t }}</h4>
       <div class="socials">
         <a
           href="https://www.instagram.com/enoch_leathercraft/"
           target="_blank"
-          rel="noopener noreferrer"
-        >
+          rel="noopener noreferrer">
           <span>📸</span> {{ 'footer.follow.instagram' | t }}
         </a>
         <a
           href="https://www.facebook.com/enoch.leathercraft"
           target="_blank"
-          rel="noopener noreferrer"
-        >
+          rel="noopener noreferrer">
           <span>📘</span> {{ 'footer.follow.facebook' | t }}
         </a>
       </div>
