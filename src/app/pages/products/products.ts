@@ -56,15 +56,21 @@ export class ProductsComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
 
-    // Vérifie si l'utilisateur est connecté (même clé que ton interceptor si tu veux)
+    // Vérifie si l'utilisateur est connecté
     this.isLoggedIn = !!localStorage.getItem('auth_token');
 
-    // Récupération des filtres depuis l'URL
+    // Récupération des filtres depuis l'URL + ré-application quand ça change
     this.route.queryParams.subscribe((params) => {
       this.selectedSegment = params['segment'] || '';
       this.selectedCategory = params['category'] || '';
       this.searchTerm = params['search'] || '';
       this.sortBy = params['sort'] || this.sortBy || '';
+
+      // Quand on est déjà sur /products et que la navbar change juste les query params
+      // on réapplique les filtres sur la liste actuelle.
+      if (this.products && this.products.length > 0) {
+        this.applyFilters();
+      }
     });
 
     // Chargement des produits

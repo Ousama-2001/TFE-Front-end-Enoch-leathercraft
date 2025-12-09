@@ -428,7 +428,7 @@
 
   .products-hero {
     display: flex;
-    flex-direction: column;   // ⬅️ colonne
+    flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 0.9rem;
@@ -448,10 +448,9 @@
 
     .search-wrapper {
       width: 100%;
-      max-width: 520px;       // barre bien centrée
+      max-width: 520px;
     }
   }
-
 
   .filters-row {
     flex-direction: column;
