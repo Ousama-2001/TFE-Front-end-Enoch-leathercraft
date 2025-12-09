@@ -25,6 +25,16 @@
             {{ 'nav.home' | t }}
           </a>
         </div>
+        <!-- NOUVEAUTÉS -->
+        <div class="nav-item">
+          <a
+            routerLink="/products"
+            [queryParams]="{ sort: 'newest' }"
+            routerLinkActive="active"
+          >
+            {{ 'nav.new' | t }}
+          </a>
+        </div>
 
         <!-- HOMME -->
         <div class="nav-item has-dropdown">
@@ -149,16 +159,6 @@
           </div>
         </div>
 
-        <!-- NOUVEAUTÉS -->
-        <div class="nav-item">
-          <a
-            routerLink="/products"
-            [queryParams]="{ sort: 'newest' }"
-            routerLinkActive="active"
-          >
-            {{ 'nav.new' | t }}
-          </a>
-        </div>
 
         <!-- À propos -->
         <div class="nav-item">

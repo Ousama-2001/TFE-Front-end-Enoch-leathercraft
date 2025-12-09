@@ -5,39 +5,42 @@
     <div class="hero-overlay"></div>
 
     <div class="hero-content">
-      <!-- COLONNE GAUCHE -->
+
+      <!-- ========== COLONNE GAUCHE ========== -->
       <div class="hero-left">
 
-        <div class="hero-logo">
-          <img [src]="logoUrl" alt="Logo">
+        <!-- Logo + ENOCH LEATHERCRAFT sur une ligne -->
+        <div class="hero-brand">
+          <div class="hero-logo">
+            <img [src]="logoUrl" alt="Enoch Leathercraft logo" />
+          </div>
+
+          <h1 class="hero-main-title">
+            ENOCH LEATHERCRAFT
+          </h1>
         </div>
 
-        <h1 class="hero-main-title">
-          Enoch LeatherCraft
-        </h1>
-
-        <p class="hero-subtitle">
-          {{ 'home.hero.title' | t }}
-        </p>
-
-        <p class="hero-subtext">
+        <!-- Slogan sous le nom -->
+        <p class="subtitle">
           {{ 'home.hero.subtitle' | t }}
         </p>
+
+
 
         <div class="hero-actions">
           <button class="btn-primary" (click)="goToProducts()">
             {{ 'home.hero.cta' | t }}
           </button>
+        </div>
 
-          <div class="hero-tags">
-            <span>{{ 'home.hero.tag.artisanal' | t }}</span>
-            <span>{{ 'home.hero.tag.unique' | t }}</span>
-            <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
-          </div>
+        <div class="hero-tags">
+          <span>{{ 'home.hero.tag.artisanal' | t }}</span>
+          <span>{{ 'home.hero.tag.unique' | t }}</span>
+          <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
         </div>
       </div>
 
-      <!-- COLONNE DROITE : HIGHLIGHT CARD -->
+      <!-- ========== COLONNE DROITE : CARTE PRODUIT ========== -->
       <div class="hero-right">
         <div class="highlight-card" *ngIf="latestProducts.length > 0">
           <h4>{{ 'home.highlight.newSelection' | t }}</h4>
@@ -51,11 +54,14 @@
             {{ latestProducts[0].price | currency:'EUR' }}
           </p>
 
-          <button class="btn-highlight" (click)="goToProductDetail(latestProducts[0])">
+          <button
+            class="btn-highlight"
+            (click)="goToProductDetail(latestProducts[0])">
             {{ 'home.highlight.cta' | t }}
           </button>
         </div>
       </div>
+
     </div>
   </section>
 
@@ -163,7 +169,6 @@
       {{ 'home.about.p2' | t }}
     </p>
   </section>
-
 </div>
 
 <!-- ============================ FOOTER ============================ -->

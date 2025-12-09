@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ProductService, Product } from '../../services/products.service';
-import { CurrencyPipe } from '@angular/common';
-import {TranslatePipe} from '../../pipes/translate.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +20,7 @@ export class HomeComponent implements OnInit {
   loading = false;
   error = '';
 
+  // logo et fond
   logoUrl = 'http://localhost:8080/uploads/products/logo.jpg';
 
   constructor(
@@ -28,9 +28,6 @@ export class HomeComponent implements OnInit {
     private router: Router
   ) {}
 
-  // ========================================================
-  //                INIT : CHARGER PRODUITS
-  // ========================================================
   ngOnInit(): void {
     this.loading = true;
 
@@ -53,21 +50,13 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // ========================================================
-  //                   IMAGE PRODUIT
-  // ========================================================
   getImage(product: Product): string {
-    // 👉 EXACTEMENT comme dans products.html
     if (product.imageUrls && product.imageUrls.length > 0) {
       return 'http://localhost:8080' + product.imageUrls[0];
     }
-
     return 'assets/img/products/placeholder-bag.jpg';
   }
 
-  // ========================================================
-  //                  NAVIGATION
-  // ========================================================
   goToProducts(): void {
     this.router.navigate(['/products']);
   }
