@@ -32,6 +32,7 @@
 
   <!-- ========= FILTRES ========= -->
   <section class="filters-row">
+    <!-- Segment -->
     <div class="filter-group">
       <label>{{ 'products.filters.segment' | t }}</label>
       <select [(ngModel)]="selectedSegment" (ngModelChange)="onFiltersChange()">
@@ -44,6 +45,7 @@
       </select>
     </div>
 
+    <!-- Catégorie -->
     <div class="filter-group">
       <label>{{ 'products.filters.category' | t }}</label>
       <select [(ngModel)]="selectedCategory" (ngModelChange)="onFiltersChange()">
@@ -55,27 +57,18 @@
           {{ 'products.filters.category.belts' | t }}
         </option>
         <option value="portefeuilles">
-          Portefeuilles
+          {{ 'products.filters.category.wallets' | t }}
         </option>
         <option value="portes-cartes">
-          Portes-cartes
+          {{ 'products.filters.category.cardHolders' | t }}
         </option>
         <option value="sets-de-table">
-          Sets de table
+          {{ 'products.filters.category.placemats' | t }}
         </option>
       </select>
     </div>
 
-    <div class="filter-group">
-      <label>{{ 'products.filters.material' | t }}</label>
-      <select [(ngModel)]="selectedMaterial" (ngModelChange)="onFiltersChange()">
-        <option value="">{{ 'products.filters.material.all' | t }}</option>
-        <option value="cuir">{{ 'products.filters.material.leather' | t }}</option>
-        <option value="tissu">{{ 'products.filters.material.fabric' | t }}</option>
-        <option value="mixte">{{ 'products.filters.material.mix' | t }}</option>
-      </select>
-    </div>
-
+    <!-- Prix -->
     <div class="filter-group">
       <label>{{ 'products.filters.price' | t }}</label>
       <div class="filter-price-inputs">
@@ -95,6 +88,7 @@
       </div>
     </div>
 
+    <!-- Tri -->
     <div class="filter-group">
       <label>{{ 'products.filters.sort' | t }}</label>
       <select [(ngModel)]="sortBy" (ngModelChange)="onFiltersChange()">
@@ -161,7 +155,7 @@
               </p>
             </ng-template>
 
-            <!-- STOCK AVEC TRADUCTION -->
+            <!-- STOCK -->
             <p class="stock-info" *ngIf="p.stockQuantity != null">
               <span *ngIf="p.stockQuantity > 0; else outOfStock">
                 {{ 'products.stock.inStockPrefix' | t }}{{ p.stockQuantity }}

@@ -203,6 +203,10 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.category.bags': 'Sacs & sacoches',
     'products.filters.category.belts': 'Ceintures',
     'products.filters.category.smallLeather': 'Petite maroquinerie',
+    // 🔥 nouvelles clés pour la liste déroulante
+    'products.filters.category.wallets': 'Portefeuilles',
+    'products.filters.category.cardHolders': 'Portes-cartes',
+    'products.filters.category.placemats': 'Sets de table',
 
     'products.filters.material': 'Matériau',
     'products.filters.material.all': 'Tous',
@@ -709,6 +713,9 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.category.bags': 'Bags & satchels',
     'products.filters.category.belts': 'Belts',
     'products.filters.category.smallLeather': 'Small leather goods',
+    'products.filters.category.wallets': 'Wallets',
+    'products.filters.category.cardHolders': 'Card holders',
+    'products.filters.category.placemats': 'Placemats',
 
     'products.filters.material': 'Material',
     'products.filters.material.all': 'All',
