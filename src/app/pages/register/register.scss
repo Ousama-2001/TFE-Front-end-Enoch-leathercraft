@@ -69,6 +69,44 @@ form {
   }
 }
 
+/* ✅ CGV */
+.terms-row {
+  margin-top: 0.25rem;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.35;
+
+  input {
+    margin-top: 0.2rem;
+    width: 16px;
+    height: 16px;
+    accent-color: #a855f7;
+    cursor: pointer;
+  }
+
+  a {
+    color: #a855f7;
+    font-weight: 700;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.terms-error {
+  margin: 0.45rem 0 0;
+  color: #fca5a5;
+  font-size: 0.82rem;
+}
+
 button {
   margin-top: 0.5rem;
   padding: 0.7rem 1rem;
@@ -88,8 +126,8 @@ button {
   }
 
   &:disabled {
-    opacity: 0.6;
-    cursor: default;
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 }
 
@@ -112,5 +150,12 @@ button {
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .form-row.two-cols {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, LoginRequest } from '../../services/auth.service';
 
 @Component({
@@ -16,18 +16,19 @@ export class LoginComponent {
   password = '';
   loading = false;
 
-  // erreur pour la partie "login"
   error = '';
 
-  // Compte supprimé → bloc de réactivation
   deletedAccount = false;
   reactivateEmail = '';
   reactivateMessage = '';
 
-  // erreur spécifique pour la partie "réactivation"
   reactivationError = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   submit(): void {
     this.error = '';
@@ -49,7 +50,11 @@ export class LoginComponent {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/home']);
+
+        const returnUrl =
+          this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.loading = false;

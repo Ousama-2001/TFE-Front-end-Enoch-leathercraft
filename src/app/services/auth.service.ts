@@ -15,6 +15,9 @@ export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+
+  // ✅ Ajout CGV (optionnel pour ne pas casser si backend ne le gère pas)
+  acceptTerms?: boolean;
 }
 
 export type UserRole = 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN';
@@ -87,16 +90,13 @@ export class AuthService {
     });
   }
 
-
-// 🔥 nouveau : envoi de la demande de réactivation AVEC message
+  // 🔥 nouveau : envoi de la demande de réactivation AVEC message
   requestReactivation(email: string, message?: string) {
     return this.http.post(`${this.api}/auth/reactivation-request`, {
       email,
       message,
     });
   }
-
-
 
   isAuthPage(): boolean {
     const url = this.router.url;

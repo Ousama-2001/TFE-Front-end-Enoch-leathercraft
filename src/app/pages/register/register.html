@@ -31,14 +31,42 @@
         <input type="password" [(ngModel)]="password" name="password" required />
       </div>
 
-      <button type="submit">S'inscrire</button>
+      <!-- ✅ CGV -->
+      <div class="terms-row">
+        <label class="terms-checkbox">
+          <input
+            type="checkbox"
+            [(ngModel)]="acceptTerms"
+            name="acceptTerms"
+          />
+          <span>
+            J’accepte les
+            <a routerLink="/terms" target="_blank" rel="noopener noreferrer">
+              Conditions Générales
+            </a>
+          </span>
+        </label>
+
+        <p class="terms-error" *ngIf="submitted && !acceptTerms">
+          Tu dois accepter les Conditions Générales pour créer ton compte.
+        </p>
+      </div>
+
+      <button type="submit" [disabled]="!acceptTerms">
+        S'inscrire
+      </button>
 
       <p class="error" *ngIf="error">{{ error }}</p>
 
-      <!-- ⭐ Lien vers login -->
+      <!-- ✅ lien login qui garde le returnUrl -->
       <p class="switch-link">
         Déjà un compte ?
-        <a routerLink="/login">Se connecter</a>
+        <a
+          routerLink="/login"
+          [queryParams]="returnUrl ? { returnUrl: returnUrl } : null"
+        >
+          Se connecter
+        </a>
       </p>
     </form>
   </div>
