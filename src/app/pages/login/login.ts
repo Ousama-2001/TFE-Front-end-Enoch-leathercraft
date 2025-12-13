@@ -21,7 +21,6 @@ export class LoginComponent {
   deletedAccount = false;
   reactivateEmail = '';
   reactivateMessage = '';
-
   reactivationError = '';
 
   constructor(
@@ -51,10 +50,9 @@ export class LoginComponent {
       next: () => {
         this.loading = false;
 
-        const returnUrl =
-          this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-
-        this.router.navigateByUrl(returnUrl);
+        // ✅ priorité au returnUrl, sinon home
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        this.router.navigateByUrl(returnUrl || '/home');
       },
       error: (err) => {
         this.loading = false;

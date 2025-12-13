@@ -28,7 +28,12 @@
 
       <div class="form-group">
         <label>Mot de passe</label>
-        <input type="password" [(ngModel)]="password" name="password" required />
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
       </div>
 
       <!-- ✅ CGV -->
@@ -38,6 +43,7 @@
             type="checkbox"
             [(ngModel)]="acceptTerms"
             name="acceptTerms"
+            required
           />
           <span>
             J’accepte les
@@ -58,7 +64,6 @@
 
       <p class="error" *ngIf="error">{{ error }}</p>
 
-      <!-- ✅ lien login qui garde le returnUrl -->
       <p class="switch-link">
         Déjà un compte ?
         <a

@@ -3,6 +3,9 @@
     ← Retour aux produits
   </button>
 
+  <!-- ✅ Message visiteur -->
+  <p class="auth-warning" *ngIf="authWarning">{{ authWarning }}</p>
+
   <!-- ========= CARTE PRODUIT (Haut de page) ========= -->
   <div class="product-detail-card">
     <div class="left">
@@ -127,12 +130,11 @@
       <p *ngIf="reviewsError" class="error-text">{{ reviewsError }}</p>
 
       <div *ngIf="!reviewsLoading && !reviewsError && reviews.length === 0" class="empty-state">
-        Soer le premier à donner votre avis sur ce produit !
+        Sois le premier à donner votre avis sur ce produit !
       </div>
 
       <ul class="review-list" *ngIf="!reviewsLoading && !reviewsError && reviews.length > 0">
         <li *ngFor="let r of reviews" class="review-card">
-          <!-- Header de l'avis (Avatar + Nom + Date) -->
           <div class="review-card-header">
             <div class="user-info">
               <div class="avatar">{{ r.authorName ? r.authorName.charAt(0).toUpperCase() : '?' }}</div>
@@ -142,19 +144,15 @@
               </div>
             </div>
 
-            <!-- Étoiles de l'avis -->
             <div class="review-rating-stars">
               <span *ngFor="let s of [1,2,3,4,5]" class="star" [class.filled]="s <= r.rating">★</span>
             </div>
           </div>
 
-          <!-- Contenu ou Mode Édition -->
           <div class="review-content">
-            <!-- Mode Lecture -->
             <div *ngIf="editingReviewId !== r.id">
               <p class="comment-text">{{ r.comment }}</p>
 
-              <!-- Actions (Modifier/Supprimer) -->
               <div class="review-actions" *ngIf="r.mine">
                 <button class="text-btn" (click)="startEdit(r)">Modifier</button>
                 <span class="separator">•</span>
@@ -162,7 +160,6 @@
               </div>
             </div>
 
-            <!-- Mode Édition -->
             <div *ngIf="editingReviewId === r.id" class="edit-box">
               <div class="form-row">
                 <label>Note :</label>
@@ -187,7 +184,7 @@
       </ul>
     </div>
 
-    <!-- 3. Formulaire d'ajout (En bas) -->
+    <!-- 3. Formulaire d'ajout -->
     <div class="write-review-area">
       <div class="write-card">
         <h4>Donnez votre avis</h4>

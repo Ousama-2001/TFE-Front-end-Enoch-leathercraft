@@ -1,7 +1,6 @@
-// src/app/pages/product-detail/product-detail.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ProductService, Product } from '../../services/products.service';
@@ -14,11 +13,12 @@ import {
   WishlistService,
   WishlistItemResponse,
 } from '../../services/wishlist.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, RouterLink],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })
@@ -27,6 +27,9 @@ export class ProductDetailComponent implements OnInit {
   loading = false;
   error = '';
   addedMessage = '';
+
+  // ✅ message visiteur (action protégée)
+  authWarning = '';
 
   // --- stock / panier ---
   stockAvailable = 0;
@@ -41,7 +44,6 @@ export class ProductDetailComponent implements OnInit {
   reviews: ProductReview[] = [];
   reviewsLoading = false;
   reviewsError = '';
-
   averageRating = 0;
   totalReviews = 0;
 
@@ -68,12 +70,12 @@ export class ProductDetailComponent implements OnInit {
     private productService: ProductService,
     public cartService: CartService,
     private reviewService: ProductReviewService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
-    // ✅ détection GENERIQUE de la connexion : on cherche n'importe quel JWT
-    this.isLoggedIn = this.detectLoggedInFromStorage();
+    this.isLoggedIn = this.auth.isAuthenticated();
 
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : null;
@@ -92,7 +94,7 @@ export class ProductDetailComponent implements OnInit {
         this.isOutOfStock = this.stockAvailable <= 0;
         this.loading = false;
 
-        // cart à jour
+        // panier
         this.cartService.loadCart().subscribe();
 
         // avis
@@ -111,31 +113,25 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  // ===== helper : détection de n'importe quel JWT dans localStorage / sessionStorage
-  private detectLoggedInFromStorage(): boolean {
-    try {
-      const storages = [window.localStorage, window.sessionStorage];
+  // =================== HELPER LOGIN ===================
 
-      for (const storage of storages) {
-        for (let i = 0; i < storage.length; i++) {
-          const key = storage.key(i);
-          if (!key) continue;
-          const value = storage.getItem(key);
-          if (!value) continue;
+  private requireLoginOrRedirect(): boolean {
+    if (this.auth.isAuthenticated()) return true;
 
-          // ressemble à un JWT (3 parties séparées par des points)
-          if (value.split('.').length === 3) {
-            return true;
-          }
-        }
-      }
-    } catch {
-      // SSR / sécurité navigateur : on ignore
-    }
+    this.authWarning =
+      'Vous devez être connecté ou inscrit pour effectuer cette action.';
+    setTimeout(() => {
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      this.authWarning = '';
+    }, 1200);
+
     return false;
   }
 
   // =================== NAVIGATION ===================
+
   goBack(): void {
     this.router.navigate(['/products']);
   }
@@ -158,6 +154,9 @@ export class ProductDetailComponent implements OnInit {
 
   increase(): void {
     if (!this.product || !this.product.id) return;
+
+    if (!this.requireLoginOrRedirect()) return;
+
     if (!this.canIncrease) {
       this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
@@ -176,6 +175,9 @@ export class ProductDetailComponent implements OnInit {
 
   decrease(): void {
     if (!this.product || !this.product.id) return;
+
+    if (!this.requireLoginOrRedirect()) return;
+
     if (this.quantity <= 0) return;
 
     if (this.quantity === 1) {
@@ -195,6 +197,9 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart(): void {
     if (!this.product || !this.product.id) return;
+
+    if (!this.requireLoginOrRedirect()) return;
+
     if (!this.canIncrease) {
       this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
@@ -244,13 +249,7 @@ export class ProductDetailComponent implements OnInit {
   toggleWishlist(): void {
     if (!this.product || !this.product.id) return;
 
-    if (!this.isLoggedIn) {
-      // simple redirection vers login si pas connecté
-      this.router.navigate(['/login'], {
-        queryParams: { redirectTo: '/products/' + this.product.id },
-      });
-      return;
-    }
+    if (!this.requireLoginOrRedirect()) return;
 
     this.wishlistService.toggle(this.product.id).subscribe({
       next: (items: WishlistItemResponse[]) => {
@@ -272,7 +271,6 @@ export class ProductDetailComponent implements OnInit {
       this.totalReviews = 0;
       return;
     }
-
     const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
     this.totalReviews = this.reviews.length;
     this.averageRating = sum / this.totalReviews;
@@ -301,9 +299,8 @@ export class ProductDetailComponent implements OnInit {
   }
 
   submitReview(): void {
-    if (!this.isLoggedIn || !this.product || !this.product.id) {
-      return;
-    }
+    if (!this.requireLoginOrRedirect()) return;
+    if (!this.product || !this.product.id) return;
 
     if (!this.reviewComment.trim()) {
       this.reviewError = 'Veuillez entrer un commentaire.';
@@ -339,9 +336,10 @@ export class ProductDetailComponent implements OnInit {
       });
   }
 
-  // édition avis
   startEdit(review: ProductReview): void {
+    if (!this.requireLoginOrRedirect()) return;
     if (!review.mine) return;
+
     this.editingReviewId = review.id;
     this.editRating = review.rating;
     this.editComment = review.comment;
@@ -359,7 +357,9 @@ export class ProductDetailComponent implements OnInit {
   }
 
   submitEdit(review: ProductReview): void {
+    if (!this.requireLoginOrRedirect()) return;
     if (!this.product || !this.product.id || !review.mine) return;
+
     if (!this.editComment.trim()) {
       this.reviewError = 'Veuillez entrer un commentaire.';
       return;
@@ -394,6 +394,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   deleteReview(review: ProductReview): void {
+    if (!this.requireLoginOrRedirect()) return;
     if (!review.mine) return;
     if (!confirm('Supprimer cet avis ?')) return;
 

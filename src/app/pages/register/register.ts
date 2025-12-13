@@ -28,7 +28,7 @@ export class RegisterComponent implements OnInit {
 
   error = '';
 
-  // ✅ pour passer au login et pour rediriger après register
+  // ✅ pour ton register.html (queryParams)
   returnUrl: string | null = null;
 
   constructor(
@@ -51,26 +51,20 @@ export class RegisterComponent implements OnInit {
     }
 
     const payload: RegisterRequest = {
-      firstName: this.firstName.trim(),
-      lastName: this.lastName.trim(),
-      username: this.username.trim(),
-      email: this.email.trim(),
+      firstName: this.firstName,
+      lastName: this.lastName,
+      username: this.username,
+      email: this.email,
       password: this.password,
     };
 
     this.auth.register(payload).subscribe({
       next: (res: LoginResponse) => {
-        console.log('REGISTER success', res);
-
-        if (this.returnUrl) {
-          this.router.navigateByUrl(this.returnUrl);
-          return;
-        }
-
+        // ✅ admin -> admin, sinon returnUrl ou home
         if (res.role === 'ADMIN' || res.role === 'SUPER_ADMIN') {
           this.router.navigate(['/admin']);
         } else {
-          this.router.navigate(['/home']);
+          this.router.navigateByUrl(this.returnUrl || '/home');
         }
       },
       error: (err: any) => {

@@ -3,6 +3,9 @@
 
   <!-- ========= HEADER + SEARCH ========= -->
   <section class="products-hero">
+    <div class="auth-warning" *ngIf="authWarning">
+      {{ authWarning }}
+    </div>
     <div class="hero-text">
       <h1>{{ 'products.hero.title' | t }}</h1>
       <p>
