@@ -2,6 +2,27 @@
   <h1>Mon panier</h1>
 
   <ng-container *ngIf="cart.items.length; else empty">
+    <!-- ✅ Message guest (affiché si tentative checkout sans connexion) -->
+    <div class="guest-alert" *ngIf="guestMessage">
+      {{ guestMessage }}
+      <div class="guest-actions">
+        <a
+          class="guest-link"
+          routerLink="/login"
+          [queryParams]="{ returnUrl: '/checkout' }"
+        >
+          Se connecter
+        </a>
+        <a
+          class="guest-link outline"
+          routerLink="/register"
+          [queryParams]="{ returnUrl: '/checkout' }"
+        >
+          Créer un compte
+        </a>
+      </div>
+    </div>
+
     <table class="cart-table">
       <thead>
       <tr>
@@ -14,17 +35,19 @@
       </thead>
 
       <tbody>
-      <tr
-        *ngFor="let item of cart.items; trackBy: trackByProductId"
-      >
+      <tr *ngFor="let item of cart.items; trackBy: trackByProductId">
         <td>{{ item.name }}</td>
 
         <td>{{ item.unitPrice | currency: 'EUR' }}</td>
 
         <td class="qty-buttons">
-          <button type="button" class="btn-qty" (click)="decrease(item)">−</button>
+          <button type="button" class="btn-qty" (click)="decrease(item)">
+            −
+          </button>
           <span class="qty">{{ item.quantity }}</span>
-          <button type="button" class="btn-qty" (click)="increase(item)">+</button>
+          <button type="button" class="btn-qty" (click)="increase(item)">
+            +
+          </button>
         </td>
 
         <td>{{ item.lineTotal | currency: 'EUR' }}</td>
@@ -41,7 +64,7 @@
     <div class="cart-summary">
       <p>
         Total ({{ cart.totalQuantity }} article(s)) :
-        <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
+        <strong>{{ cart.totalAmount | currency : 'EUR' }}</strong>
       </p>
 
       <div class="cart-actions">
@@ -49,7 +72,6 @@
           Vider le panier
         </button>
 
-        <!-- 👉 Nouveau : on va sur la page checkout -->
         <button
           type="button"
           class="btn-primary"
@@ -59,10 +81,13 @@
           Passer à la validation de la commande
         </button>
 
-        <a routerLink="/products">
-          ← Continuer mes achats
-        </a>
+        <a routerLink="/products"> ← Continuer mes achats </a>
       </div>
+
+      <!-- ✅ petit hint si pas connecté -->
+      <p class="hint" *ngIf="!isLoggedIn">
+        Astuce : connecte-toi pour valider ta commande.
+      </p>
     </div>
   </ng-container>
 

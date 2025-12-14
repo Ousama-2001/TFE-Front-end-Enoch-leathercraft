@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 
 // Services
 import { CartService, CartItem } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-cart',
@@ -13,17 +14,31 @@ import { CartService, CartItem } from '../../services/cart.service';
   styleUrls: ['./cart.scss'],
 })
 export class CartComponent implements OnInit {
-
   validating = false;
   error = '';
 
+  // ✅ état login
+  isLoggedIn = false;
+
+  // ✅ message guest
+  guestMessage = '';
+
   constructor(
     public cart: CartService,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.cart.loadCart().subscribe();
+
+    // ✅ détection connexion
+    this.isLoggedIn = this.auth.isAuthenticated?.()
+      ? this.auth.isAuthenticated()
+      : !!localStorage.getItem('auth_token');
+
+    // reset message
+    this.guestMessage = '';
   }
 
   trackByProductId(index: number, item: CartItem): number {
@@ -54,11 +69,21 @@ export class CartComponent implements OnInit {
     }
   }
 
-  /** 👉 Nouveau : aller vers la page de checkout */
+  /** ✅ Checkout : si pas connecté -> login + returnUrl */
   goToCheckout(): void {
-    if (!this.cart.items.length) {
+    if (!this.cart.items.length) return;
+
+    // guest -> on bloque et on redirige
+    if (!this.isLoggedIn) {
+      this.guestMessage =
+        'Vous devez être connecté ou inscrit pour valider votre commande.';
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: '/checkout' },
+      });
       return;
     }
+
+    // connecté -> checkout
     this.router.navigate(['/checkout']);
   }
 }

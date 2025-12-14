@@ -33,8 +33,6 @@
       </button>
     </form>
 
-    <!-- Bloc spécial compte supprimé -->
-    <!-- Bloc spécial compte supprimé -->
     <div class="reactivation-box" *ngIf="deletedAccount">
       <h3>Compte désactivé</h3>
       <p>
@@ -65,7 +63,6 @@
         ></textarea>
       </div>
 
-      <!-- ⬇⬇ erreur spécifique réactivation -->
       <p *ngIf="reactivationError" class="error-message">
         {{ reactivationError }}
       </p>
@@ -79,7 +76,6 @@
         Demander la réactivation
       </button>
     </div>
-
 
     <div class="auth-footer">
       <a routerLink="/register">Créer un compte</a>

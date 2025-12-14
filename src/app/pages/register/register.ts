@@ -22,13 +22,12 @@ export class RegisterComponent implements OnInit {
   email = '';
   password = '';
 
-  // ✅ CGV
   acceptTerms = false;
   submitted = false;
 
   error = '';
 
-  // ✅ pour ton register.html (queryParams)
+  // ✅ pour queryParams login
   returnUrl: string | null = null;
 
   constructor(
@@ -38,7 +37,25 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    // si déjà connecté → on ne reste pas sur register
+    if (this.auth.isAuthenticated()) {
+      const safe = this.getSafeReturnUrl();
+      this.router.navigateByUrl(safe);
+      return;
+    }
+
+    this.returnUrl = this.getSafeReturnUrlRaw();
+  }
+
+  private getSafeReturnUrlRaw(): string | null {
+    const raw = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (!raw) return null;
+    if (!raw.startsWith('/')) return null; // sécurité
+    return raw;
+  }
+
+  private getSafeReturnUrl(): string {
+    return this.getSafeReturnUrlRaw() || '/home';
   }
 
   onSubmit(): void {
@@ -60,12 +77,14 @@ export class RegisterComponent implements OnInit {
 
     this.auth.register(payload).subscribe({
       next: (res: LoginResponse) => {
-        // ✅ admin -> admin, sinon returnUrl ou home
+        // ✅ admin -> admin
         if (res.role === 'ADMIN' || res.role === 'SUPER_ADMIN') {
           this.router.navigate(['/admin']);
-        } else {
-          this.router.navigateByUrl(this.returnUrl || '/home');
+          return;
         }
+
+        // ✅ sinon returnUrl ou home
+        this.router.navigateByUrl(this.getSafeReturnUrl());
       },
       error: (err: any) => {
         console.error('REGISTER error', err);

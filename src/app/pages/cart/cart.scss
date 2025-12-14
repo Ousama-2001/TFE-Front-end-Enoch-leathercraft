@@ -9,7 +9,58 @@
 h1 {
   font-size: 2.4rem;
   font-weight: 700;
-  margin-bottom: 2rem;
+  margin-bottom: 1.6rem;
+}
+
+/* ✅ ALERT GUEST */
+.guest-alert {
+  margin-bottom: 1.2rem;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  color: #fde68a;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.guest-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.guest-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #f59e0b, #fb7185);
+  color: #050814;
+  border: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 10px 20px rgba(251, 113, 133, 0.25);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(251, 113, 133, 0.35);
+  }
+
+  &.outline {
+    background: transparent;
+    color: #fdba74;
+    border: 1px solid rgba(253, 186, 116, 0.6);
+    box-shadow: none;
+
+    &:hover {
+      background: rgba(253, 186, 116, 0.08);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 /* TABLE */
@@ -73,7 +124,7 @@ h1 {
   font-weight: 600;
 }
 
-/* 🔴 BOUTON SUPPRIMER */
+/* SUPPRIMER */
 
 .btn-remove {
   background: linear-gradient(135deg, #ef4444, #fb7185);
@@ -97,7 +148,7 @@ h1 {
   }
 }
 
-/* 🟥 BOUTON VIDER LE PANIER */
+/* VIDER */
 
 .btn-clear {
   background: linear-gradient(135deg, #dc2626, #f87171);
@@ -121,7 +172,7 @@ h1 {
   }
 }
 
-/* 💜 BOUTON VALIDATION COMMANDE */
+/* CHECKOUT */
 
 .btn-primary {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -145,7 +196,7 @@ h1 {
 .cart-summary {
   margin-top: 2rem;
   padding: 1.6rem 2rem;
-  max-width: 420px;
+  max-width: 520px;
   background: rgba(15, 23, 42, 0.95);
   border-radius: 1rem;
   box-shadow: 0 20px 30px rgba(15, 23, 42, 0.6);
@@ -156,14 +207,16 @@ h1 {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.hint {
+  margin-top: 10px;
+  color: #9ca3af;
+  font-size: 0.85rem;
 }
 
 /* PANIER VIDE */
-
-empty {
-  text-align: center;
-}
-
 .empty p {
   color: #9ca3af;
   margin-bottom: 1rem;

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -11,7 +11,7 @@ import { AuthService, LoginRequest } from '../../services/auth.service';
   templateUrl: './login.html',
   styleUrls: ['./login.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   emailOrUsername = '';
   password = '';
   loading = false;
@@ -28,6 +28,26 @@ export class LoginComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {}
+
+  ngOnInit(): void {
+    // ✅ si déjà connecté, on ne reste pas sur /login
+    if (this.auth.isAuthenticated()) {
+      const returnUrl = this.getSafeReturnUrl();
+      this.router.navigateByUrl(returnUrl);
+    }
+  }
+
+  private getSafeReturnUrl(): string {
+    const raw = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    // si vide -> home
+    if (!raw) return '/home';
+
+    // sécurité : on autorise seulement des chemins internes
+    if (!raw.startsWith('/')) return '/home';
+
+    return raw;
+  }
 
   submit(): void {
     this.error = '';
@@ -51,8 +71,8 @@ export class LoginComponent {
         this.loading = false;
 
         // ✅ priorité au returnUrl, sinon home
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-        this.router.navigateByUrl(returnUrl || '/home');
+        const returnUrl = this.getSafeReturnUrl();
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.loading = false;
