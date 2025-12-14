@@ -1,19 +1,19 @@
-<!-- src/app/pages/products/products.html -->
 <div class="products-page">
 
-  <!-- ========= HEADER + SEARCH ========= -->
+  <div class="auth-warning" *ngIf="authWarning">
+    {{ authWarning }}
+  </div>
+
   <section class="products-hero">
-    <div class="auth-warning" *ngIf="authWarning">
-      {{ authWarning }}
-    </div>
     <div class="hero-text">
       <h1>{{ 'products.hero.title' | t }}</h1>
-      <p>
-        {{ 'products.hero.subtitle' | t }}
-      </p>
+      <p>{{ 'products.hero.subtitle' | t }}</p>
     </div>
+  </section>
 
-    <div class="search-wrapper">
+  <section class="filters-card">
+
+    <div class="filters-top">
       <div class="search-bar">
         <span class="search-icon">🔍</span>
         <input
@@ -30,89 +30,95 @@
           ✕
         </button>
       </div>
-    </div>
-  </section>
 
-  <!-- ========= FILTRES ========= -->
-  <section class="filters-row">
-    <!-- Segment -->
-    <div class="filter-group">
-      <label>{{ 'products.filters.segment' | t }}</label>
-      <select [(ngModel)]="selectedSegment" (ngModelChange)="onFiltersChange()">
-        <option value="">{{ 'products.filters.segment.all' | t }}</option>
-        <option value="homme">{{ 'products.filters.segment.men' | t }}</option>
-        <option value="femme">{{ 'products.filters.segment.women' | t }}</option>
-        <option value="petite-maroquinerie">
-          {{ 'products.filters.segment.smallLeather' | t }}
-        </option>
-      </select>
+      <button type="button" class="btn-reset" (click)="clearAllFilters()">
+        {{ 'products.filters.reset' | t }}
+      </button>
     </div>
 
-    <!-- Catégorie -->
-    <div class="filter-group">
-      <label>{{ 'products.filters.category' | t }}</label>
-      <select [(ngModel)]="selectedCategory" (ngModelChange)="onFiltersChange()">
-        <option value="">{{ 'products.filters.category.all' | t }}</option>
-        <option value="sacs-sacoches">
-          {{ 'products.filters.category.bags' | t }}
-        </option>
-        <option value="ceintures">
-          {{ 'products.filters.category.belts' | t }}
-        </option>
-        <option value="portefeuilles">
-          {{ 'products.filters.category.wallets' | t }}
-        </option>
-        <option value="portes-cartes">
-          {{ 'products.filters.category.cardHolders' | t }}
-        </option>
-        <option value="sets-de-table">
-          {{ 'products.filters.category.placemats' | t }}
-        </option>
-      </select>
-    </div>
+    <div class="filters-grid">
 
-    <!-- Prix -->
-    <div class="filter-group">
-      <label>{{ 'products.filters.price' | t }}</label>
-      <div class="filter-price-inputs">
-        <input
-          type="number"
-          placeholder="Min"
-          [(ngModel)]="priceMin"
-          (ngModelChange)="onFiltersChange()"
-        />
-        <span>–</span>
-        <input
-          type="number"
-          placeholder="Max"
-          [(ngModel)]="priceMax"
-          (ngModelChange)="onFiltersChange()"
-        />
+      <div class="filter-group">
+        <label>{{ 'products.filters.segment' | t }}</label>
+        <select [(ngModel)]="selectedSegment" (ngModelChange)="onFiltersChange()">
+          <option value="">{{ 'products.filters.segment.all' | t }}</option>
+          <option value="homme">{{ 'products.filters.segment.men' | t }}</option>
+          <option value="femme">{{ 'products.filters.segment.women' | t }}</option>
+          <option value="petite-maroquinerie">
+            {{ 'products.filters.segment.smallLeather' | t }}
+          </option>
+        </select>
       </div>
+
+      <div class="filter-group">
+        <label>{{ 'products.filters.category' | t }}</label>
+        <select [(ngModel)]="selectedCategory" (ngModelChange)="onFiltersChange()">
+          <option value="">{{ 'products.filters.category.all' | t }}</option>
+          <option value="sacs-sacoches">{{ 'products.filters.category.bags' | t }}</option>
+          <option value="ceintures">{{ 'products.filters.category.belts' | t }}</option>
+          <option value="portefeuilles">{{ 'products.filters.category.wallets' | t }}</option>
+          <option value="portes-cartes">{{ 'products.filters.category.cardHolders' | t }}</option>
+          <option value="sets-de-table">{{ 'products.filters.category.placemats' | t }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group price-group">
+        <label>{{ 'products.filters.price' | t }}</label>
+
+        <div class="price-row-container">
+          <div class="price-input-wrapper">
+            <span class="currency-symbol">€</span>
+            <input
+              type="number"
+              min="0"
+              step="10"
+              placeholder="Min"
+              [(ngModel)]="priceMin"
+              (ngModelChange)="onFiltersChange()"
+              (input)="preventNegative($event)"
+            />
+          </div>
+
+          <span class="separator">–</span>
+
+          <div class="price-input-wrapper">
+            <span class="currency-symbol">€</span>
+            <input
+              type="number"
+              min="0"
+              step="10"
+              placeholder="Max"
+              [(ngModel)]="priceMax"
+              (ngModelChange)="onFiltersChange()"
+              (input)="preventNegative($event)"
+            />
+          </div>
+        </div>
+
+        <div class="price-note">
+          <ng-template #emptyNote>&nbsp;</ng-template>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>{{ 'products.filters.sort' | t }}</label>
+        <select [(ngModel)]="sortBy" (ngModelChange)="onFiltersChange()">
+          <option value="">{{ 'products.filters.sort.default' | t }}</option>
+          <option value="price-asc">{{ 'products.filters.sort.priceAsc' | t }}</option>
+          <option value="price-desc">{{ 'products.filters.sort.priceDesc' | t }}</option>
+          <option value="newest">{{ 'products.filters.sort.newest' | t }}</option>
+        </select>
+      </div>
+
     </div>
 
-    <!-- Tri -->
-    <div class="filter-group">
-      <label>{{ 'products.filters.sort' | t }}</label>
-      <select [(ngModel)]="sortBy" (ngModelChange)="onFiltersChange()">
-        <option value="">{{ 'products.filters.sort.default' | t }}</option>
-        <option value="price-asc">{{ 'products.filters.sort.priceAsc' | t }}</option>
-        <option value="price-desc">{{ 'products.filters.sort.priceDesc' | t }}</option>
-        <option value="newest">{{ 'products.filters.sort.newest' | t }}</option>
-      </select>
-    </div>
+
   </section>
 
-  <!-- ========= LISTE PRODUITS ========= -->
-  <section
-    class="products-section"
-    *ngIf="filteredProducts && filteredProducts.length; else noProducts">
-
+  <section class="products-section" *ngIf="filteredProducts && filteredProducts.length; else noProducts">
     <h2 class="section-title">{{ 'products.section.title' | t }}</h2>
 
     <div class="products-grid">
-
-      <!-- SKELETONS SI CHARGEMENT -->
       <ng-container *ngIf="loading; else productsList">
         <article class="product-card skeleton" *ngFor="let _ of skeletonItems">
           <div class="product-image shimmer"></div>
@@ -126,10 +132,8 @@
         </article>
       </ng-container>
 
-      <!-- VRAIS PRODUITS -->
       <ng-template #productsList>
         <article class="product-card" *ngFor="let p of paginatedProducts">
-
           <div class="product-image">
             <img
               [src]="p.imageUrls && p.imageUrls.length > 0
@@ -148,104 +152,64 @@
 
           <div class="product-body">
             <h3 class="product-name">{{ p.name }}</h3>
-
             <p class="product-description" *ngIf="p.description; else noDesc">
               {{ p.description }}
             </p>
             <ng-template #noDesc>
-              <p class="product-description muted">
-                {{ 'products.description.missing' | t }}
-              </p>
+              <p class="product-description muted">{{ 'products.description.missing' | t }}</p>
             </ng-template>
-
-            <!-- STOCK -->
             <p class="stock-info" *ngIf="p.stockQuantity != null">
               <span *ngIf="p.stockQuantity > 0; else outOfStock">
                 {{ 'products.stock.inStockPrefix' | t }}{{ p.stockQuantity }}
                 {{ 'products.stock.inStockSuffix' | t }}
               </span>
               <ng-template #outOfStock>
-                <span class="out-stock">
-                  {{ 'products.stock.outOfStock' | t }}
-                </span>
+                <span class="out-stock">{{ 'products.stock.outOfStock' | t }}</span>
               </ng-template>
             </p>
           </div>
 
           <div class="card-footer">
-            <div class="price">
-              {{ p.price | currency : 'EUR' }}
-            </div>
-
+            <div class="price">{{ p.price | currency : 'EUR' }}</div>
             <div class="card-actions">
-
-              <!-- Si pas encore dans le panier -->
               <ng-container *ngIf="getQuantity(p) === 0; else qtyControls">
                 <button
                   type="button"
                   class="btn-icon btn-cart"
                   (click)="increase(p)"
-                  [disabled]="isAddDisabled(p)"
-                  [attr.aria-label]="'product.addToCart' | t">
+                  [disabled]="isAddDisabled(p)">
                   🛒
                 </button>
               </ng-container>
-
-              <!-- Déjà présent : pill quantité -->
               <ng-template #qtyControls>
                 <div class="qty-pill">
                   <button type="button" (click)="decrease(p)">−</button>
                   <span>{{ getQuantity(p) }}</span>
-                  <button
-                    type="button"
-                    (click)="increase(p)"
-                    [disabled]="isMaxQuantityReached(p)">
-                    +
-                  </button>
+                  <button type="button" (click)="increase(p)" [disabled]="isMaxQuantityReached(p)">+</button>
                 </div>
               </ng-template>
-
-              <a
-                class="btn-icon btn-eye"
-                [routerLink]="['/products', p.id]"
-                aria-label="Voir le produit">
-                👁️
-              </a>
+              <a class="btn-icon btn-eye" [routerLink]="['/products', p.id]" aria-label="Voir le produit">👁️</a>
             </div>
-
-            <p class="stock-warning" *ngIf="isMaxQuantityReached(p)">
-              {{ 'products.stock.maxReached' | t }}
-            </p>
+            <p class="stock-warning" *ngIf="isMaxQuantityReached(p)">{{ 'products.stock.maxReached' | t }}</p>
           </div>
         </article>
       </ng-template>
     </div>
 
-    <!-- PAGINATION -->
     <div class="pagination" *ngIf="totalPages > 1">
-      <button
-        class="page-btn"
-        [disabled]="page === 1"
-        (click)="changePage(page - 1)">
+      <button class="page-btn" [disabled]="page === 1" (click)="changePage(page - 1)">
         {{ 'products.pagination.prev' | t }}
       </button>
-
       <span class="page-info">
         {{ 'products.pagination.pageInfo' | t }} {{ page }} / {{ totalPages }}
       </span>
-
-      <button
-        class="page-btn"
-        [disabled]="page === totalPages"
-        (click)="changePage(page + 1)">
+      <button class="page-btn" [disabled]="page === totalPages" (click)="changePage(page + 1)">
         {{ 'products.pagination.next' | t }}
       </button>
     </div>
   </section>
 
   <ng-template #noProducts>
-    <p class="empty-message">
-      {{ 'products.empty' | t }}
-    </p>
+    <p class="empty-message">{{ 'products.empty' | t }}</p>
   </ng-template>
 </div>

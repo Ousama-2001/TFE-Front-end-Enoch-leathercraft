@@ -220,6 +220,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.sort.priceAsc': 'Prix croissant',
     'products.filters.sort.priceDesc': 'Prix décroissant',
     'products.filters.sort.newest': 'Nouveautés',
+    'products.filters.reset': 'Réinitialiser',
 
     'products.section.title': 'Nos produits',
     'products.description.missing': 'Description à venir.',
@@ -729,6 +730,8 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.sort.priceAsc': 'Price: Low to high',
     'products.filters.sort.priceDesc': 'Price: High to low',
     'products.filters.sort.newest': 'Newest',
+    'products.filters.reset': 'Reset',
+
 
     'products.section.title': 'Our products',
     'products.description.missing': 'Description coming soon.',

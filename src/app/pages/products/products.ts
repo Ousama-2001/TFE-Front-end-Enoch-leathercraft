@@ -5,7 +5,10 @@ import { FormsModule } from '@angular/forms';
 
 import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
-import { WishlistService, WishlistItemResponse } from '../../services/wishlist.service';
+import {
+  WishlistService,
+  WishlistItemResponse,
+} from '../../services/wishlist.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService } from '../../services/auth.service';
 
@@ -13,8 +16,8 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-products',
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, TranslatePipe],
-  templateUrl: './products.html',
-  styleUrls: ['./products.scss'],
+  templateUrl: './products.html', // Assure-toi que c'est le bon nom
+  styleUrls: ['./products.scss'], // Assure-toi que c'est le bon nom
 })
 export class ProductsComponent implements OnInit {
   products: Product[] = [];
@@ -43,7 +46,7 @@ export class ProductsComponent implements OnInit {
   // Skeleton
   skeletonItems = Array(8).fill(0);
 
-  // ✅ message visiteur
+  // Message visiteur
   authWarning = '';
 
   constructor(
@@ -83,7 +86,6 @@ export class ProductsComponent implements OnInit {
       },
     });
 
-    // panier : si visiteur, ton backend va sûrement renvoyer 401/403 → on ignore
     this.cartService.loadCart().subscribe({ error: () => {} });
 
     if (this.isLoggedIn) {
@@ -99,13 +101,25 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  // ✅ Empêche la saisie de nombres négatifs dans l'input
+  preventNegative(event: any): void {
+    const input = event.target;
+    if (input.value < 0) {
+      input.value = 0;
+      if (input.placeholder === 'Min') this.priceMin = 0;
+      if (input.placeholder === 'Max') this.priceMax = 0;
+    }
+  }
+
   private requireLoginOrRedirect(): boolean {
     if (this.auth.isAuthenticated()) return true;
 
     this.authWarning =
       'Vous devez être connecté ou inscrit pour effectuer cette action.';
     setTimeout(() => {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
       this.authWarning = '';
     }, 1200);
 
@@ -131,40 +145,44 @@ export class ProductsComponent implements OnInit {
   }
 
   // ====== Helpers segments / catégories ======
-
   private getSegmentSlug(p: Product): string | null {
     switch ((p as any).segmentCategoryId) {
-      case 1:
-        return 'homme';
-      case 2:
-        return 'femme';
-      case 3:
-        return 'petite-maroquinerie';
-      default:
-        return null;
+      case 1: return 'homme';
+      case 2: return 'femme';
+      case 3: return 'petite-maroquinerie';
+      default: return null;
     }
   }
 
   private getTypeSlug(p: Product): string | null {
     switch ((p as any).typeCategoryId) {
-      case 4:
-        return 'sacs-sacoches';
-      case 5:
-        return 'ceintures';
-      case 6:
-        return 'portefeuilles';
-      case 7:
-        return 'portes-cartes';
-      case 8:
-        return 'sets-de-table';
-      default:
-        return null;
+      case 4: return 'sacs-sacoches';
+      case 5: return 'ceintures';
+      case 6: return 'portefeuilles';
+      case 7: return 'portes-cartes';
+      case 8: return 'sets-de-table';
+      default: return null;
+    }
+  }
+
+  private normalizePrices(): void {
+    const clamp = (v: number | null) => {
+      if (v == null) return null;
+      if (Number.isNaN(v)) return null;
+      return Math.max(0, Math.floor(v));
+    };
+
+    this.priceMin = clamp(this.priceMin);
+    this.priceMax = clamp(this.priceMax);
+
+    if (this.priceMin != null && this.priceMax != null && this.priceMax < this.priceMin) {
+      this.priceMax = this.priceMin;
     }
   }
 
   // ====== FILTRES / TRI ======
-
   applyFilters(): void {
+    this.normalizePrices();
     let result = [...this.products];
 
     if (this.searchTerm.trim()) {
@@ -172,38 +190,28 @@ export class ProductsComponent implements OnInit {
       result = result.filter(
         (p) =>
           (p.name && p.name.toLowerCase().includes(term)) ||
-          ((p as any).description && (p as any).description.toLowerCase().includes(term))
+          ((p as any).description &&
+            (p as any).description.toLowerCase().includes(term))
       );
     }
 
     if (this.selectedSegment) {
       result = result.filter((p) => this.getSegmentSlug(p) === this.selectedSegment);
     }
-
     if (this.selectedCategory) {
       result = result.filter((p) => this.getTypeSlug(p) === this.selectedCategory);
     }
-
     if (this.selectedMaterial) {
       const mat = this.selectedMaterial.toLowerCase();
-      result = result.filter(
-        (p) => (p as any).material && (p as any).material.toLowerCase().includes(mat)
-      );
+      result = result.filter((p) => (p as any).material && (p as any).material.toLowerCase().includes(mat));
     }
-
     if (this.priceMin != null) result = result.filter((p) => p.price >= this.priceMin!);
     if (this.priceMax != null) result = result.filter((p) => p.price <= this.priceMax!);
 
     switch (this.sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        result.sort((a, b) => (b.id || 0) - (a.id || 0));
-        break;
+      case 'price-asc': result.sort((a, b) => a.price - b.price); break;
+      case 'price-desc': result.sort((a, b) => b.price - a.price); break;
+      case 'newest': result.sort((a, b) => (b.id || 0) - (a.id || 0)); break;
     }
 
     this.filteredProducts = result;
@@ -219,8 +227,18 @@ export class ProductsComponent implements OnInit {
     this.applyFilters();
   }
 
-  // ====== PAGINATION ======
+  clearAllFilters(): void {
+    this.searchTerm = '';
+    this.selectedSegment = '';
+    this.selectedCategory = '';
+    this.selectedMaterial = '';
+    this.priceMin = null;
+    this.priceMax = null;
+    this.sortBy = '';
+    this.applyFilters();
+  }
 
+  // ====== PAGINATION ======
   get paginatedProducts(): Product[] {
     const start = (this.page - 1) * this.pageSize;
     return this.filteredProducts.slice(start, start + this.pageSize);
@@ -237,8 +255,7 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  // ====== PANIER ======
-
+  // ====== PANIER & WISHLIST ======
   getQuantity(p: Product): number {
     if (!p.id) return 0;
     const item = this.cartService.items.find((i: CartItem) => i.productId === p.id);
@@ -259,17 +276,13 @@ export class ProductsComponent implements OnInit {
 
   increase(p: Product): void {
     if (!p.id) return;
-
     if (!this.requireLoginOrRedirect()) return;
-
     if (this.isAddDisabled(p)) {
       alert('Vous avez atteint le stock maximum disponible pour ce produit.');
       return;
     }
-
     this.cartService.addProduct(p.id, 1).subscribe({
       error: () => {
-        // si backend refuse (token expiré etc.)
         this.authWarning = 'Vous devez être connecté pour ajouter au panier.';
         setTimeout(() => (this.authWarning = ''), 2000);
       },
@@ -278,9 +291,7 @@ export class ProductsComponent implements OnInit {
 
   decrease(p: Product): void {
     if (!p.id) return;
-
     if (!this.requireLoginOrRedirect()) return;
-
     const q = this.getQuantity(p);
     if (q <= 1) {
       this.cartService.removeItem(p.id).subscribe();
@@ -289,26 +300,20 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  // ====== WISHLIST ======
-
   isFavorite(p: Product): boolean {
     return !!p.id && this.wishlistProductIds.has(p.id);
   }
 
   toggleFavorite(p: Product): void {
     if (!p.id) return;
-
     if (!this.requireLoginOrRedirect()) return;
-
     this.wishlistService.toggle(p.id).subscribe({
       next: (items: WishlistItemResponse[]) => {
         this.wishlistProductIds = new Set(
-          items
-            .filter((it) => !!it.product && !!it.product.id)
-            .map((it) => it.product.id)
+          items.filter((it) => !!it.product && !!it.product.id).map((it) => it.product.id)
         );
       },
-      error: (err) => console.error('Erreur toggle wishlist pour produit', p.id, err),
+      error: (err) => console.error('Erreur toggle wishlist', err),
     });
   }
 }
