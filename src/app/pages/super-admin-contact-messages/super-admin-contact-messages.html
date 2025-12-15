@@ -1,0 +1,51 @@
+<div class="contact-admin">
+
+  <h2>Messages de contact</h2>
+
+  <p class="info" *ngIf="loading">Chargement…</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <div class="messages" *ngIf="!loading && messages.length">
+
+    <article
+      class="message-card"
+      *ngFor="let m of messages"
+      [class.handled]="m.handled">
+
+      <header>
+        <div>
+          <strong>{{ m.name }}</strong>
+          <span class="email">{{ m.email }}</span>
+        </div>
+
+        <span class="date">
+          {{ m.createdAt | date:'dd/MM/yyyy HH:mm' }}
+        </span>
+      </header>
+
+      <p class="message">
+        {{ m.message }}
+      </p>
+
+      <footer>
+        <span *ngIf="m.handled" class="handled-info">
+          Traité par {{ m.handledBy }} –
+          {{ m.handledAt | date:'dd/MM/yyyy HH:mm' }}
+        </span>
+
+        <button
+          type="button"
+          class="btn"
+          (click)="toggleHandled(m)">
+          {{ m.handled ? 'Marquer non traité' : 'Marquer traité' }}
+        </button>
+      </footer>
+
+    </article>
+  </div>
+
+  <p class="info" *ngIf="!loading && !messages.length">
+    Aucun message pour le moment.
+  </p>
+
+</div>

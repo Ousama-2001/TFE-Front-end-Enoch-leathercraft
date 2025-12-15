@@ -1,19 +1,16 @@
-// src/app/pages/my-orders/my-orders.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import {
-  OrderService,
-  OrderResponse,
-  StripeCheckoutResponse,
-  ReturnRequestPayload
-} from '../../services/order.service';
 import { FormsModule } from '@angular/forms';
+
+import { OrderService, OrderResponse, StripeCheckoutResponse, ReturnRequestPayload } from '../../services/order.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, RouterModule, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, RouterModule, FormsModule, TranslatePipe],
   templateUrl: './my-orders.html',
   styleUrls: ['./my-orders.scss'],
 })
@@ -27,19 +24,26 @@ export class MyOrdersComponent implements OnInit {
   actionLoading: { [orderId: number]: boolean } = {};
 
   showReturnForm: { [orderId: number]: boolean } = {};
-  selectedReason: { [orderId: number]: string } = {};
+  selectedReasonKey: { [orderId: number]: string } = {};
   returnComment: { [orderId: number]: string } = {};
 
-  returnReasons = [
-    'Taille incorrecte',
-    'Article endommagé / défectueux',
-    'Article ne correspond pas à la description',
-    'Commande incomplète',
-    'Je n’aime pas l’article',
-    'Autre'
+  returnReasonKeys = [
+    'returns.reason.size',
+    'returns.reason.damaged',
+    'returns.reason.notAsDescribed',
+    'returns.reason.incomplete',
+    'returns.reason.dontLike',
+    'returns.reason.other',
   ];
 
-  constructor(private orderService: OrderService) {}
+  constructor(
+    private orderService: OrderService,
+    private lang: LanguageService
+  ) {}
+
+  private tr(key: string): string {
+    return this.lang.t(key);
+  }
 
   ngOnInit(): void {
     this.loadOrders();
@@ -53,29 +57,24 @@ export class MyOrdersComponent implements OnInit {
 
     this.orderService.getMyOrders().subscribe({
       next: (list) => {
-        this.orders = list;
+        this.orders = [...list].sort((a, b) => {
+          const da = new Date(a.createdAt as any).getTime();
+          const db = new Date(b.createdAt as any).getTime();
+          return db - da;
+        });
         this.loading = false;
       },
       error: (err) => {
         console.error('Erreur chargement commandes client', err);
-        this.error = 'Impossible de charger vos commandes.';
+        this.error = this.tr('orders.error');
         this.loading = false;
       }
     });
   }
 
+  // ✅ i18n status
   getStatusLabel(status: string): string {
-    switch (status) {
-      case 'PENDING':           return 'En attente';
-      case 'PAID':              return 'Payée';
-      case 'SHIPPED':           return 'Expédiée';
-      case 'DELIVERED':         return 'Livrée';
-      case 'CANCELLED':         return 'Annulée';
-      case 'RETURN_REQUESTED':  return 'Retour demandé';
-      case 'RETURN_APPROVED':   return 'Retour accepté';
-      case 'RETURN_REJECTED':   return 'Retour refusé';
-      default:                  return status;
-    }
+    return this.tr(`order.status.${status}`);
   }
 
   getStatusClass(status: string): string {
@@ -92,30 +91,27 @@ export class MyOrdersComponent implements OnInit {
     }
   }
 
-  // ✅ Annulation autorisée quand PENDING ou PAID
   canCancel(o: OrderResponse): boolean {
     return o.status === 'PENDING' || o.status === 'PAID';
   }
-
   canPay(o: OrderResponse): boolean {
     return o.status === 'PENDING';
   }
-
   canDownloadInvoice(o: OrderResponse): boolean {
     return o.status === 'PAID' || o.status === 'DELIVERED';
   }
-
   canRequestReturn(o: OrderResponse): boolean {
     return o.status === 'DELIVERED';
   }
-
   hasReturnLabel(o: OrderResponse): boolean {
     return o.status === 'RETURN_APPROVED';
   }
 
   cancelOrder(o: OrderResponse): void {
     if (!this.canCancel(o)) return;
-    if (!confirm(`Annuler la commande ${o.reference} ?`)) return;
+
+    const msg = this.tr('orders.confirm.cancel').replace('{ref}', o.reference);
+    if (!confirm(msg)) return;
 
     this.actionLoading[o.id] = true;
     this.infoMessage = '';
@@ -123,17 +119,15 @@ export class MyOrdersComponent implements OnInit {
 
     this.orderService.cancelOrder(o.id).subscribe({
       next: (updated) => {
-        this.orders = this.orders.map(order =>
-          order.id === updated.id ? updated : order
-        );
+        this.orders = this.orders.map(x => x.id === updated.id ? updated : x);
         this.actionLoading[o.id] = false;
-        this.infoMessage = 'Commande annulée avec succès.';
+        this.infoMessage = this.tr('orders.info.cancelled');
         setTimeout(() => this.infoMessage = '', 3000);
       },
       error: (err) => {
         console.error('Erreur annulation commande', err);
         this.actionLoading[o.id] = false;
-        this.errorMessage = "Impossible d'annuler cette commande.";
+        this.errorMessage = this.tr('orders.error.cancel');
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
@@ -149,16 +143,13 @@ export class MyOrdersComponent implements OnInit {
     this.orderService.payOrder(o.id).subscribe({
       next: (resp: StripeCheckoutResponse) => {
         this.actionLoading[o.id] = false;
-        if (resp.checkoutUrl) {
-          window.location.href = resp.checkoutUrl;
-        } else {
-          this.errorMessage = 'URL de paiement introuvable.';
-        }
+        if (resp.checkoutUrl) window.location.href = resp.checkoutUrl;
+        else this.errorMessage = this.tr('orders.error.paymentUrlMissing');
       },
       error: (err) => {
         console.error('Erreur paiement commande', err);
         this.actionLoading[o.id] = false;
-        this.errorMessage = 'Erreur lors du paiement de la commande.';
+        this.errorMessage = this.tr('orders.error.pay');
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
@@ -166,9 +157,7 @@ export class MyOrdersComponent implements OnInit {
 
   openReturnForm(o: OrderResponse): void {
     this.showReturnForm[o.id] = true;
-    if (!this.selectedReason[o.id]) {
-      this.selectedReason[o.id] = this.returnReasons[0];
-    }
+    if (!this.selectedReasonKey[o.id]) this.selectedReasonKey[o.id] = this.returnReasonKeys[0];
   }
 
   cancelReturnForm(o: OrderResponse): void {
@@ -178,16 +167,19 @@ export class MyOrdersComponent implements OnInit {
   submitReturn(o: OrderResponse): void {
     if (!this.canRequestReturn(o)) return;
 
-    const reason = this.selectedReason[o.id];
+    const reasonKey = this.selectedReasonKey[o.id];
     const comment = this.returnComment[o.id];
 
-    if (!reason) {
-      this.errorMessage = 'Veuillez sélectionner un motif de retour.';
+    if (!reasonKey) {
+      this.errorMessage = this.tr('returns.error.selectReason');
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
 
-    const payload: ReturnRequestPayload = { reason, comment };
+    const payload: ReturnRequestPayload = {
+      reason: this.tr(reasonKey),
+      comment
+    };
 
     this.actionLoading[o.id] = true;
     this.infoMessage = '';
@@ -195,23 +187,22 @@ export class MyOrdersComponent implements OnInit {
 
     this.orderService.requestReturn(o.id, payload).subscribe({
       next: (updated) => {
-        this.orders = this.orders.map(order =>
-          order.id === updated.id ? updated : order
-        );
+        this.orders = this.orders.map(x => x.id === updated.id ? updated : x);
         this.actionLoading[o.id] = false;
         this.showReturnForm[o.id] = false;
-        this.infoMessage = 'Demande de retour enregistrée.';
+        this.infoMessage = this.tr('returns.info.saved');
         setTimeout(() => this.infoMessage = '', 3000);
       },
       error: (err) => {
         console.error('Erreur demande de retour', err);
         this.actionLoading[o.id] = false;
-        this.errorMessage = 'Impossible de demander le retour pour cette commande.';
+        this.errorMessage = this.tr('returns.error.requestFailed');
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
   }
 
+  // ✅ a.download ici, dans le subscribe (tu l’as bien fait)
   downloadInvoice(o: OrderResponse): void {
     if (!this.canDownloadInvoice(o)) return;
 
@@ -225,43 +216,38 @@ export class MyOrdersComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `facture-${o.reference}.txt`;
+        a.download = `invoice-${o.reference}.pdf`; // ✅ ICI
         a.click();
         window.URL.revokeObjectURL(url);
       },
       error: (err) => {
         console.error('Erreur téléchargement facture', err);
         this.actionLoading[o.id] = false;
-        this.errorMessage = 'Impossible de télécharger la facture.';
+        this.errorMessage = this.tr('orders.error.invoice');
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
   }
 
-  // 🔖 Étiquette de retour : fichier texte simple avec l’adresse + ref commande
   downloadReturnLabel(o: OrderResponse): void {
     if (!this.hasReturnLabel(o)) return;
 
-    const content = `ETIQUETTE DE RETOUR - Enoch Leathercraft Shop
+    const content = `${this.tr('returns.label.title')}
 
-Référence commande : ${o.reference}
+${this.tr('returns.label.orderRef')} : ${o.reference}
 
-Expéditeur :
-${/* tu peux personnaliser plus tard avec le profil */ ''}_________________________
-
-Destinataire :
+${this.tr('returns.label.to')}
 Enoch Leathercraft – Service Retours
 Rue de la Maroquinerie 42
 1000 Bruxelles
 Belgique
-
-Merci d'insérer cette étiquette dans le colis ou de la coller à l'extérieur.`;
+`;
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `retour-${o.reference}.txt`;
+    a.download = `return-label-${o.reference}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
   }

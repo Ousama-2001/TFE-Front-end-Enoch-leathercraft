@@ -13,7 +13,7 @@ export interface CookieConsent {
   updatedAt: string;
 }
 
-const STORAGE_PREFIX = 'enoch_cookie_consent_v1';
+const BASE_KEY = 'enoch_cookie_consent_v1';
 
 @Injectable({ providedIn: 'root' })
 export class CookieConsentService {
@@ -21,18 +21,21 @@ export class CookieConsentService {
   consent$ = this.consentSubject.asObservable();
 
   constructor(private auth: AuthService) {
+    // init au démarrage
     this.reloadForCurrentUser();
   }
 
-  // ✅ à appeler au login/logout (depuis AppComponent)
+  /** ✅ à appeler après login/logout pour basculer guest/user */
   reloadForCurrentUser(): void {
     this.consentSubject.next(this.read());
   }
 
+  /** true si l’utilisateur courant a déjà fait un choix */
   hasChoice(): boolean {
     return !!this.consentSubject.value;
   }
 
+  /** consent actuel (ou null) */
   getConsent(): CookieConsent | null {
     return this.consentSubject.value;
   }
@@ -73,17 +76,25 @@ export class CookieConsentService {
     this.save(c);
   }
 
+  /** 🔁 Ouvre à nouveau la gestion cookies (Manage cookies) */
+  openManager(): void {
+    this.consentSubject.next(null);
+  }
+
+  /** 🔥 reset total pour l’utilisateur courant */
   clear(): void {
     localStorage.removeItem(this.storageKey());
     this.consentSubject.next(null);
   }
 
-  // ----------------- private -----------------
+  // ---------------- private ----------------
 
   private storageKey(): string {
-    const userKey = this.auth.getUserKey();
-    if (userKey) return `${STORAGE_PREFIX}__user__${userKey}`;
-    return `${STORAGE_PREFIX}__guest`;
+    // ✅ par user si connecté, sinon guest
+    const userKey = this.auth.isAuthenticated() ? this.auth.getToken() : 'guest';
+    // token peut être long -> on garde juste une partie
+    const safe = (userKey || 'guest').slice(0, 20);
+    return `${BASE_KEY}_${safe}`;
   }
 
   private save(consent: CookieConsent): void {
@@ -95,10 +106,8 @@ export class CookieConsentService {
     try {
       const raw = localStorage.getItem(this.storageKey());
       if (!raw) return null;
-
       const parsed = JSON.parse(raw) as CookieConsent;
       if (!parsed || parsed.necessary !== true) return null;
-
       return parsed;
     } catch {
       return null;

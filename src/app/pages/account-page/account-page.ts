@@ -4,7 +4,9 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AccountService, Profile, UserOrder } from '../../services/account.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router, RouterModule } from '@angular/router';  // ⭐ import RouterModule
+import { Router, RouterModule } from '@angular/router';
+import { LanguageService } from '../../services/language.service';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 type AccountTab = 'overview' | 'profile' | 'address' | 'orders' | 'security';
 
@@ -16,7 +18,8 @@ type AccountTab = 'overview' | 'profile' | 'address' | 'orders' | 'security';
     FormsModule,
     CurrencyPipe,
     DatePipe,
-    RouterModule           // ⭐ pour que routerLink fonctionne
+    RouterModule,
+    TranslatePipe
   ],
   templateUrl: './account-page.html',
   styleUrls: ['./account-page.scss']
@@ -53,12 +56,17 @@ export class AccountPageComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
-    private router: Router
+    private router: Router,
+    private lang: LanguageService
   ) {}
 
   ngOnInit(): void {
     this.loadProfile();
     this.loadOrders();
+  }
+
+  private tr(key: string): string {
+    return this.lang.t(key);
   }
 
   switchTab(tab: AccountTab): void {
@@ -69,13 +77,14 @@ export class AccountPageComponent implements OnInit {
 
   loadProfile(): void {
     this.loadingProfile = true;
+
     this.accountService.getProfile().subscribe({
       next: (data) => {
         this.profile = data;
         this.loadingProfile = false;
       },
       error: () => {
-        this.error = 'Impossible de charger le profil.';
+        this.error = this.tr('account.error.loadProfile');
         this.loadingProfile = false;
       }
     });
@@ -89,11 +98,11 @@ export class AccountPageComponent implements OnInit {
     this.accountService.updateProfile(this.profile).subscribe({
       next: (updated) => {
         this.profile = updated;
-        this.success = 'Profil mis à jour.';
+        this.success = this.tr('account.success.profileUpdated');
         this.savingProfile = false;
       },
       error: () => {
-        this.error = 'Erreur lors de la sauvegarde.';
+        this.error = this.tr('account.error.saveProfile');
         this.savingProfile = false;
       }
     });
@@ -101,14 +110,21 @@ export class AccountPageComponent implements OnInit {
 
   loadOrders(): void {
     this.loadingOrders = true;
+
     this.accountService.getMyOrders().subscribe({
       next: (orders) => {
-        this.myOrders = orders;
+        // ✅ si ton API renvoie pas trié : on force du plus récent au plus ancien
+        this.myOrders = [...orders].sort((a, b) => {
+          const da = new Date(a.createdAt as any).getTime();
+          const db = new Date(b.createdAt as any).getTime();
+          return db - da;
+        });
+
         this.computeTotalSpent();
         this.loadingOrders = false;
       },
       error: () => {
-        this.error = 'Impossible de charger vos commandes.';
+        this.error = this.tr('account.error.loadOrders');
         this.loadingOrders = false;
       }
     });
@@ -123,12 +139,12 @@ export class AccountPageComponent implements OnInit {
     this.success = '';
 
     if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
-      this.error = 'Tous les champs sont obligatoires.';
+      this.error = this.tr('account.error.requiredFields');
       return;
     }
 
     if (this.newPassword !== this.confirmPassword) {
-      this.error = 'Les mots de passe ne correspondent pas.';
+      this.error = this.tr('account.error.passwordMismatch');
       return;
     }
 
@@ -139,17 +155,22 @@ export class AccountPageComponent implements OnInit {
       newPassword: this.newPassword
     }).subscribe({
       next: (msg: string) => {
-        this.success = msg && msg.trim().length ? msg : 'Mot de passe mis à jour.';
+        // si ton backend renvoie déjà un message propre, sinon fallback i18n
+        this.success = (msg && msg.trim().length)
+          ? msg
+          : this.tr('account.success.passwordUpdated');
+
         this.oldPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
         this.changingPassword = false;
       },
       error: (err: HttpErrorResponse) => {
-        if (typeof err.error === 'string') {
+        // si backend renvoie une string (souvent déjà en FR), on garde. sinon fallback i18n
+        if (typeof err.error === 'string' && err.error.trim().length) {
           this.error = err.error;
         } else {
-          this.error = 'Erreur lors du changement de mot de passe.';
+          this.error = this.tr('account.error.changePassword');
         }
         this.changingPassword = false;
       }
@@ -157,7 +178,7 @@ export class AccountPageComponent implements OnInit {
   }
 
   deleteAccount(): void {
-    if (!confirm('Voulez-vous vraiment supprimer votre compte ?')) {
+    if (!confirm(this.tr('account.confirm.delete'))) {
       return;
     }
 
@@ -167,8 +188,11 @@ export class AccountPageComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: () => {
-        this.error = 'Impossible de supprimer le compte.';
+        this.error = this.tr('account.error.deleteAccount');
       }
     });
+  }
+  getOrderStatusLabel(status: string): string {
+    return this.tr(`order.status.${status}`);
   }
 }

@@ -1,27 +1,25 @@
-<!-- src/app/pages/my-orders/my-orders.html -->
 <div class="my-orders-page">
-  <h1>Mes commandes</h1>
-  <p class="subtitle">
-    Retrouvez ici l’historique de vos commandes Enoch Leathercraft.
-  </p>
+  <h1>{{ 'orders.title' | t }}</h1>
+  <p class="subtitle">{{ 'orders.subtitle' | t }}</p>
 
   <p class="alert info" *ngIf="infoMessage">{{ infoMessage }}</p>
   <p class="alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-  <p class="info" *ngIf="loading">Chargement de vos commandes...</p>
+  <p class="info" *ngIf="loading">{{ 'orders.loading' | t }}</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
   <div *ngIf="!loading && !error && orders.length === 0" class="empty">
-    Vous n’avez encore passé aucune commande.
+    {{ 'orders.empty' | t }}
   </div>
 
   <div class="orders-list" *ngIf="!loading && !error && orders.length > 0">
     <article class="order-card" *ngFor="let o of orders">
       <div class="order-main">
         <div>
-          <h2>Commande {{ o.reference }}</h2>
+          <h2>{{ 'orders.card.titlePrefix' | t }} {{ o.reference }}</h2>
           <p class="date">
-            Passée le {{ o.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+            {{ 'orders.datePrefix' | t }}
+            {{ o.createdAt | date:'dd/MM/yyyy à HH:mm' }}
           </p>
         </div>
 
@@ -36,131 +34,99 @@
       </div>
 
       <div class="order-summary">
-        {{ o.items.length }} article(s)
+        {{ o.items.length }} {{ 'orders.itemsSuffix' | t }}
       </div>
 
-      <!-- Infos retour -->
       <div class="return-info" *ngIf="o.status === 'RETURN_REQUESTED'">
-        Votre demande de retour a bien été envoyée. Elle est en cours d’étude par notre équipe.
+        {{ 'returns.info.requested' | t }}
       </div>
 
       <div class="return-info success" *ngIf="o.status === 'RETURN_APPROVED'">
-        Votre demande de retour a été acceptée.
-        Vous pouvez utiliser l’étiquette de retour ci-dessous et renvoyer le colis à notre adresse.
+        {{ 'returns.info.approved' | t }}
       </div>
 
       <div class="return-info danger" *ngIf="o.status === 'RETURN_REJECTED'">
-        Votre demande de retour a été refusée.
+        {{ 'returns.info.rejected' | t }}
         <ng-container *ngIf="o.notes">
           <br />
-          <strong>Motif :</strong>
+          <strong>{{ 'returns.reason.label' | t }}</strong>
           <pre class="reason-text">{{ o.notes }}</pre>
         </ng-container>
       </div>
 
       <div class="order-actions">
-        <a
-          [routerLink]="['/my-orders', o.id]"
-          class="btn ghost"
-        >
-          Voir le détail →
+        <a [routerLink]="['/my-orders', o.id]" class="btn ghost">
+          {{ 'orders.detailLink' | t }}
         </a>
 
-        <!-- Annulation : PENDING ou PAID -->
-        <button
-          type="button"
-          class="btn secondary"
-          *ngIf="canCancel(o)"
-          (click)="cancelOrder(o)"
-          [disabled]="actionLoading[o.id]"
-        >
-          Annuler
+        <button type="button" class="btn secondary"
+                *ngIf="canCancel(o)"
+                (click)="cancelOrder(o)"
+                [disabled]="actionLoading[o.id]">
+          {{ 'orders.actions.cancel' | t }}
         </button>
 
-        <!-- Paiement : seulement si PENDING -->
-        <button
-          type="button"
-          class="btn primary"
-          *ngIf="canPay(o)"
-          (click)="payOrder(o)"
-          [disabled]="actionLoading[o.id]"
-        >
-          {{ actionLoading[o.id] ? 'Traitement...' : 'Payer maintenant' }}
+        <button type="button" class="btn primary"
+                *ngIf="canPay(o)"
+                (click)="payOrder(o)"
+                [disabled]="actionLoading[o.id]">
+          {{ actionLoading[o.id] ? ('orders.actions.processing' | t) : ('orders.actions.payNow' | t) }}
         </button>
 
-        <!-- Demander un retour : seulement si DELIVERED -->
-        <button
-          type="button"
-          class="btn secondary"
-          *ngIf="canRequestReturn(o) && !showReturnForm[o.id]"
-          (click)="openReturnForm(o)"
-          [disabled]="actionLoading[o.id]"
-        >
-          Demander un retour
+        <button type="button" class="btn secondary"
+                *ngIf="canRequestReturn(o) && !showReturnForm[o.id]"
+                (click)="openReturnForm(o)"
+                [disabled]="actionLoading[o.id]">
+          {{ 'returns.actions.request' | t }}
         </button>
 
-        <!-- Facture : PAID ou DELIVERED -->
-        <button
-          type="button"
-          class="btn ghost"
-          *ngIf="canDownloadInvoice(o)"
-          (click)="downloadInvoice(o)"
-          [disabled]="actionLoading[o.id]"
-        >
-          Télécharger la facture
+        <button type="button" class="btn ghost"
+                *ngIf="canDownloadInvoice(o)"
+                (click)="downloadInvoice(o)"
+                [disabled]="actionLoading[o.id]">
+          {{ 'orders.actions.invoice' | t }}
         </button>
 
-        <!-- Étiquette de retour si retour accepté -->
-        <button
-          type="button"
-          class="btn secondary"
-          *ngIf="hasReturnLabel(o)"
-          (click)="downloadReturnLabel(o)"
-          [disabled]="actionLoading[o.id]"
-        >
-          Télécharger l’étiquette de retour
+        <button type="button" class="btn secondary"
+                *ngIf="hasReturnLabel(o)"
+                (click)="downloadReturnLabel(o)"
+                [disabled]="actionLoading[o.id]">
+          {{ 'returns.actions.label' | t }}
         </button>
       </div>
 
-      <!-- Formulaire de retour -->
       <div class="return-form" *ngIf="showReturnForm[o.id]">
-        <h3>Motif du retour</h3>
+        <h3>{{ 'returns.form.title' | t }}</h3>
 
         <label>
-          Sélectionnez un motif
-          <select [(ngModel)]="selectedReason[o.id]">
-            <option *ngFor="let r of returnReasons" [ngValue]="r">
-              {{ r }}
+          {{ 'returns.form.selectLabel' | t }}
+          <select [(ngModel)]="selectedReasonKey[o.id]">
+            <option *ngFor="let k of returnReasonKeys" [ngValue]="k">
+              {{ k | t }}
             </option>
           </select>
         </label>
 
         <label>
-          Commentaire (optionnel)
+          {{ 'returns.form.commentLabel' | t }}
           <textarea
             rows="3"
             [(ngModel)]="returnComment[o.id]"
-            placeholder="Ajoutez un détail sur le problème rencontré...">
+            [placeholder]="'returns.form.placeholder' | t">
           </textarea>
         </label>
 
         <div class="return-actions">
-          <button
-            type="button"
-            class="btn primary"
-            (click)="submitReturn(o)"
-            [disabled]="actionLoading[o.id]"
-          >
-            Confirmer la demande de retour
+          <button type="button" class="btn primary"
+                  (click)="submitReturn(o)"
+                  [disabled]="actionLoading[o.id]">
+            {{ 'returns.form.confirm' | t }}
           </button>
 
-          <button
-            type="button"
-            class="btn ghost"
-            (click)="cancelReturnForm(o)"
-            [disabled]="actionLoading[o.id]"
-          >
-            Annuler
+          <button type="button" class="btn ghost"
+                  (click)="cancelReturnForm(o)"
+                  [disabled]="actionLoading[o.id]">
+            {{ 'common.cancel' | t }}
           </button>
         </div>
       </div>

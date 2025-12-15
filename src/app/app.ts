@@ -16,6 +16,7 @@ import { WishlistService, WishlistItemResponse } from './services/wishlist.servi
 
 // ✅ Cookie banner
 import { CookieBannerComponent } from './pages/cookie-banner/cookie-banner';
+import { CookieConsentService } from './services/cookie-consent.service';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,7 @@ import { CookieBannerComponent } from './pages/cookie-banner/cookie-banner';
     RouterLink,
     RouterLinkActive,
     TranslatePipe,
-    CookieBannerComponent, // ✅ important
+    CookieBannerComponent,
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
@@ -50,17 +51,20 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private languageService: LanguageService,
-    private wishlistService: WishlistService
+    private wishlistService: WishlistService,
+    private cookieConsent: CookieConsentService // ✅ important
   ) {
     this.cart$ = this.cartService.cart$;
   }
 
-  // ✅ pour afficher guest / connecté dans la navbar
   get isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
   }
 
   ngOnInit(): void {
+    // ✅ cookies: recharge selon user courant (guest ou connecté)
+    this.cookieConsent.reloadForCurrentUser();
+
     this.languageService.currentLang$.subscribe((lang) => {
       this.currentLang = lang;
     });
@@ -79,7 +83,6 @@ export class AppComponent implements OnInit {
         error: () => {},
       });
     } else {
-      // guest -> badges à 0
       this.cartQuantity = 0;
       this.wishlistCount = 0;
     }
@@ -104,11 +107,11 @@ export class AppComponent implements OnInit {
   // ✅ panier protégé : si guest clique -> message + redirect
   goToCart(): void {
     if (!this.authService.isAuthenticated()) {
-      this.authWarning = 'Vous devez être connecté ou inscrit pour accéder au panier.';
+      this.authWarning =
+        'Vous devez être connecté ou inscrit pour accéder au panier.';
       setTimeout(() => {
-        this.router.navigate(['/login'], {
-          queryParams: { returnUrl: this.router.url },
-        });
+        // ✅ returnUrl = /cart (logique)
+        this.router.navigate(['/login'], { queryParams: { returnUrl: '/cart' } });
         this.authWarning = '';
       }, 1200);
       return;
@@ -117,11 +120,10 @@ export class AppComponent implements OnInit {
     this.router.navigate(['/cart']);
   }
 
-  // ✅ wishlist protégée même via bouton
   goToWishlist(): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url },
+        queryParams: { returnUrl: '/wishlist' },
       });
       return;
     }
@@ -130,8 +132,14 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+
+    // ✅ badges à 0
     this.cartQuantity = 0;
     this.wishlistCount = 0;
+
+    // ✅ cookies: on repasse en "guest"
+    this.cookieConsent.reloadForCurrentUser();
+
     this.router.navigate(['/home']);
   }
 }

@@ -3,13 +3,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrderService, OrderResponse } from '../../services/order.service';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   standalone: true,
   selector: 'app-order-detail',
   templateUrl: './order-detail.html',
   styleUrls: ['./order-detail.scss'],
-  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink],
+  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink, TranslatePipe],
 })
 export class OrderDetailComponent implements OnInit {
 
@@ -17,20 +19,22 @@ export class OrderDetailComponent implements OnInit {
   loading = false;
   error: string | null = null;
 
-  currentLang: 'fr' | 'en' =
-    (localStorage.getItem('lang') === 'en' ? 'en' : 'fr');
-
   constructor(
     private route: ActivatedRoute,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private lang: LanguageService
   ) {}
+
+  private tr(key: string): string {
+    return this.lang.t(key);
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : NaN;
 
     if (Number.isNaN(id)) {
-      this.error = 'Identifiant de commande invalide.';
+      this.error = this.tr('orders.detail.error.invalidId');
       return;
     }
 
@@ -44,39 +48,13 @@ export class OrderDetailComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Erreur chargement commande', err);
-        this.error = 'Impossible de charger les détails de la commande.';
+        this.error = this.tr('orders.detail.error.loadFailed');
         this.loading = false;
       }
     });
   }
 
-  getTotalItems(): number {
-    if (!this.order) return 0;
-    return this.order.items.reduce((sum, item) => sum + item.quantity, 0);
-  }
-
   getStatusLabel(status: string): string {
-    const labels = {
-      fr: {
-        PENDING: 'En attente',
-        PAID: 'Payée',
-        SHIPPED: 'Expédiée',
-        DELIVERED: 'Livrée',
-        CANCELLED: 'Annulée',
-        RETURN_REQUESTED: 'Retour demandé'
-      },
-      en: {
-        PENDING: 'Pending',
-        PAID: 'Paid',
-        SHIPPED: 'Shipped',
-        DELIVERED: 'Delivered',
-        CANCELLED: 'Cancelled',
-        RETURN_REQUESTED: 'Return requested'
-      }
-    } as const;
-
-    const lang = this.currentLang;
-    // @ts-ignore
-    return labels[lang][status] ?? status;
+    return this.tr(`order.status.${status}`);
   }
 }

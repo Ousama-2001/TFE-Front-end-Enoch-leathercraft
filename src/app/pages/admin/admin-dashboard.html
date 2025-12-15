@@ -46,6 +46,14 @@
         Gestion des avis
       </button>
 
+      <!-- ✅ Support (ADMIN + SUPER_ADMIN) -->
+      <button class="tab-btn"
+              *ngIf="isAdminOrSuperAdmin"
+              [class.active]="activeTab === 'support'"
+              (click)="setTab('support')">
+        Support (messages)
+      </button>
+
       <!-- 🔐 Onglets réservés au SUPER ADMIN -->
       <button class="tab-btn"
               *ngIf="isSuperAdmin"
@@ -440,7 +448,7 @@
           </div>
         </div>
 
-        <!-- 🔥 Segment + type filtré -->
+        <!-- Segment + type filtré -->
         <div class="form-row two-cols">
           <div class="form-group">
             <label for="segmentCategory">Segment *</label>
@@ -703,6 +711,11 @@
   <!-- ========= ONGLET 5 : GESTION DES AVIS ========= -->
   <section *ngIf="activeTab === 'reviews'" class="reviews-tab">
     <app-admin-reviews></app-admin-reviews>
+  </section>
+
+  <!-- ✅ ONGLET SUPPORT (ADMIN + SUPER_ADMIN) -->
+  <section *ngIf="activeTab === 'support' && isAdminOrSuperAdmin" class="support-tab">
+    <app-super-admin-contact-messages></app-super-admin-contact-messages>
   </section>
 
   <!-- ========= ONGLET 6 : GESTION DES UTILISATEURS (SUPER ADMIN) ========= -->

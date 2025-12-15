@@ -1,20 +1,19 @@
 <!-- src/app/pages/order-detail/order-detail.html -->
 <div class="order-detail-page">
-  <!-- ✅ retour vers la bonne page -->
-  <a routerLink="/my-orders" class="back-link">← Retour à mes commandes</a>
+  <a routerLink="/my-orders" class="back-link">← {{ 'orders.detail.back' | t }}</a>
 
-  <h1>Détail de la commande</h1>
+  <h1>{{ 'orders.detail.title' | t }}</h1>
 
-  <p class="info" *ngIf="loading">Chargement de la commande...</p>
+  <p class="info" *ngIf="loading">{{ 'orders.detail.loading' | t }}</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
   <ng-container *ngIf="!loading && !error && order">
 
     <section class="order-header">
       <div>
-        <h2>Commande {{ order.reference }}</h2>
+        <h2>{{ 'orders.card.titlePrefix' | t }} {{ order.reference }}</h2>
         <p class="date">
-          Passée le {{ order.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+          {{ 'orders.datePrefix' | t }} {{ order.createdAt | date:'dd/MM/yyyy à HH:mm' }}
         </p>
       </div>
 
@@ -23,21 +22,21 @@
           {{ getStatusLabel(order.status) }}
         </span>
         <p class="total">
-          Total : {{ order.totalAmount | currency:'EUR' }}
+          {{ 'orders.detail.totalPrefix' | t }} {{ order.totalAmount | currency:'EUR' }}
         </p>
       </div>
     </section>
 
     <section class="order-items">
-      <h3>Articles</h3>
+      <h3>{{ 'orders.detail.itemsTitle' | t }}</h3>
 
       <table>
         <thead>
         <tr>
-          <th>Produit</th>
-          <th>Prix unitaire</th>
-          <th>Quantité</th>
-          <th>Total ligne</th>
+          <th>{{ 'cart.table.product' | t }}</th>
+          <th>{{ 'cart.table.unitPrice' | t }}</th>
+          <th>{{ 'cart.table.quantity' | t }}</th>
+          <th>{{ 'cart.table.lineTotal' | t }}</th>
         </tr>
         </thead>
         <tbody>

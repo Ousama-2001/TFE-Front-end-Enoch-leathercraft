@@ -160,6 +160,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'account.security.change': 'Changer le mot de passe',
     'account.security.changing': '...',
 
+    'account.subtitle': 'Gérez vos informations personnelles, vos adresses, vos commandes et la sécurité de votre compte.',
+    'account.overview.completeProfileHint': 'Complétez votre profil pour une expérience optimale.',
+    'account.overview.sinceAccountCreation': 'Depuis la création de votre compte',
+    'account.overview.totalAmountHint': 'Montant cumulé des commandes',
+
+    'account.orders.seeAll': 'Voir toutes mes commandes →',
+
+    'account.security.dangerZone': 'Zone sensible',
+    'account.security.deleteHint': 'La suppression de votre compte désactivera votre accès. Vous pourrez le réactiver plus tard en vous reconnectant.',
+    'account.security.deleteAccount': 'Supprimer mon compte',
+
+    'account.confirm.delete': 'Voulez-vous vraiment supprimer votre compte ?',
+
+    'account.error.loadProfile': 'Impossible de charger le profil.',
+    'account.error.saveProfile': 'Erreur lors de la sauvegarde.',
+    'account.error.loadOrders': 'Impossible de charger vos commandes.',
+    'account.error.requiredFields': 'Tous les champs sont obligatoires.',
+    'account.error.passwordMismatch': 'Les mots de passe ne correspondent pas.',
+    'account.error.changePassword': 'Erreur lors du changement de mot de passe.',
+    'account.error.deleteAccount': 'Impossible de supprimer le compte.',
+
+    'account.success.profileUpdated': 'Profil mis à jour.',
+    'account.success.passwordUpdated': 'Mot de passe mis à jour.',
+
+
     // ===== ORDERS PAGE =====
     'orders.title': 'Mes commandes',
     'orders.subtitle':
@@ -170,6 +195,65 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'orders.datePrefix': 'Passée le',
     'orders.itemsSuffix': 'article(s)',
     'orders.detailLink': 'Voir le détail →',
+    'orders.card.titlePrefix': 'Commande',
+    'orders.actions.cancel': 'Annuler',
+    'orders.actions.payNow': 'Payer maintenant',
+    'orders.actions.processing': 'Traitement...',
+    'orders.actions.invoice': 'Télécharger la facture',
+
+    'orders.confirm.cancel': 'Annuler la commande {ref} ?',
+    'orders.info.cancelled': 'Commande annulée avec succès.',
+    'orders.error.cancel': "Impossible d'annuler cette commande.",
+    'orders.error.pay': 'Erreur lors du paiement de la commande.',
+    'orders.error.paymentUrlMissing': 'URL de paiement introuvable.',
+    'orders.error.invoice': 'Impossible de télécharger la facture.',
+
+    'orders.detail.back': 'Retour à mes commandes',
+    'orders.detail.title': 'Détail de la commande',
+    'orders.detail.loading': 'Chargement de la commande...',
+    'orders.detail.totalPrefix': 'Total :',
+    'orders.detail.itemsTitle': 'Articles',
+    'orders.detail.error.invalidId': 'Identifiant de commande invalide.',
+    'orders.detail.error.loadFailed': 'Impossible de charger les détails de la commande.',
+
+    'order.status.PENDING': 'En attente',
+    'order.status.PAID': 'Payée',
+    'order.status.SHIPPED': 'Expédiée',
+    'order.status.DELIVERED': 'Livrée',
+    'order.status.CANCELLED': 'Annulée',
+    'order.status.RETURN_REQUESTED': 'Retour demandé',
+    'order.status.RETURN_APPROVED': 'Retour accepté',
+    'order.status.RETURN_REJECTED': 'Retour refusé',
+
+    'returns.actions.request': 'Demander un retour',
+    'returns.actions.label': "Télécharger l’étiquette de retour",
+    'returns.form.title': 'Motif du retour',
+    'returns.form.selectLabel': 'Sélectionnez un motif',
+    'returns.form.commentLabel': 'Commentaire (optionnel)',
+    'returns.form.placeholder': 'Ajoutez un détail sur le problème rencontré...',
+    'returns.form.confirm': 'Confirmer la demande de retour',
+    'returns.error.selectReason': 'Veuillez sélectionner un motif de retour.',
+    'returns.error.requestFailed': 'Impossible de demander le retour pour cette commande.',
+    'returns.info.saved': 'Demande de retour enregistrée.',
+    'returns.info.requested': 'Votre demande de retour a bien été envoyée. Elle est en cours d’étude par notre équipe.',
+    'returns.info.approved': 'Votre demande de retour a été acceptée. Vous pouvez renvoyer le colis avec l’étiquette ci-dessous.',
+    'returns.info.rejected': 'Votre demande de retour a été refusée.',
+    'returns.reason.label': 'Motif :',
+
+    'returns.reason.size': 'Taille incorrecte',
+    'returns.reason.damaged': 'Article endommagé / défectueux',
+    'returns.reason.notAsDescribed': 'Article ne correspond pas à la description',
+    'returns.reason.incomplete': 'Commande incomplète',
+    'returns.reason.dontLike': 'Je n’aime pas l’article',
+    'returns.reason.other': 'Autre',
+
+    'returns.label.title': 'ETIQUETTE DE RETOUR - Enoch Leathercraft Shop',
+    'returns.label.orderRef': 'Référence commande',
+    'returns.label.to': 'Destinataire :',
+
+    'common.cancel': 'Annuler',
+
+
 
     // ===== PRODUITS GENERIC =====
     'product.material': 'Matériau',
@@ -288,18 +372,22 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'contact.form.name': 'Nom / Prénom',
     'contact.form.email': 'Adresse e-mail',
     'contact.form.message': 'Message',
+
     'contact.messagePlaceholder':
       'Expliquez votre demande (produit, commande, demande personnalisée...)',
 
     'contact.form.submit': 'Envoyer le message',
     'contact.form.sending': 'Envoi…',
+
+// ✅ Message simple, sans simulation
     'contact.success': 'Votre message a bien été envoyé.',
 
     'contact.info.title': 'Informations atelier',
     'contact.info.description':
-      'Enoch Leathercraft — Atelier basé à Bruxelles.',
+      'Enoch Leathercraft — Atelier artisanal basé à Bruxelles.',
     'contact.workshopLabel': 'Atelier',
     'contact.emailLabel': 'E-mail',
+
 
 
     // ===== CHECKOUT =====
@@ -539,6 +627,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       marketing: 'Marketing',
       marketingHint: 'Publicités personnalisées (si activé).',
       alwaysOn: 'Toujours actif',
+      "manage": "Gérer les cookies"
     },
   },
 
@@ -700,6 +789,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'account.security.change': 'Change password',
     'account.security.changing': '...',
 
+    'account.subtitle': 'Manage your personal info, addresses, orders, and account security.',
+    'account.overview.completeProfileHint': 'Complete your profile for a better experience.',
+    'account.overview.sinceAccountCreation': 'Since your account was created',
+    'account.overview.totalAmountHint': 'Cumulative order amount',
+
+    'account.orders.seeAll': 'See all my orders →',
+
+    'account.security.dangerZone': 'Danger zone',
+    'account.security.deleteHint': 'Deleting your account will disable access. You can reactivate later by logging in again.',
+    'account.security.deleteAccount': 'Delete my account',
+
+    'account.confirm.delete': 'Do you really want to delete your account?',
+
+    'account.error.loadProfile': 'Unable to load profile.',
+    'account.error.saveProfile': 'Error while saving.',
+    'account.error.loadOrders': 'Unable to load your orders.',
+    'account.error.requiredFields': 'All fields are required.',
+    'account.error.passwordMismatch': 'Passwords do not match.',
+    'account.error.changePassword': 'Error while changing password.',
+    'account.error.deleteAccount': 'Unable to delete account.',
+
+    'account.success.profileUpdated': 'Profile updated.',
+    'account.success.passwordUpdated': 'Password updated.',
+
+
     // ===== ORDERS PAGE =====
     'orders.title': 'My orders',
     'orders.subtitle':
@@ -710,6 +824,64 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'orders.datePrefix': 'Placed on',
     'orders.itemsSuffix': 'item(s)',
     'orders.detailLink': 'View details →',
+    'orders.card.titlePrefix': 'Order',
+    'orders.actions.cancel': 'Cancel',
+    'orders.actions.payNow': 'Pay now',
+    'orders.actions.processing': 'Processing...',
+    'orders.actions.invoice': 'Download invoice',
+
+    'orders.confirm.cancel': 'Cancel order {ref}?',
+    'orders.info.cancelled': 'Order cancelled successfully.',
+    'orders.error.cancel': 'Unable to cancel this order.',
+    'orders.error.pay': 'Error while paying for the order.',
+    'orders.error.paymentUrlMissing': 'Payment URL not found.',
+    'orders.error.invoice': 'Unable to download invoice.',
+
+    'orders.detail.back': 'Back to my orders',
+    'orders.detail.title': 'Order details',
+    'orders.detail.loading': 'Loading order...',
+    'orders.detail.totalPrefix': 'Total:',
+    'orders.detail.itemsTitle': 'Items',
+    'orders.detail.error.invalidId': 'Invalid order id.',
+    'orders.detail.error.loadFailed': 'Unable to load order details.',
+
+    'order.status.PENDING': 'Pending',
+    'order.status.PAID': 'Paid',
+    'order.status.SHIPPED': 'Shipped',
+    'order.status.DELIVERED': 'Delivered',
+    'order.status.CANCELLED': 'Cancelled',
+    'order.status.RETURN_REQUESTED': 'Return requested',
+    'order.status.RETURN_APPROVED': 'Return approved',
+    'order.status.RETURN_REJECTED': 'Return rejected',
+
+    'returns.actions.request': 'Request a return',
+    'returns.actions.label': 'Download return label',
+    'returns.form.title': 'Return reason',
+    'returns.form.selectLabel': 'Select a reason',
+    'returns.form.commentLabel': 'Comment (optional)',
+    'returns.form.placeholder': 'Add a detail about the issue...',
+    'returns.form.confirm': 'Confirm return request',
+    'returns.error.selectReason': 'Please select a return reason.',
+    'returns.error.requestFailed': 'Unable to request a return for this order.',
+    'returns.info.saved': 'Return request saved.',
+    'returns.info.requested': 'Your return request has been sent and is being reviewed.',
+    'returns.info.approved': 'Your return request was approved. You can send the parcel back with the label below.',
+    'returns.info.rejected': 'Your return request was rejected.',
+    'returns.reason.label': 'Reason:',
+
+    'returns.reason.size': 'Wrong size',
+    'returns.reason.damaged': 'Damaged / defective item',
+    'returns.reason.notAsDescribed': 'Item not as described',
+    'returns.reason.incomplete': 'Incomplete order',
+    'returns.reason.dontLike': "I don't like the item",
+    'returns.reason.other': 'Other',
+
+    'returns.label.title': 'RETURN LABEL - Enoch Leathercraft Shop',
+    'returns.label.orderRef': 'Order reference',
+    'returns.label.to': 'To:',
+
+    'common.cancel': 'Cancel',
+
 
     // ===== PRODUCT GENERIC =====
     'product.material': 'Material',
@@ -828,18 +1000,22 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'contact.form.name': 'Name',
     'contact.form.email': 'Email address',
     'contact.form.message': 'Message',
+
     'contact.messagePlaceholder':
       'Tell us what you need (product, order, custom request...)',
 
     'contact.form.submit': 'Send message',
     'contact.form.sending': 'Sending…',
+
+// ✅ Message clair et définitif
     'contact.success': 'Your message has been sent.',
 
     'contact.info.title': 'Workshop information',
     'contact.info.description':
-      'Enoch Leathercraft — Workshop based in Brussels.',
+      'Enoch Leathercraft — Handcrafted workshop based in Brussels.',
     'contact.workshopLabel': 'Workshop',
     'contact.emailLabel': 'Email',
+
 
 
     // ===== CHECKOUT =====
@@ -1079,6 +1255,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       marketing: 'Marketing',
       marketingHint: 'Personalized ads (if enabled).',
       alwaysOn: 'Always on',
+      "manage": "Manage cookies"
     },
   },
 };

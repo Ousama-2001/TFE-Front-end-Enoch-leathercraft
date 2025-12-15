@@ -16,7 +16,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
 
-  // ✅ Ajout CGV (optionnel pour ne pas casser si backend ne le gère pas)
+  // ✅ Ajout CGV (optionnel)
   acceptTerms?: boolean;
 }
 
@@ -104,7 +104,7 @@ export class AuthService {
   }
 
   // =========================================================
-  // ✅ NOUVEAU : clé utilisateur stable depuis le JWT
+  // ✅ clé utilisateur stable depuis le JWT
   // =========================================================
   getUserKey(): string | null {
     const token = this.getToken();
@@ -113,7 +113,6 @@ export class AuthService {
     const payload = this.parseJwt(token);
     if (!payload) return null;
 
-    // On tente plusieurs claims possibles (selon ton backend)
     const candidate =
       payload.userId ??
       payload.id ??
@@ -134,7 +133,10 @@ export class AuthService {
 
       const base64Url = parts[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+      const padded = base64.padEnd(
+        base64.length + ((4 - (base64.length % 4)) % 4),
+        '='
+      );
 
       const json = decodeURIComponent(
         atob(padded)

@@ -16,9 +16,9 @@ export class ContactComponent {
   email = '';
   message = '';
 
+  loading = false;
   success = false;
   error = '';
-  loading = false;
 
   constructor(private contactService: ContactService) {}
 
@@ -26,7 +26,7 @@ export class ContactComponent {
     this.success = false;
     this.error = '';
 
-    if (!this.name || !this.email || !this.message) {
+    if (!this.name.trim() || !this.email.trim() || !this.message.trim()) {
       this.error = 'Veuillez compléter tous les champs.';
       return;
     }
@@ -41,16 +41,19 @@ export class ContactComponent {
       })
       .subscribe({
         next: () => {
+          this.loading = false;
           this.success = true;
           this.name = '';
           this.email = '';
           this.message = '';
-          this.loading = false;
         },
         error: (err) => {
-          console.error('Contact error:', err);
-          this.error = "Erreur lors de l'envoi. Réessaie plus tard.";
           this.loading = false;
+          if (err?.status === 429) {
+            this.error = err.error || 'Veuillez attendre avant de réessayer.';
+          } else {
+            this.error = "Erreur lors de l’envoi. Réessaie plus tard.";
+          }
         },
       });
   }

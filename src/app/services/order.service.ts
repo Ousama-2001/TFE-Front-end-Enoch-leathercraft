@@ -1,6 +1,5 @@
-// src/app/services/order.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface OrderItemResponse {
@@ -15,7 +14,7 @@ export interface OrderResponse {
   totalAmount: number;
   status: string;
   createdAt: string;
-  notes?: string;               // 🆕 motif / décisions (retour) si besoin
+  notes?: string;
   items: OrderItemResponse[];
 }
 
@@ -29,76 +28,33 @@ export interface ReturnRequestPayload {
   comment?: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class OrderService {
   private baseUrl = 'http://localhost:8080/api/orders';
 
   constructor(private http: HttpClient) {}
 
-  private getAuthHeaders(): HttpHeaders | undefined {
-    const token = localStorage.getItem('token');
-    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-  }
-
-  checkout(): Observable<OrderResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<OrderResponse>(
-      `${this.baseUrl}/checkout`,
-      {},
-      { headers }
-    );
-  }
-
   getMyOrders(): Observable<OrderResponse[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<OrderResponse[]>(
-      `${this.baseUrl}/my-orders`,
-      { headers }
-    );
+    return this.http.get<OrderResponse[]>(`${this.baseUrl}/my-orders`);
   }
 
   getMyOrderById(id: number): Observable<OrderResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<OrderResponse>(
-      `${this.baseUrl}/${id}`,
-      { headers }
-    );
+    return this.http.get<OrderResponse>(`${this.baseUrl}/${id}`);
   }
 
   cancelOrder(id: number): Observable<OrderResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<OrderResponse>(
-      `${this.baseUrl}/${id}/cancel`,
-      {},
-      { headers }
-    );
+    return this.http.post<OrderResponse>(`${this.baseUrl}/${id}/cancel`, {});
   }
 
   payOrder(id: number): Observable<StripeCheckoutResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<StripeCheckoutResponse>(
-      `${this.baseUrl}/${id}/pay`,
-      {},
-      { headers }
-    );
+    return this.http.post<StripeCheckoutResponse>(`${this.baseUrl}/${id}/pay`, {});
   }
 
   requestReturn(id: number, payload: ReturnRequestPayload): Observable<OrderResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<OrderResponse>(
-      `${this.baseUrl}/${id}/return`,
-      payload,
-      { headers }
-    );
+    return this.http.post<OrderResponse>(`${this.baseUrl}/${id}/return`, payload);
   }
 
   downloadInvoice(id: number): Observable<Blob> {
-    const headers = this.getAuthHeaders();
-    return this.http.get(`${this.baseUrl}/${id}/invoice`, {
-      headers,
-      responseType: 'blob'
-    });
+    return this.http.get(`${this.baseUrl}/${id}/invoice`, { responseType: 'blob' });
   }
 }

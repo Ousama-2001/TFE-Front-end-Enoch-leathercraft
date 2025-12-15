@@ -80,4 +80,16 @@ export class CookieBannerComponent implements OnInit, OnDestroy {
     this.visible = false;
     this.customizeOpen = false;
   }
+  openFromFooter(): void {
+    this.visible = true;
+    this.customizeOpen = true;
+
+    const c = this.cookies.getConsent();
+    if (c) {
+      this.preferences = c.preferences;
+      this.analytics = c.analytics;
+      this.marketing = c.marketing;
+    }
+  }
+
 }
