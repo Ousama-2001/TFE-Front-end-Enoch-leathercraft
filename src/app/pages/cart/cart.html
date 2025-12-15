@@ -1,23 +1,38 @@
 <div class="cart-page">
   <h1>Mon panier</h1>
 
+  <!-- ✅ Countdown -->
+  <div class="cart-expiry" *ngIf="cart.items.length">
+    <ng-container *ngIf="(cart.timeLeftMs$ | async) as ms">
+      <div class="expiry-row" *ngIf="ms > 0">
+        ⏳ Temps restant pour valider :
+        <strong>{{ formatMs(ms) }}</strong>
+      </div>
+      <div class="expiry-row danger" *ngIf="ms === 0">
+        ⌛ Temps écoulé : votre panier a été vidé.
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ✅ message expiration -->
+  <div class="expiry-alert" *ngIf="expiryMessage">
+    {{ expiryMessage }}
+  </div>
+
+  <!-- ✅ message stock -->
+  <div class="stock-alert" *ngIf="stockMessage">
+    {{ stockMessage }}
+  </div>
+
   <ng-container *ngIf="cart.items.length; else empty">
-    <!-- ✅ Message guest (affiché si tentative checkout sans connexion) -->
+    <!-- ✅ Message guest -->
     <div class="guest-alert" *ngIf="guestMessage">
       {{ guestMessage }}
       <div class="guest-actions">
-        <a
-          class="guest-link"
-          routerLink="/login"
-          [queryParams]="{ returnUrl: '/checkout' }"
-        >
+        <a class="guest-link" routerLink="/login" [queryParams]="{ returnUrl: '/checkout' }">
           Se connecter
         </a>
-        <a
-          class="guest-link outline"
-          routerLink="/register"
-          [queryParams]="{ returnUrl: '/checkout' }"
-        >
+        <a class="guest-link outline" routerLink="/register" [queryParams]="{ returnUrl: '/checkout' }">
           Créer un compte
         </a>
       </div>
@@ -36,16 +51,27 @@
 
       <tbody>
       <tr *ngFor="let item of cart.items; trackBy: trackByProductId">
-        <td>{{ item.name }}</td>
+        <td>
+          {{ item.name }}
+          <div class="stock-hint" *ngIf="item.stockQuantity !== undefined">
+            Stock: {{ item.stockQuantity }}
+          </div>
+        </td>
 
         <td>{{ item.unitPrice | currency: 'EUR' }}</td>
 
         <td class="qty-buttons">
-          <button type="button" class="btn-qty" (click)="decrease(item)">
-            −
-          </button>
+          <button type="button" class="btn-qty" (click)="decrease(item)">−</button>
+
           <span class="qty">{{ item.quantity }}</span>
-          <button type="button" class="btn-qty" (click)="increase(item)">
+
+          <button
+            type="button"
+            class="btn-qty"
+            (click)="increase(item)"
+            [disabled]="!canIncrease(item)"
+            [title]="!canIncrease(item) ? 'Stock insuffisant' : ''"
+          >
             +
           </button>
         </td>
@@ -84,7 +110,6 @@
         <a routerLink="/products"> ← Continuer mes achats </a>
       </div>
 
-      <!-- ✅ petit hint si pas connecté -->
       <p class="hint" *ngIf="!isLoggedIn">
         Astuce : connecte-toi pour valider ta commande.
       </p>

@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  tap,
+  combineLatest,
+  interval,
+  map,
+  startWith,
+} from 'rxjs';
 
 // --- INTERFACES ---
 
@@ -12,6 +20,9 @@ export interface CartItem {
   quantity: number;
   lineTotal: number;
   imageUrl?: string;
+
+  // ✅ STOCK (si le back le renvoie)
+  stockQuantity?: number; // ex: 5 => on bloque qty > 5
 }
 
 export interface CartResponse {
@@ -19,6 +30,9 @@ export interface CartResponse {
   items: CartItem[];
   totalQuantity: number;
   totalAmount: number;
+
+  // ✅ TIMER (back)
+  expiresAt?: string | null;
 }
 
 export interface CartAddRequest {
@@ -59,10 +73,23 @@ export class CartService {
   items: CartItem[] = [];
   totalQuantity = 0;
   totalAmount = 0;
+  expiresAt: string | null = null;
 
   // État observable
   private cartSubject = new BehaviorSubject<CartResponse | null>(null);
   cart$ = this.cartSubject.asObservable();
+
+  /** ✅ Countdown en ms, mis à jour chaque seconde */
+  timeLeftMs$ = combineLatest([
+    this.cart$,
+    interval(1000).pipe(startWith(0)),
+  ]).pipe(
+    map(([cart]) => {
+      if (!cart?.expiresAt) return 0;
+      const ms = new Date(cart.expiresAt).getTime() - Date.now();
+      return Math.max(0, ms);
+    })
+  );
 
   constructor(private http: HttpClient) {}
 
@@ -71,6 +98,7 @@ export class CartService {
     this.items = cart.items;
     this.totalQuantity = cart.totalQuantity;
     this.totalAmount = cart.totalAmount;
+    this.expiresAt = cart.expiresAt ?? null;
   }
 
   loadCart() {
@@ -117,7 +145,13 @@ export class CartService {
   checkout(payload: CheckoutPayload): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.baseUrl}/orders/checkout`, payload).pipe(
       tap(() => {
-        this.syncState({ cartId: 0, items: [], totalQuantity: 0, totalAmount: 0 });
+        this.syncState({
+          cartId: 0,
+          items: [],
+          totalQuantity: 0,
+          totalAmount: 0,
+          expiresAt: null,
+        });
       })
     );
   }
@@ -125,5 +159,12 @@ export class CartService {
   getQuantity(productId: number): number {
     const item = this.items.find((i) => i.productId === productId);
     return item ? item.quantity : 0;
+  }
+
+  /** ✅ STOCK helper (front only) */
+  getItemStock(productId: number): number | null {
+    const item = this.items.find((i) => i.productId === productId);
+    if (!item) return null;
+    return typeof item.stockQuantity === 'number' ? item.stockQuantity : null;
   }
 }

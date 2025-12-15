@@ -2,7 +2,7 @@
 <div class="app-shell">
   <!-- ======================= NAVBAR ======================= -->
   <header class="topbar" *ngIf="!isAuthPage()">
-    <!-- LOGO + NAVIGATION -->
+    <!-- ===== GAUCHE : LOGO + NAV ===== -->
     <div class="topbar-left">
       <a routerLink="/home" class="brand">
         <img
@@ -13,7 +13,7 @@
         <span class="brand-title">ENOCH LEATHERCRAFT</span>
       </a>
 
-      <!-- NAVIGATION PRINCIPALE -->
+      <!-- ===== NAVIGATION PRINCIPALE ===== -->
       <nav class="main-nav">
         <div class="nav-item">
           <a
@@ -35,7 +35,35 @@
           </a>
         </div>
 
-        <!-- ... (le reste de ton menu inchangé) ... -->
+        <div class="nav-item">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'homme' }"
+            routerLinkActive="active"
+          >
+            {{ 'nav.men' | t }}
+          </a>
+        </div>
+
+        <div class="nav-item">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'femme' }"
+            routerLinkActive="active"
+          >
+            {{ 'nav.women' | t }}
+          </a>
+        </div>
+
+        <div class="nav-item">
+          <a
+            routerLink="/products"
+            [queryParams]="{ segment: 'petite-maroquinerie' }"
+            routerLinkActive="active"
+          >
+            {{ 'nav.smallLeather' | t }}
+          </a>
+        </div>
 
         <div class="nav-item">
           <a routerLink="/about" routerLinkActive="active">
@@ -51,9 +79,9 @@
       </nav>
     </div>
 
-    <!-- BOUTONS À DROITE -->
+    <!-- ===== DROITE : LANG / WISHLIST / CART / AUTH ===== -->
     <div class="topbar-right">
-      <!-- Sélecteur de langue -->
+      <!-- 🌍 LANG -->
       <div class="lang-switcher">
         <div class="lang-toggle">
           <div
@@ -67,7 +95,7 @@
             [class.active]="currentLang === 'fr'"
             (click)="changeLang('fr')"
           >
-            <span class="lang-code">FR</span>
+            FR
           </button>
 
           <button
@@ -76,19 +104,19 @@
             [class.active]="currentLang === 'en'"
             (click)="changeLang('en')"
           >
-            <span class="lang-code">EN</span>
+            EN
           </button>
         </div>
         <span class="lang-label">🌍</span>
       </div>
 
-      <!-- ✅ WISHLIST ICON -->
+      <!-- ❤️ WISHLIST -->
       <div class="wishlist-wrapper">
         <button
           class="wishlist-button"
           type="button"
           (click)="goToWishlist()"
-          aria-label="Voir ma wishlist"
+          aria-label="Wishlist"
         >
           <span class="wishlist-icon">♥</span>
           <span class="wishlist-badge" *ngIf="wishlistCount > 0">
@@ -97,27 +125,32 @@
         </button>
       </div>
 
-      <!-- MINI PANIER -->
+      <!-- 🧺 PANIER -->
       <div
         class="cart-wrapper"
         (mouseenter)="miniCartOpen = true"
         (mouseleave)="miniCartOpen = false"
       >
         <button class="cart-button" (click)="goToCart()">
-          <span class="cart-icon">🧺</span>
-          <span class="cart-label">{{ 'nav.cart' | t }}</span>
+          🧺
           <span class="cart-badge" *ngIf="cartQuantity > 0">
             {{ cartQuantity }}
           </span>
         </button>
 
-        <div
-          class="cart-popover"
-          *ngIf="miniCartOpen && (cart$ | async) as cart"
-        >
+        <!-- ✅ FIX : on récupère cart via async + as cart -->
+        <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
           <h3 class="cart-popover-title">{{ 'cart.title' | t }}</h3>
 
-          <ng-container *ngIf="cart && cart.items.length > 0; else emptyCart">
+          <!-- ✅ TIMER dans la popover (seulement si panier non vide) -->
+          <div class="mini-timer" *ngIf="(cart.items?.length ?? 0) > 0">
+            <ng-container *ngIf="(timeLeftMs$ | async) as ms">
+              <span *ngIf="ms > 0">⏳ {{ formatMs(ms) }}</span>
+              <span class="danger" *ngIf="ms === 0">⌛ Expiré</span>
+            </ng-container>
+          </div>
+
+          <ng-container *ngIf="(cart.items?.length ?? 0) > 0; else emptyCart">
             <div class="cart-items">
               <div class="cart-item" *ngFor="let item of cart.items">
                 <div class="cart-item-left">
@@ -128,8 +161,7 @@
                   <div class="cart-info">
                     <div class="name">{{ item.name }}</div>
                     <div class="meta">
-                      x{{ item.quantity }} •
-                      {{ item.unitPrice | currency : 'EUR' }}
+                      x{{ item.quantity }} • {{ item.unitPrice | currency : 'EUR' }}
                     </div>
                   </div>
                 </div>
@@ -158,39 +190,61 @@
         </div>
       </div>
 
-      <!-- ✅ GUEST vs CONNECTÉ -->
-      <ng-container *ngIf="isLoggedIn; else guestButtons">
-        <button class="account-button" routerLink="/profile">
+      <!-- 👤 AUTH -->
+      <ng-container *ngIf="isLoggedIn; else guest">
+        <button class="btn-chip btn-account" routerLink="/profile">
           👤 {{ 'nav.account' | t }}
         </button>
-
-        <button class="logout-button" (click)="logout()">
+        <button class="btn-chip btn-logout" (click)="logout()">
           {{ 'nav.logout' | t }}
         </button>
       </ng-container>
 
-      <ng-template #guestButtons>
-        <button class="account-button" routerLink="/login">
+      <ng-template #guest>
+        <button class="btn-chip btn-login" routerLink="/login">
           {{ 'nav.login' | t }}
         </button>
-
-        <button class="logout-button" routerLink="/register">
+        <button class="btn-chip btn-register" routerLink="/register">
           {{ 'nav.register' | t }}
         </button>
       </ng-template>
+
+      <!-- ☰ BURGER (mobile) -->
+      <button class="burger" type="button" (click)="mobileNavOpen = !mobileNavOpen">
+        ☰
+      </button>
+    </div>
+
+    <!-- ===== MENU MOBILE ===== -->
+    <div class="mobile-nav" *ngIf="mobileNavOpen">
+      <a routerLink="/home" (click)="mobileNavOpen=false">{{ 'nav.home' | t }}</a>
+      <a routerLink="/products" [queryParams]="{ sort: 'newest' }" (click)="mobileNavOpen=false">
+        {{ 'nav.new' | t }}
+      </a>
+      <a routerLink="/products" [queryParams]="{ segment: 'homme' }" (click)="mobileNavOpen=false">
+        {{ 'nav.men' | t }}
+      </a>
+      <a routerLink="/products" [queryParams]="{ segment: 'femme' }" (click)="mobileNavOpen=false">
+        {{ 'nav.women' | t }}
+      </a>
+      <a routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }" (click)="mobileNavOpen=false">
+        {{ 'nav.smallLeather' | t }}
+      </a>
+      <a routerLink="/about" (click)="mobileNavOpen=false">{{ 'nav.about' | t }}</a>
+      <a routerLink="/contact" (click)="mobileNavOpen=false">{{ 'nav.contact' | t }}</a>
     </div>
   </header>
 
-  <!-- ✅ message visiteur (cart) -->
+  <!-- MESSAGE VISITEUR -->
   <div class="auth-warning" *ngIf="authWarning">
     {{ authWarning }}
   </div>
 
-  <!-- ======================= CONTENU DES PAGES ======================= -->
+  <!-- ======================= CONTENU ======================= -->
   <main class="page">
     <router-outlet></router-outlet>
   </main>
 
-  <!-- ✅ COOKIE BANNER EN BAS -->
+  <!-- COOKIE -->
   <app-cookie-banner></app-cookie-banner>
 </div>

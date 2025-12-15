@@ -1,19 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
-import {
-  ProductReviewService,
-  ProductReview,
-} from '../../services/product-review.service';
-import {
-  WishlistService,
-  WishlistItemResponse,
-} from '../../services/wishlist.service';
+import { ProductReviewService, ProductReview } from '../../services/product-review.service';
+import { WishlistService, WishlistItemResponse } from '../../services/wishlist.service';
 import { AuthService } from '../../services/auth.service';
+
+type SlideDir = 'left' | 'right';
 
 @Component({
   selector: 'app-product-detail',
@@ -26,28 +22,26 @@ export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   loading = false;
   error = '';
-  addedMessage = '';
 
-  // ✅ message visiteur (action protégée)
+  // messages
+  addedMessage = '';
   authWarning = '';
 
-  // --- stock / panier ---
+  // stock / panier
   stockAvailable = 0;
   isOutOfStock = false;
   stockMessage = '';
 
-  // --- wishlist ---
+  // wishlist
   isInWishlist = false;
-  wishlistLoading = false;
 
-  // --- avis ---
+  // avis
   reviews: ProductReview[] = [];
   reviewsLoading = false;
   reviewsError = '';
   averageRating = 0;
   totalReviews = 0;
 
-  // création avis
   isLoggedIn = false;
   reviewRating = 5;
   reviewComment = '';
@@ -55,14 +49,22 @@ export class ProductDetailComponent implements OnInit {
   reviewError = '';
   reviewSuccessMsg = '';
 
-  // édition avis
   editingReviewId: number | null = null;
   editRating = 5;
   editComment = '';
   editSubmitting = false;
 
-  // suppression
-  deleteError = '';
+  // galerie
+  activeImageIndex = 0;
+
+  // animation slide
+  imageAnimClass: '' | 'slide-left' | 'slide-right' = '';
+
+  // swipe / drag
+  private dragging = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragPointerId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -77,9 +79,7 @@ export class ProductDetailComponent implements OnInit {
   ngOnInit(): void {
     this.isLoggedIn = this.auth.isAuthenticated();
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const id = idParam ? Number(idParam) : null;
-
+    const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
       this.error = 'Produit invalide.';
       return;
@@ -90,59 +90,140 @@ export class ProductDetailComponent implements OnInit {
     this.productService.getOne(id).subscribe({
       next: (p: Product) => {
         this.product = p;
+
         this.stockAvailable = p.stockQuantity ?? 0;
         this.isOutOfStock = this.stockAvailable <= 0;
-        this.loading = false;
 
-        // panier
+        this.activeImageIndex = 0;
+
         this.cartService.loadCart().subscribe();
-
-        // avis
         this.loadReviews(id);
+        if (this.isLoggedIn) this.refreshWishlistStatus();
 
-        // wishlist
-        if (this.isLoggedIn) {
-          this.refreshWishlistStatus();
-        }
+        this.loading = false;
       },
-      error: (err: unknown) => {
-        console.error('Erreur chargement produit', err);
+      error: () => {
         this.error = 'Produit introuvable.';
         this.loading = false;
       },
     });
   }
 
-  // =================== HELPER LOGIN ===================
+  /* ================== GALERIE ================== */
+
+  get images(): string[] {
+    return this.product?.imageUrls ?? [];
+  }
+
+  get hasThumbs(): boolean {
+    return this.images.length > 1;
+  }
+
+  get activeImageUrl(): string {
+    if (!this.images.length) return 'assets/img/products/placeholder-bag.jpg';
+    const idx = Math.min(Math.max(this.activeImageIndex, 0), this.images.length - 1);
+    return 'http://localhost:8080' + this.images[idx];
+  }
+
+  private triggerSlideAnim(dir: SlideDir): void {
+    this.imageAnimClass = dir === 'left' ? 'slide-left' : 'slide-right';
+    // reset pour permettre de rejouer l'anim même si on change vite
+    setTimeout(() => (this.imageAnimClass = ''), 220);
+  }
+
+  prevImage(): void {
+    if (this.images.length <= 1) return;
+    this.triggerSlideAnim('right'); // l'image arrive de la gauche visuellement => on simule inverse
+    this.activeImageIndex = (this.activeImageIndex - 1 + this.images.length) % this.images.length;
+  }
+
+  nextImage(): void {
+    if (this.images.length <= 1) return;
+    this.triggerSlideAnim('left');
+    this.activeImageIndex = (this.activeImageIndex + 1) % this.images.length;
+  }
+
+  setActiveImage(i: number): void {
+    if (!this.images.length) return;
+    if (i < 0 || i >= this.images.length) return;
+    const dir: SlideDir = i > this.activeImageIndex ? 'left' : 'right';
+    this.triggerSlideAnim(dir);
+    this.activeImageIndex = i;
+  }
+
+  // clavier (quand tu es sur la page)
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(e: KeyboardEvent): void {
+    // évite de voler les flèches quand tu tapes dans un textarea/select/input
+    const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+    if (e.key === 'ArrowLeft') this.prevImage();
+    if (e.key === 'ArrowRight') this.nextImage();
+  }
+
+  // swipe / drag (pointer events -> souris + touch)
+  onPointerDown(e: PointerEvent): void {
+    if (this.images.length <= 1) return;
+    this.dragging = true;
+    this.dragPointerId = e.pointerId;
+    this.dragStartX = e.clientX;
+    this.dragStartY = e.clientY;
+  }
+
+  onPointerMove(e: PointerEvent): void {
+    if (!this.dragging) return;
+    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
+    // on ne fait rien en live (simple + fluide), on décide au release
+  }
+
+  onPointerUp(e: PointerEvent): void {
+    if (!this.dragging) return;
+    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
+
+    const dx = e.clientX - this.dragStartX;
+    const dy = e.clientY - this.dragStartY;
+
+    this.dragging = false;
+    this.dragPointerId = null;
+
+    // si geste vertical (scroll) -> ignore
+    if (Math.abs(dy) > Math.abs(dx)) return;
+
+    // seuil swipe
+    const TH = 50;
+    if (dx > TH) this.prevImage();
+    if (dx < -TH) this.nextImage();
+  }
+
+  onPointerCancel(): void {
+    this.dragging = false;
+    this.dragPointerId = null;
+  }
+
+  /* ================== LOGIN ================== */
 
   private requireLoginOrRedirect(): boolean {
     if (this.auth.isAuthenticated()) return true;
 
-    this.authWarning =
-      'Vous devez être connecté ou inscrit pour effectuer cette action.';
+    this.authWarning = 'Vous devez être connecté pour effectuer cette action.';
     setTimeout(() => {
-      this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url },
-      });
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       this.authWarning = '';
     }, 1200);
 
     return false;
   }
 
-  // =================== NAVIGATION ===================
-
   goBack(): void {
+    // si tu veux un vrai retour historique : this.router.navigateByUrl('/products') est ok
     this.router.navigate(['/products']);
   }
 
-  // =================== PANIER / STOCK ===================
+  /* ================== PANIER ================== */
 
   get quantity(): number {
-    if (!this.product) return 0;
-    const item = this.cartService.items.find(
-      (i: CartItem) => i.productId === this.product!.id
-    );
+    const item = this.cartService.items.find((i: CartItem) => i.productId === this.product?.id);
     return item ? item.quantity : 0;
   }
 
@@ -153,117 +234,80 @@ export class ProductDetailComponent implements OnInit {
   }
 
   increase(): void {
-    if (!this.product || !this.product.id) return;
-
-    if (!this.requireLoginOrRedirect()) return;
+    if (!this.requireLoginOrRedirect() || !this.product) return;
 
     if (!this.canIncrease) {
       this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
     }
 
-    this.cartService.addProduct(this.product.id, 1).subscribe({
+    this.cartService.addProduct(this.product.id!, 1).subscribe({
       next: () => {
         this.stockMessage = '';
         this.cartService.loadCart().subscribe();
       },
-      error: (err: unknown) => {
-        console.error('Erreur ajout au panier', err);
+      error: () => {
+        this.stockMessage = "Erreur lors de l'ajout au panier.";
       },
     });
   }
 
   decrease(): void {
-    if (!this.product || !this.product.id) return;
-
-    if (!this.requireLoginOrRedirect()) return;
-
+    if (!this.requireLoginOrRedirect() || !this.product) return;
     if (this.quantity <= 0) return;
 
     if (this.quantity === 1) {
-      this.cartService.removeItem(this.product.id).subscribe({
+      this.cartService.removeItem(this.product.id!).subscribe({
         next: () => this.cartService.loadCart().subscribe(),
       });
     } else {
-      this.cartService
-        .updateQuantity(this.product.id, this.quantity - 1)
-        .subscribe({
-          next: () => this.cartService.loadCart().subscribe(),
-        });
+      this.cartService.updateQuantity(this.product.id!, this.quantity - 1).subscribe({
+        next: () => this.cartService.loadCart().subscribe(),
+      });
     }
 
     this.stockMessage = '';
   }
 
   addToCart(): void {
-    if (!this.product || !this.product.id) return;
-
-    if (!this.requireLoginOrRedirect()) return;
+    if (!this.requireLoginOrRedirect() || !this.product) return;
 
     if (!this.canIncrease) {
       this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
       return;
     }
 
-    this.cartService.addProduct(this.product.id, 1).subscribe({
+    this.cartService.addProduct(this.product.id!, 1).subscribe({
       next: () => {
         this.cartService.loadCart().subscribe();
-        this.addedMessage = 'Produit ajouté au panier ✔';
+        this.addedMessage = 'Produit ajouté ✔';
         this.stockMessage = '';
-
-        const btn = document.querySelector('.btn-cart-animated');
-        btn?.classList.add('added');
-
-        setTimeout(() => {
-          btn?.classList.remove('added');
-          this.addedMessage = '';
-        }, 1500);
+        setTimeout(() => (this.addedMessage = ''), 1500);
       },
       error: () => {
-        this.addedMessage = "Erreur lors de l'ajout au panier";
-        setTimeout(() => (this.addedMessage = ''), 2000);
+        this.addedMessage = "Erreur lors de l'ajout";
+        setTimeout(() => (this.addedMessage = ''), 1500);
       },
     });
   }
 
-  // =================== WISHLIST ===================
+  /* ================== WISHLIST ================== */
 
   private refreshWishlistStatus(): void {
-    if (!this.product || !this.product.id) return;
-    this.wishlistLoading = true;
-
-    this.wishlistService.load().subscribe({
-      next: (items: WishlistItemResponse[]) => {
-        this.isInWishlist = items.some(
-          (it) => it.product && it.product.id === this.product!.id
-        );
-        this.wishlistLoading = false;
-      },
-      error: (err) => {
-        console.error('Erreur chargement wishlist', err);
-        this.wishlistLoading = false;
-      },
+    this.wishlistService.load().subscribe((items: WishlistItemResponse[]) => {
+      this.isInWishlist = items.some((i) => i.product?.id === this.product?.id);
     });
   }
 
   toggleWishlist(): void {
-    if (!this.product || !this.product.id) return;
+    if (!this.requireLoginOrRedirect() || !this.product) return;
 
-    if (!this.requireLoginOrRedirect()) return;
-
-    this.wishlistService.toggle(this.product.id).subscribe({
-      next: (items: WishlistItemResponse[]) => {
-        this.isInWishlist = items.some(
-          (it) => it.product && it.product.id === this.product!.id
-        );
-      },
-      error: (err) => {
-        console.error('Erreur toggle wishlist', err);
-      },
+    this.wishlistService.toggle(this.product.id!).subscribe((items: WishlistItemResponse[]) => {
+      this.isInWishlist = items.some((i) => i.product?.id === this.product?.id);
     });
   }
 
-  // =================== AVIS PRODUIT ===================
+  /* ================== AVIS ================== */
 
   private recomputeAverage(): void {
     if (!this.reviews.length) {
@@ -271,9 +315,8 @@ export class ProductDetailComponent implements OnInit {
       this.totalReviews = 0;
       return;
     }
-    const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
     this.totalReviews = this.reviews.length;
-    this.averageRating = sum / this.totalReviews;
+    this.averageRating = this.reviews.reduce((a, r) => a + r.rating, 0) / this.totalReviews;
   }
 
   get roundedAverage(): number {
@@ -287,20 +330,18 @@ export class ProductDetailComponent implements OnInit {
     this.reviewService.getForProduct(productId).subscribe({
       next: (list: ProductReview[]) => {
         this.reviews = list;
-        this.reviewsLoading = false;
         this.recomputeAverage();
+        this.reviewsLoading = false;
       },
-      error: (err: unknown) => {
-        console.error('Erreur chargement avis', err);
-        this.reviewsError = 'Impossible de charger les avis pour ce produit.';
+      error: () => {
+        this.reviewsError = 'Impossible de charger les avis.';
         this.reviewsLoading = false;
       },
     });
   }
 
   submitReview(): void {
-    if (!this.requireLoginOrRedirect()) return;
-    if (!this.product || !this.product.id) return;
+    if (!this.requireLoginOrRedirect() || !this.product) return;
 
     if (!this.reviewComment.trim()) {
       this.reviewError = 'Veuillez entrer un commentaire.';
@@ -312,53 +353,46 @@ export class ProductDetailComponent implements OnInit {
 
     this.reviewService
       .addReview({
-        productId: this.product.id,
+        productId: this.product.id!,
         rating: this.reviewRating,
         comment: this.reviewComment.trim(),
       })
       .subscribe({
-        next: (created: ProductReview) => {
-          this.reviews = [created, ...this.reviews];
+        next: (r: ProductReview) => {
+          this.reviews.unshift(r);
           this.recomputeAverage();
-
           this.reviewComment = '';
           this.reviewRating = 5;
           this.reviewSubmitting = false;
           this.reviewSuccessMsg = 'Merci pour votre avis !';
           setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
         },
-        error: (err: unknown) => {
-          console.error('Erreur ajout avis', err);
-          this.reviewError =
-            'Impossible d’enregistrer votre avis. Réessayez plus tard.';
+        error: () => {
           this.reviewSubmitting = false;
+          this.reviewError = "Impossible d’enregistrer votre avis.";
         },
       });
   }
 
-  startEdit(review: ProductReview): void {
+  startEdit(r: ProductReview): void {
     if (!this.requireLoginOrRedirect()) return;
-    if (!review.mine) return;
+    if (!r.mine) return;
 
-    this.editingReviewId = review.id;
-    this.editRating = review.rating;
-    this.editComment = review.comment;
-    this.editSubmitting = false;
-    this.deleteError = '';
+    this.editingReviewId = r.id;
+    this.editRating = r.rating;
+    this.editComment = r.comment;
     this.reviewError = '';
     this.reviewSuccessMsg = '';
   }
 
   cancelEdit(): void {
     this.editingReviewId = null;
-    this.editRating = 5;
-    this.editComment = '';
     this.editSubmitting = false;
   }
 
-  submitEdit(review: ProductReview): void {
+  submitEdit(r: ProductReview): void {
     if (!this.requireLoginOrRedirect()) return;
-    if (!this.product || !this.product.id || !review.mine) return;
+    if (!r.mine) return;
 
     if (!this.editComment.trim()) {
       this.reviewError = 'Veuillez entrer un commentaire.';
@@ -366,50 +400,40 @@ export class ProductDetailComponent implements OnInit {
     }
 
     this.editSubmitting = true;
-    this.reviewError = '';
-    this.reviewSuccessMsg = '';
 
     this.reviewService
-      .updateReview(review.id, {
+      .updateReview(r.id, {
         rating: this.editRating,
         comment: this.editComment.trim(),
       })
       .subscribe({
         next: (updated: ProductReview) => {
-          this.reviews = this.reviews.map((r) =>
-            r.id === updated.id ? updated : r
-          );
-          this.recomputeAverage();
-          this.editSubmitting = false;
+          this.reviews = this.reviews.map((x) => (x.id === updated.id ? updated : x));
           this.cancelEdit();
+          this.recomputeAverage();
           this.reviewSuccessMsg = 'Votre avis a été mis à jour.';
           setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
         },
-        error: (err: unknown) => {
-          console.error('Erreur mise à jour avis', err);
-          this.reviewError = 'Impossible de mettre à jour votre avis.';
+        error: () => {
           this.editSubmitting = false;
+          this.reviewError = "Impossible de mettre à jour votre avis.";
         },
       });
   }
 
-  deleteReview(review: ProductReview): void {
+  deleteReview(r: ProductReview): void {
     if (!this.requireLoginOrRedirect()) return;
-    if (!review.mine) return;
+    if (!r.mine) return;
     if (!confirm('Supprimer cet avis ?')) return;
 
-    this.deleteError = '';
-    this.reviewService.deleteReview(review.id).subscribe({
+    this.reviewService.deleteReview(r.id).subscribe({
       next: () => {
-        this.reviews = this.reviews.filter((r) => r.id !== review.id);
+        this.reviews = this.reviews.filter((x) => x.id !== r.id);
         this.recomputeAverage();
-        if (this.editingReviewId === review.id) {
-          this.cancelEdit();
-        }
+        if (this.editingReviewId === r.id) this.cancelEdit();
       },
-      error: (err: unknown) => {
-        console.error('Erreur suppression avis', err);
-        this.deleteError = 'Impossible de supprimer cet avis.';
+      error: () => {
+        this.reviewError = 'Impossible de supprimer cet avis.';
       },
     });
   }

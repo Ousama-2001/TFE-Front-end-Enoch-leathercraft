@@ -4,11 +4,11 @@ export type Lang = 'fr' | 'en';
 // Utilisation de 'any' pour le deuxième Record car 'cookies' est un objet, alors que le reste sont des strings.
 export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
   fr: {
-    // ===== NAVBAR =====
+// ===== NAVBAR =====
     'nav.home': 'Accueil',
     'nav.men': 'Homme',
     'nav.women': 'Femme',
-    'nav.small-leather': 'Petite maroquinerie',
+    'nav.smallLeather': 'Petite maroquinerie',
     'nav.new': 'Nouveautés',
     'nav.about': 'À propos',
     'nav.contact': 'Contact',
@@ -632,11 +632,11 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
   },
 
   en: {
-    // ===== NAVBAR =====
+// ===== NAVBAR =====
     'nav.home': 'Home',
     'nav.men': 'Men',
     'nav.women': 'Women',
-    'nav.small-leather': 'Small leather goods',
+    'nav.smallLeather': 'Small leather goods',
     'nav.new': 'New in',
     'nav.about': 'About',
     'nav.contact': 'Contact',

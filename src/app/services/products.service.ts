@@ -1,7 +1,14 @@
-// src/app/services/products.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+export interface ProductImage {
+  id: number;
+  url: string;
+  altText?: string;
+  position?: number;
+  isPrimary?: boolean;
+}
 
 export interface Product {
   id: number;
@@ -9,15 +16,19 @@ export interface Product {
   name: string;
   slug?: string;
   description?: string;
-  material?: string;
   price: number;
   currency: string;
   weightGrams?: number;
   isActive?: boolean;
+
+  // ✅ compat public
   imageUrls?: string[];
+
+  // ✅ admin CRUD images
+  images?: ProductImage[];
+
   stockQuantity?: number;
 
-  // 🔥 nouveaux champs pour les catégories
   segmentCategoryId?: number | null;
   typeCategoryId?: number | null;
 }
@@ -27,14 +38,12 @@ export interface ProductCreateRequest {
   name: string;
   slug?: string;
   description?: string;
-  material?: string;
   price: number;
   currency?: string;
   weightGrams?: number;
   isActive?: boolean;
   stockQuantity?: number;
 
-  // 🔥 nouveaux champs pour les catégories
   segmentCategoryId?: number | null;
   typeCategoryId?: number | null;
 }
@@ -45,7 +54,6 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  // ------- CATALOGUE ACTIF (public + admin) -------
   getAll(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.baseUrl}/products`);
   }
@@ -54,70 +62,56 @@ export class ProductService {
     return this.http.get<Product>(`${this.baseUrl}/products/${id}`);
   }
 
-  // ------- PRODUITS ARCHIVÉS (soft delete) -------
   getArchived(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.baseUrl}/admin/products/archived`);
   }
 
-  // ------- CRÉATION AVEC IMAGE -------
-  create(body: ProductCreateRequest, file: File): Observable<Product> {
+  create(body: ProductCreateRequest, files: File[]): Observable<Product> {
     const formData = new FormData();
-    formData.append('file', file, file.name);
     formData.append('product', JSON.stringify(body));
+    (files || []).forEach((f) => formData.append('files', f, f.name));
     return this.http.post<Product>(`${this.baseUrl}/admin/products`, formData);
   }
 
-  // ------- MISE À JOUR AVEC IMAGE OPTIONNELLE -------
-  update(
-    id: number,
-    body: ProductCreateRequest,
-    file?: File | null
-  ): Observable<Product> {
+  update(id: number, body: ProductCreateRequest, files?: File[] | null): Observable<Product> {
     const formData = new FormData();
     formData.append('product', JSON.stringify(body));
-
-    if (file) {
-      formData.append('file', file, file.name);
-    }
-
-    return this.http.put<Product>(
-      `${this.baseUrl}/admin/products/${id}`,
-      formData
-    );
+    (files || []).forEach((f) => formData.append('files', f, f.name));
+    return this.http.put<Product>(`${this.baseUrl}/admin/products/${id}`, formData);
   }
 
-  // ------- SOFT DELETE (passe en "archivé") -------
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/admin/products/${id}`);
   }
 
-  // ------- RESTAURER UN PRODUIT ARCHIVÉ -------
   restore(id: number): Observable<Product> {
-    return this.http.patch<Product>(
-      `${this.baseUrl}/admin/products/${id}/restore`,
-      {}
-    );
+    return this.http.patch<Product>(`${this.baseUrl}/admin/products/${id}/restore`, {});
   }
 
-  /** 🔍 URL principale de l’image du produit */
-  getMainImageUrl(product: Product): string {
-    // 1) Si on a des URLs en base
-    if (product.imageUrls && product.imageUrls.length > 0) {
-      const first = product.imageUrls[0];
+  // ✅ supprimer image par ID (ton back existe déjà)
+  deleteImage(productId: number, imageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/admin/products/${productId}/images/${imageId}`);
+  }
 
-      // déjà une URL complète
-      if (first.startsWith('http://') || first.startsWith('https://')) {
-        return first;
-      }
-
-      // URL relative vers /uploads/products/... -> on préfixe par le back
-      if (first.startsWith('/')) {
-        return `http://localhost:8080${first}`;
-      }
-      return `http://localhost:8080/${first}`;
+  // ✅ URL d'image (prend index)
+  getImageUrl(product: Product, index = 0): string {
+    const arr = product.imageUrls || [];
+    if (arr.length > 0) {
+      const u = arr[Math.min(index, arr.length - 1)];
+      if (!u) return 'assets/img/products/placeholder-bag.jpg';
+      if (u.startsWith('http://') || u.startsWith('https://')) return u;
+      if (u.startsWith('/')) return `http://localhost:8080${u}`;
+      return `http://localhost:8080/${u}`;
     }
-
-    // 2) Sinon, placeholder
     return 'assets/img/products/placeholder-bag.jpg';
+  }
+
+  // ✅ admin : url image à partir de ProductImage
+  getAdminImageUrl(img: ProductImage): string {
+    const u = img?.url || '';
+    if (!u) return 'assets/img/products/placeholder-bag.jpg';
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    if (u.startsWith('/')) return `http://localhost:8080${u}`;
+    return `http://localhost:8080/${u}`;
   }
 }

@@ -1,113 +1,146 @@
-<div class="product-detail-page" *ngIf="product; else loadingOrError">
-  <button class="btn-back" type="button" (click)="goBack()">
-    ← Retour aux produits
-  </button>
+<div class="product-detail-page" *ngIf="product; else loadingTpl">
 
-  <!-- ✅ Message visiteur -->
+  <!-- ✅ TOP BAR (bouton retour plus clean) -->
+  <div class="topbar">
+    <button class="back-pill" type="button" (click)="goBack()">
+      <span class="arrow">←</span>
+      <span class="txt">Retour aux produits</span>
+    </button>
+  </div>
+
   <p class="auth-warning" *ngIf="authWarning">{{ authWarning }}</p>
 
-  <!-- ========= CARTE PRODUIT (Haut de page) ========= -->
+  <!-- ===== CARTE PRODUIT ===== -->
   <div class="product-detail-card">
+
+    <!-- ===== GALERIE ===== -->
     <div class="left">
-      <div class="image-wrapper">
-        <img
-          [src]="product.imageUrls && product.imageUrls.length > 0
-                    ? ('http://localhost:8080' + product.imageUrls[0])
-                    : 'assets/img/products/placeholder-bag.jpg'"
-          [alt]="product.name"
-        />
+      <div class="gallery">
+
+        <button
+          class="nav prev"
+          type="button"
+          (click)="prevImage()"
+          [disabled]="images.length <= 1"
+          aria-label="Image précédente">
+          ‹
+        </button>
+
+        <button
+          class="nav next"
+          type="button"
+          (click)="nextImage()"
+          [disabled]="images.length <= 1"
+          aria-label="Image suivante">
+          ›
+        </button>
+
+        <div
+          class="image-wrapper"
+          (pointerdown)="onPointerDown($event)"
+          (pointermove)="onPointerMove($event)"
+          (pointerup)="onPointerUp($event)"
+          (pointercancel)="onPointerCancel()"
+          role="group"
+          aria-label="Galerie images">
+
+          <img
+            [src]="activeImageUrl"
+            [alt]="product.name"
+            [class]="imageAnimClass"
+            draggable="false"
+          />
+        </div>
+
+        <div class="thumbs" *ngIf="hasThumbs">
+          <button
+            type="button"
+            class="thumb"
+            *ngFor="let img of images; let i = index"
+            [class.active]="i === activeImageIndex"
+            (click)="setActiveImage(i)">
+            <img
+              [src]="'http://localhost:8080' + img"
+              [alt]="product.name + ' ' + (i + 1)"
+              draggable="false"
+            />
+          </button>
+        </div>
+
+        <p class="swipe-hint" *ngIf="images.length > 1">
+          Glisse (swipe) ou utilise ← →
+        </p>
+
       </div>
     </div>
 
+    <!-- ===== INFOS ===== -->
     <div class="right">
       <h1>{{ product.name }}</h1>
+      <p class="price">{{ product.price | currency:'EUR' }}</p>
 
-      <p class="price">
-        {{ product.price | currency: 'EUR' }}
-      </p>
-
-      <!-- Ligne wishlist / info rapide -->
       <div class="wishlist-row">
         <button
           type="button"
           class="wishlist-btn"
           [class.active]="isInWishlist"
-          (click)="toggleWishlist()"
-        >
-          <span class="icon">
-            {{ isInWishlist ? '❤️' : '🤍' }}
-          </span>
-          <span class="label">
-            {{ isInWishlist ? 'Retirer de ma wishlist' : 'Ajouter à ma wishlist' }}
-          </span>
+          (click)="toggleWishlist()">
+          {{ isInWishlist ? '❤️ Retirer' : '🤍 Wishlist' }}
         </button>
-
-        <span class="wishlist-hint" *ngIf="!isLoggedIn">
-          (Vous devez être connecté pour utiliser la wishlist)
-        </span>
       </div>
 
       <div class="meta">
-        <p *ngIf="product.material">
-          <strong>Matériau :</strong> {{ product.material }}
-        </p>
-        <p *ngIf="product.description">
-          {{ product.description }}
-        </p>
-
-        <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
-          Stock disponible : {{ stockAvailable }} pièce(s).
-        </p>
-        <p class="stock-msg stock-error" *ngIf="isOutOfStock">
-          Produit actuellement en rupture de stock.
-        </p>
+        <p *ngIf="product.description">{{ product.description }}</p>
       </div>
 
+      <!-- ✅ MESSAGES STOCK -->
+      <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
+        Stock disponible : {{ stockAvailable }} pièce(s).
+      </p>
+
+      <p class="stock-msg stock-error" *ngIf="isOutOfStock">
+        Produit actuellement en rupture de stock.
+      </p>
+
+      <!-- ✅ + / - style rond -->
       <div class="qty-row">
         <button
           type="button"
           class="round-btn"
           (click)="decrease()"
-          [disabled]="quantity === 0"
-        >
+          [disabled]="quantity === 0">
           −
         </button>
+
         <span class="qty-label">{{ quantity }}</span>
+
         <button
           type="button"
           class="round-btn"
           (click)="increase()"
-          [disabled]="!canIncrease"
-        >
+          [disabled]="!canIncrease">
           +
         </button>
       </div>
 
-      <div class="actions">
-        <button
-          class="btn-cart-animated"
-          type="button"
-          (click)="addToCart()"
-          [disabled]="isOutOfStock || !canIncrease"
-        >
-          🛒 Ajouter au panier
-        </button>
+      <!-- ✅ message stock insuffisant -->
+      <p class="stock-msg inline-msg" *ngIf="stockMessage">{{ stockMessage }}</p>
 
-        <span class="added-msg" *ngIf="addedMessage">
-          {{ addedMessage }}
-        </span>
-      </div>
+      <button
+        class="btn-cart-animated"
+        type="button"
+        (click)="addToCart()"
+        [disabled]="isOutOfStock || !canIncrease">
+        Ajouter au panier
+      </button>
 
-      <p class="stock-msg inline-msg" *ngIf="stockMessage">
-        {{ stockMessage }}
-      </p>
+      <span class="added-msg" *ngIf="addedMessage">{{ addedMessage }}</span>
     </div>
   </div>
 
   <!-- ========= SECTION AVIS (VERTICALE) ========= -->
   <section class="reviews-section">
 
-    <!-- 1. En-tête des avis (Stats) -->
     <header class="reviews-header-block">
       <h3>Avis clients</h3>
       <div class="rating-overview">
@@ -118,13 +151,10 @@
         <div class="stars-display">
           <span *ngFor="let s of [1,2,3,4,5]" class="star big" [class.filled]="s <= roundedAverage">★</span>
         </div>
-        <div class="total-count">
-          Basé sur {{ totalReviews }} avis
-        </div>
+        <div class="total-count">Basé sur {{ totalReviews }} avis</div>
       </div>
     </header>
 
-    <!-- 2. Liste des avis existants -->
     <div class="reviews-list-container">
       <p *ngIf="reviewsLoading" class="loading-text">Chargement des avis...</p>
       <p *ngIf="reviewsError" class="error-text">{{ reviewsError }}</p>
@@ -154,9 +184,9 @@
               <p class="comment-text">{{ r.comment }}</p>
 
               <div class="review-actions" *ngIf="r.mine">
-                <button class="text-btn" (click)="startEdit(r)">Modifier</button>
+                <button type="button" class="text-btn" (click)="startEdit(r)">Modifier</button>
                 <span class="separator">•</span>
-                <button class="text-btn danger" (click)="deleteReview(r)">Supprimer</button>
+                <button type="button" class="text-btn danger" (click)="deleteReview(r)">Supprimer</button>
               </div>
             </div>
 
@@ -171,20 +201,24 @@
                   <option [value]="1">★☆☆☆☆ - Mauvais</option>
                 </select>
               </div>
+
               <div class="form-row">
                 <textarea rows="3" [(ngModel)]="editComment" class="input-dark"></textarea>
               </div>
+
               <div class="edit-buttons">
-                <button class="btn-cancel" (click)="cancelEdit()">Annuler</button>
-                <button class="btn-save" (click)="submitEdit(r)" [disabled]="editSubmitting">Enregistrer</button>
+                <button type="button" class="btn-cancel" (click)="cancelEdit()">Annuler</button>
+                <button type="button" class="btn-save" (click)="submitEdit(r)" [disabled]="editSubmitting">
+                  Enregistrer
+                </button>
               </div>
             </div>
+
           </div>
         </li>
       </ul>
     </div>
 
-    <!-- 3. Formulaire d'ajout -->
     <div class="write-review-area">
       <div class="write-card">
         <h4>Donnez votre avis</h4>
@@ -212,8 +246,7 @@
               rows="4"
               placeholder="Qu'avez-vous pensé de la qualité, du design..."
               [(ngModel)]="reviewComment"
-              class="input-dark"
-            ></textarea>
+              class="input-dark"></textarea>
           </div>
 
           <div class="form-footer">
@@ -231,9 +264,9 @@
   </section>
 </div>
 
-<ng-template #loadingOrError>
+<ng-template #loadingTpl>
   <div class="product-detail-page center">
-    <p *ngIf="loading">Chargement...</p>
+    <p *ngIf="loading">Chargement…</p>
     <p *ngIf="!loading && error">{{ error }}</p>
   </div>
 </ng-template>

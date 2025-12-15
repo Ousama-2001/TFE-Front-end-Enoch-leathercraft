@@ -27,6 +27,12 @@ type OrderStatusFilter =
   | 'RETURN_APPROVED'
   | 'RETURN_REJECTED';
 
+interface ProductImageVm {
+  id: number;
+  url: string;
+  isPrimary: boolean;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -45,7 +51,6 @@ type OrderStatusFilter =
 })
 export class AdminDashboardComponent implements OnInit {
 
-  // ------- Onglet actif -------
   activeTab:
     | 'stats'
     | 'orders'
@@ -57,27 +62,21 @@ export class AdminDashboardComponent implements OnInit {
     | 'users'
     | 'requests' = 'stats';
 
-  // ------- Flags rôles -------
   isSuperAdmin = false;
   isAdminOrSuperAdmin = false;
 
-  // ✅ Commandes : filtre par statut
   orderStatusFilter: OrderStatusFilter = 'ALL';
 
-  // ------- Mode produits (actifs / archivés) -------
   productsMode: 'active' | 'archived' = 'active';
 
-  // ------- STATS -------
   stats: SalesStatsResponse | null = null;
   statsLoading = false;
   statsError: string | null = null;
 
-  // ------- COMMANDES -------
   orders: AdminOrderResponse[] = [];
   ordersLoading = false;
   ordersError: string | null = null;
 
-  // Modal détail commande
   showOrderModal = false;
   selectedOrder: AdminOrderResponse | null = null;
   modalStatus: string = 'PENDING';
@@ -93,35 +92,37 @@ export class AdminDashboardComponent implements OnInit {
     { value: 'RETURN_REJECTED',   label: 'Retour refusé (manuel)' },
   ];
 
-  // ------- STOCK -------
   lowStockProducts: Product[] = [];
   lowStockLoading = false;
   lowStockError: string | null = null;
   lowStockThreshold = 5;
 
-  // ------- CRUD PRODUITS -------
   products: Product[] = [];
   loading = false;
   error = '';
   showCreateForm = false;
 
   editingProductId: number | null = null;
-  selectedFile: File | null = null;
-  currentImagePreview: string | null = null;
+
+  // ✅ nouvelles images (files)
+  selectedFiles: File[] = [];
+  selectedPreviews: string[] = [];
+
+  // ✅ images existantes DB (avec id)
+  currentImages: ProductImageVm[] = [];
+
   isSubmitting = false;
 
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
   deleteTargetName = '';
 
-  // 🔥 options de segments (ids fixés par la migration Flyway)
   segmentOptions = [
     { id: 1, label: 'Homme' },
     { id: 2, label: 'Femme' },
     { id: 3, label: 'Petite maroquinerie' },
   ];
 
-  // 🔥 options de types de produits
   typeOptions = [
     { id: 4, label: 'Sacs & sacoches' },
     { id: 5, label: 'Ceintures' },
@@ -130,40 +131,24 @@ export class AdminDashboardComponent implements OnInit {
     { id: 8, label: 'Sets de table' },
   ];
 
-  // 🔥 types filtrés selon le segment choisi
   get filteredTypeOptions() {
-    const seg = (this.newProduct as any).segmentCategoryId;
+    const seg = this.newProduct.segmentCategoryId;
 
     if (seg === 1 || seg === 2) {
-      // Homme ou Femme → sacs & sacoches + ceintures
       return this.typeOptions.filter(t => t.id === 4 || t.id === 5);
     }
 
     if (seg === 3) {
-      // Petite maroquinerie → portefeuilles, portes-cartes, sets de table
       return this.typeOptions.filter(t => t.id === 6 || t.id === 7 || t.id === 8);
     }
 
-    // Si rien choisi, on montre tout (ou tu peux retourner [] si tu préfères)
     return this.typeOptions;
-  }
-
-  // Quand on change de segment, si le type actuel n'est plus valide on le remet à null
-  onSegmentChange(): void {
-    const allowedIds = this.filteredTypeOptions.map(t => t.id);
-    if (
-      (this.newProduct as any).typeCategoryId != null &&
-      !allowedIds.includes((this.newProduct as any).typeCategoryId)
-    ) {
-      (this.newProduct as any).typeCategoryId = null;
-    }
   }
 
   newProduct: ProductCreateRequest = {
     sku: '',
     name: '',
     description: '',
-    material: '',
     price: 0,
     weightGrams: 0,
     isActive: true,
@@ -171,7 +156,7 @@ export class AdminDashboardComponent implements OnInit {
     slug: '',
     segmentCategoryId: null,
     typeCategoryId: null,
-  } as any;
+  };
 
   // ------- RETOURS (modales) -------
   showReturnDetailsModal = false;
@@ -195,7 +180,6 @@ export class AdminDashboardComponent implements OnInit {
     this.loadProducts();
   }
 
-  // ========= Onglets =========
   setTab(
     tab:
       | 'stats'
@@ -221,10 +205,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // =========================
-  // ✅ COMMANDES : tri + filtres onglets
-  // =========================
-
   private sortOrdersByDateDesc(list: AdminOrderResponse[]): AdminOrderResponse[] {
     return [...list].sort((a, b) => {
       const da = new Date(a.createdAt).getTime();
@@ -241,15 +221,12 @@ export class AdminDashboardComponent implements OnInit {
     this.orderStatusFilter = s;
   }
 
-  // ✅ commandes filtrées par statut (dans l’onglet Commandes)
   get filteredOrders(): AdminOrderResponse[] {
     const base = this.sortedOrders;
-
     if (this.orderStatusFilter === 'ALL') return base;
     return base.filter(o => o.status === this.orderStatusFilter);
   }
 
-  // ✅ onglet Retours : on montre toutes les commandes RETURN_*
   get sortedReturnOrdersAll(): AdminOrderResponse[] {
     return this.sortOrdersByDateDesc(
       this.orders.filter(o =>
@@ -260,7 +237,6 @@ export class AdminDashboardComponent implements OnInit {
     );
   }
 
-  // ========= STATS =========
   loadStats(): void {
     this.statsLoading = true;
     this.statsError = null;
@@ -278,7 +254,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // ========= COMMANDES =========
   loadOrders(): void {
     this.ordersLoading = true;
     this.ordersError = null;
@@ -340,7 +315,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // ========= STOCK =========
   loadLowStock(): void {
     this.lowStockLoading = true;
     this.lowStockError = null;
@@ -377,7 +351,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // ========= MODE PRODUITS =========
   setProductsMode(mode: 'active' | 'archived'): void {
     if (this.productsMode === mode) return;
 
@@ -386,14 +359,13 @@ export class AdminDashboardComponent implements OnInit {
     if (mode === 'archived') {
       this.showCreateForm = false;
       this.editingProductId = null;
-      this.selectedFile = null;
-      this.currentImagePreview = null;
+      this.clearSelectedFiles();
+      this.currentImages = [];
     }
 
     this.loadProducts();
   }
 
-  // ========= CRUD PRODUITS =========
   loadProducts(): void {
     this.loading = true;
     this.error = '';
@@ -416,16 +388,33 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  onFileSelected(event: any): void {
-    if (event.target.files && event.target.files.length) {
-      this.selectedFile = event.target.files[0];
-    }
+  onFilesSelected(event: any): void {
+    const files: File[] = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    this.selectedFiles = files;
+
+    this.selectedPreviews.forEach((u) => URL.revokeObjectURL(u));
+    this.selectedPreviews = files.map((f) => URL.createObjectURL(f));
+  }
+
+  removeSelectedFile(index: number): void {
+    if (index < 0 || index >= this.selectedFiles.length) return;
+    this.selectedFiles.splice(index, 1);
+
+    const prev = this.selectedPreviews[index];
+    if (prev) URL.revokeObjectURL(prev);
+    this.selectedPreviews.splice(index, 1);
+  }
+
+  clearSelectedFiles(): void {
+    this.selectedPreviews.forEach((u) => URL.revokeObjectURL(u));
+    this.selectedPreviews = [];
+    this.selectedFiles = [];
   }
 
   toggleCreateForm(): void {
-    if (this.productsMode === 'archived') {
-      return;
-    }
+    if (this.productsMode === 'archived') return;
 
     if (this.editingProductId !== null) {
       this.resetForm();
@@ -433,6 +422,59 @@ export class AdminDashboardComponent implements OnInit {
       this.showCreateForm = !this.showCreateForm;
       this.error = '';
     }
+  }
+
+  clampPrice(): void {
+    if (this.newProduct.price == null) return;
+    if (this.newProduct.price < 0) this.newProduct.price = 0;
+  }
+
+  private skuPrefixFromSelection(): string {
+    const seg = this.newProduct.segmentCategoryId;
+    const type = this.newProduct.typeCategoryId;
+
+    const segCode =
+      seg === 1 ? 'MEN' :
+        seg === 2 ? 'WOM' :
+          seg === 3 ? 'SLG' : 'PRD';
+
+    const typeCode =
+      type === 4 ? 'BAG' :
+        type === 5 ? 'BLT' :
+          type === 6 ? 'WAL' :
+            type === 7 ? 'CRD' :
+              type === 8 ? 'SET' : 'ITM';
+
+    return `${segCode}-${typeCode}`;
+  }
+
+  private generateSku(): string {
+    const prefix = this.skuPrefixFromSelection();
+    const suffix = String(Date.now()).slice(-4);
+    return `${prefix}-${suffix}`;
+  }
+
+  private autoSkuIfEmpty(): void {
+    if (!this.newProduct.sku || !this.newProduct.sku.trim()) {
+      this.newProduct.sku = this.generateSku();
+    }
+  }
+
+  normalizeSku(): void {
+    if (!this.newProduct.sku) return;
+    this.newProduct.sku = this.newProduct.sku.trim().toUpperCase();
+  }
+
+  onSegmentChange(): void {
+    const allowedIds = this.filteredTypeOptions.map(t => t.id);
+    if (this.newProduct.typeCategoryId != null && !allowedIds.includes(this.newProduct.typeCategoryId)) {
+      this.newProduct.typeCategoryId = null;
+    }
+    this.autoSkuIfEmpty();
+  }
+
+  onTypeChange(): void {
+    this.autoSkuIfEmpty();
   }
 
   private slugify(name: string): string {
@@ -457,14 +499,17 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    // 🔥 on impose le choix d’un segment + type
-    if (!(this.newProduct as any).segmentCategoryId || !(this.newProduct as any).typeCategoryId) {
+    if (this.newProduct.price < 0) {
+      this.newProduct.price = 0;
+    }
+
+    if (!this.newProduct.segmentCategoryId || !this.newProduct.typeCategoryId) {
       this.error = 'Merci de choisir un segment et un type de produit.';
       return;
     }
 
-    if (this.editingProductId === null && !this.selectedFile) {
-      this.error = 'Veuillez sélectionner une image pour créer un nouveau produit.';
+    if (this.editingProductId === null && !this.selectedFiles.length) {
+      this.error = 'Veuillez sélectionner au moins une image pour créer un nouveau produit.';
       return;
     }
 
@@ -473,28 +518,16 @@ export class AdminDashboardComponent implements OnInit {
     const payload: ProductCreateRequest = {
       ...this.newProduct,
       slug,
-      currency: (this.newProduct as any).currency ?? 'EUR',
+      currency: this.newProduct.currency ?? 'EUR',
     };
 
     this.isSubmitting = true;
 
+    // CREATE
     if (this.editingProductId === null) {
-      if (this.selectedFile) {
-        this.productService.create(payload, this.selectedFile).subscribe({
-          next: (created: Product) => {
-            this.products = [created, ...this.products];
-            this.resetForm();
-          },
-          error: (err) => {
-            this.handleError(err);
-            this.isSubmitting = false;
-          },
-        });
-      }
-    } else {
-      this.productService.update(this.editingProductId, payload, this.selectedFile).subscribe({
-        next: (updated: Product) => {
-          this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
+      this.productService.create(payload, this.selectedFiles).subscribe({
+        next: (created: Product) => {
+          this.products = [created, ...this.products];
           this.resetForm();
         },
         error: (err) => {
@@ -502,30 +535,62 @@ export class AdminDashboardComponent implements OnInit {
           this.isSubmitting = false;
         },
       });
+      return;
     }
+
+    // UPDATE
+    const filesToSend = this.selectedFiles.length ? this.selectedFiles : null;
+
+    this.productService.update(this.editingProductId, payload, filesToSend).subscribe({
+      next: (updated: Product) => {
+        this.products = this.products.map((p) => (p.id === updated.id ? updated : p));
+        this.resetForm();
+      },
+      error: (err) => {
+        this.handleError(err);
+        this.isSubmitting = false;
+      },
+    });
+  }
+
+  private toAbsoluteUrl(u: string): string {
+    if (!u) return '';
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    if (u.startsWith('/')) return 'http://localhost:8080' + u;
+    return 'http://localhost:8080/' + u;
   }
 
   startEdit(p: Product): void {
-    if (this.productsMode === 'archived') {
-      return;
-    }
+    if (this.productsMode === 'archived') return;
 
     this.showCreateForm = true;
     this.editingProductId = p.id ?? null;
     this.error = '';
-    this.selectedFile = null;
 
-    if (p.imageUrls && p.imageUrls.length > 0) {
-      this.currentImagePreview = 'http://localhost:8080' + p.imageUrls[0];
+    this.clearSelectedFiles();
+
+    // ✅ Priorité : images[] (avec id) si dispo, sinon fallback imageUrls[]
+    const anyP: any = p as any;
+
+    if (Array.isArray(anyP.images) && anyP.images.length) {
+      this.currentImages = anyP.images.map((img: any) => ({
+        id: img.id,
+        url: this.toAbsoluteUrl(img.url),
+        isPrimary: !!img.isPrimary,
+      }));
     } else {
-      this.currentImagePreview = null;
+      const urls = (p.imageUrls || []).map(u => this.toAbsoluteUrl(u)).filter(Boolean);
+      this.currentImages = urls.map((url, idx) => ({
+        id: -(idx + 1), // ids fake (pas supprimables)
+        url,
+        isPrimary: idx === 0,
+      }));
     }
 
     this.newProduct = {
       sku: p.sku,
       name: p.name,
       description: p.description ?? '',
-      material: p.material ?? '',
       price: p.price,
       weightGrams: p.weightGrams ?? 0,
       isActive: p.isActive ?? true,
@@ -533,15 +598,34 @@ export class AdminDashboardComponent implements OnInit {
       slug: (p as any).slug ?? '',
       segmentCategoryId: (p as any).segmentCategoryId ?? null,
       typeCategoryId: (p as any).typeCategoryId ?? null,
-    } as any;
+    };
+  }
+
+  deleteExistingImage(imageId: number): void {
+    // ids fake => pas supprimables (fallback)
+    if (imageId < 0) {
+      alert("Cette image vient de 'imageUrls' (sans id). Charge le produit avec 'images' pour pouvoir supprimer.");
+      return;
+    }
+    if (!this.editingProductId) return;
+
+    if (!confirm('Supprimer cette image ?')) return;
+
+    this.productService.deleteImage(this.editingProductId, imageId).subscribe({
+      next: () => {
+        this.currentImages = this.currentImages.filter(img => img.id !== imageId);
+      },
+      error: err => {
+        console.error('Erreur suppression image', err);
+        alert('Impossible de supprimer cette image.');
+      }
+    });
   }
 
   restoreProduct(p: Product): void {
     if (!p.id) return;
 
-    if (!confirm(`Restaurer le produit "${p.name}" ?`)) {
-      return;
-    }
+    if (!confirm(`Restaurer le produit "${p.name}" ?`)) return;
 
     this.isSubmitting = true;
     this.productService.restore(p.id).subscribe({
@@ -565,15 +649,15 @@ export class AdminDashboardComponent implements OnInit {
   private resetForm(): void {
     this.showCreateForm = false;
     this.editingProductId = null;
-    this.selectedFile = null;
-    this.currentImagePreview = null;
     this.isSubmitting = false;
+
+    this.clearSelectedFiles();
+    this.currentImages = [];
 
     this.newProduct = {
       sku: '',
       name: '',
       description: '',
-      material: '',
       price: 0,
       weightGrams: 0,
       isActive: true,
@@ -581,7 +665,7 @@ export class AdminDashboardComponent implements OnInit {
       slug: '',
       segmentCategoryId: null,
       typeCategoryId: null,
-    } as any;
+    };
   }
 
   onLogout(): void {
@@ -589,9 +673,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openDeleteConfirm(p: Product): void {
-    if (this.productsMode === 'archived') {
-      return;
-    }
+    if (this.productsMode === 'archived') return;
 
     this.deleteTargetId = p.id ?? null;
     this.deleteTargetName = p.name;
@@ -622,7 +704,6 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // ------- RETOURS (modales) -------
   openReturnDetails(order: AdminOrderResponse): void {
     this.selectedReturnOrder = order;
     this.showReturnDetailsModal = true;
