@@ -1,7 +1,8 @@
 // src/app/i18n/translations.ts
 export type Lang = 'fr' | 'en';
 
-export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
+// Utilisation de 'any' pour le deuxième Record car 'cookies' est un objet, alors que le reste sont des strings.
+export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
   fr: {
     // ===== NAVBAR =====
     'nav.home': 'Accueil',
@@ -203,7 +204,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.category.bags': 'Sacs & sacoches',
     'products.filters.category.belts': 'Ceintures',
     'products.filters.category.smallLeather': 'Petite maroquinerie',
-    // 🔥 nouvelles clés pour la liste déroulante
     'products.filters.category.wallets': 'Portefeuilles',
     'products.filters.category.cardHolders': 'Portes-cartes',
     'products.filters.category.placemats': 'Sets de table',
@@ -276,21 +276,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'reviews.rating.2': '★★☆☆☆ - Moyen',
     'reviews.rating.1': '★☆☆☆☆ - Mauvais',
 
-    // ===== CONTACT =====
+// ===== CONTACT =====
     'contact.title': 'Contact',
     'contact.subtitle':
       'Une question sur un produit, une commande ou une demande personnalisée ? N’hésitez pas à nous écrire.',
+
+    'contact.formTitle': 'Envoyer un message',
+    'contact.formHelp': 'Nous répondons généralement sous 24 à 48 heures.',
+    'contact.replyTime': 'Réponse sous 24–48h',
+
     'contact.form.name': 'Nom / Prénom',
     'contact.form.email': 'Adresse e-mail',
     'contact.form.message': 'Message',
+    'contact.messagePlaceholder':
+      'Expliquez votre demande (produit, commande, demande personnalisée...)',
+
     'contact.form.submit': 'Envoyer le message',
-    'contact.form.success':
-      'Merci, votre message a bien été envoyé (simulation).',
+    'contact.form.sending': 'Envoi…',
+    'contact.success': 'Votre message a bien été envoyé.',
+
     'contact.info.title': 'Informations atelier',
     'contact.info.description':
       'Enoch Leathercraft — Atelier basé à Bruxelles.',
-    'contact.info.email': 'Email : saidenoch@gmail.com',
-    'contact.info.instagram': 'Instagram : @enoch.leathercraft',
+    'contact.workshopLabel': 'Atelier',
+    'contact.emailLabel': 'E-mail',
+
 
     // ===== CHECKOUT =====
     'checkout.title': 'Finaliser ma commande',
@@ -510,6 +520,26 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'footer.follow.facebook': 'Facebook',
 
     'footer.bottom': 'Enoch Leathercraft — Tous droits réservés.',
+
+    cookies: {
+      title: 'Cookies',
+      desc: 'Nous utilisons des cookies pour améliorer votre expérience. Vous pouvez accepter, refuser ou personnaliser.',
+      privacyLink: 'En savoir plus',
+      accept: 'Tout accepter',
+      reject: 'Tout refuser',
+      customize: 'Personnaliser',
+      close: 'Fermer',
+      save: 'Enregistrer',
+      necessary: 'Essentiels',
+      necessaryHint: 'Nécessaires au fonctionnement du site.',
+      preferences: 'Préférences',
+      preferencesHint: 'Sauvegarde de vos choix (ex: langue).',
+      analytics: 'Statistiques',
+      analyticsHint: 'Aide à comprendre l’utilisation du site.',
+      marketing: 'Marketing',
+      marketingHint: 'Publicités personnalisées (si activé).',
+      alwaysOn: 'Toujours actif',
+    },
   },
 
   en: {
@@ -732,7 +762,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'products.filters.sort.newest': 'Newest',
     'products.filters.reset': 'Reset',
 
-
     'products.section.title': 'Our products',
     'products.description.missing': 'Description coming soon.',
     'products.stock.inStockPrefix': '',
@@ -787,21 +816,31 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'reviews.rating.2': '★★☆☆☆ - Poor',
     'reviews.rating.1': '★☆☆☆☆ - Bad',
 
-    // ===== CONTACT =====
+// ===== CONTACT =====
     'contact.title': 'Contact',
     'contact.subtitle':
       'A question about a product, an order or a custom request? Feel free to write to us.',
-    'contact.form.name': 'Name / First name',
+
+    'contact.formTitle': 'Send a message',
+    'contact.formHelp': 'We usually reply within 24–48 hours.',
+    'contact.replyTime': 'Reply within 24–48h',
+
+    'contact.form.name': 'Name',
     'contact.form.email': 'Email address',
     'contact.form.message': 'Message',
+    'contact.messagePlaceholder':
+      'Tell us what you need (product, order, custom request...)',
+
     'contact.form.submit': 'Send message',
-    'contact.form.success':
-      'Thank you, your message has been sent (simulation).',
+    'contact.form.sending': 'Sending…',
+    'contact.success': 'Your message has been sent.',
+
     'contact.info.title': 'Workshop information',
     'contact.info.description':
       'Enoch Leathercraft — Workshop based in Brussels.',
-    'contact.info.email': 'Email: saidenoch@gmail.com',
-    'contact.info.instagram': 'Instagram: @enoch.leathercraft',
+    'contact.workshopLabel': 'Workshop',
+    'contact.emailLabel': 'Email',
+
 
     // ===== CHECKOUT =====
     'checkout.title': 'Finalize my order',
@@ -992,7 +1031,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'privacy.section8.body':
       'The website mainly uses technical cookies that are necessary for operation (session, cart, login). Audience measurement or tracking cookies may also be used, subject to your consent when required.',
 
-    'privacy.section9.title': '9. Security',
+    'privacy.section9.title': '9. Sécurité',
     'privacy.section9.body':
       'We implement reasonable technical and organisational measures to protect your data against unauthorised access, loss, destruction or alteration.',
 
@@ -1021,5 +1060,25 @@ export const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'footer.follow.facebook': 'Facebook',
 
     'footer.bottom': 'Enoch Leathercraft — All rights reserved.',
+
+    cookies: {
+      title: 'Cookies',
+      desc: 'We use cookies to improve your experience. You can accept, reject, or customize.',
+      privacyLink: 'Learn more',
+      accept: 'Accept all',
+      reject: 'Reject all',
+      customize: 'Customize',
+      close: 'Close',
+      save: 'Save',
+      necessary: 'Necessary',
+      necessaryHint: 'Required for the site to work.',
+      preferences: 'Preferences',
+      preferencesHint: 'Saves your choices (e.g., language).',
+      analytics: 'Analytics',
+      analyticsHint: 'Helps us understand site usage.',
+      marketing: 'Marketing',
+      marketingHint: 'Personalized ads (if enabled).',
+      alwaysOn: 'Always on',
+    },
   },
 };

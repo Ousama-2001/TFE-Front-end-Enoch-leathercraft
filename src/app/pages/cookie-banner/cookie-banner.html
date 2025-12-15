@@ -1,0 +1,102 @@
+<div class="cookie-footer" *ngIf="visible">
+  <div class="cookie-inner" role="dialog" aria-live="polite" aria-label="Cookie banner">
+    <div class="cookie-left">
+      <div class="cookie-badge" aria-hidden="true">🍪</div>
+
+      <div class="cookie-text">
+        <div class="cookie-title">
+          {{ 'cookies.title' | t }}
+        </div>
+
+        <div class="cookie-desc">
+          {{ 'cookies.desc' | t }}
+          <a routerLink="/privacy" class="cookie-link">
+            {{ 'cookies.privacyLink' | t }}
+          </a>.
+        </div>
+      </div>
+    </div>
+
+    <div class="cookie-actions">
+      <button type="button" class="btn btn-ghost" (click)="openCustomize()">
+        {{ 'cookies.customize' | t }}
+      </button>
+
+      <button type="button" class="btn btn-ghost" (click)="rejectAll()">
+        {{ 'cookies.reject' | t }}
+      </button>
+
+      <button type="button" class="btn btn-primary" (click)="acceptAll()">
+        {{ 'cookies.accept' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- PANEL PERSONNALISATION -->
+  <div class="cookie-panel" *ngIf="customizeOpen">
+    <div class="panel-inner">
+      <div class="panel-title">{{ 'cookies.customize' | t }}</div>
+
+      <div class="rows">
+        <div class="row locked">
+          <div class="row-left">
+            <div class="label">{{ 'cookies.necessary' | t }}</div>
+            <div class="hint">{{ 'cookies.necessaryHint' | t }}</div>
+          </div>
+          <div class="row-right">
+            <span class="pill">{{ 'cookies.alwaysOn' | t }}</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-left">
+            <div class="label">{{ 'cookies.preferences' | t }}</div>
+            <div class="hint">{{ 'cookies.preferencesHint' | t }}</div>
+          </div>
+          <div class="row-right">
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="preferences" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-left">
+            <div class="label">{{ 'cookies.analytics' | t }}</div>
+            <div class="hint">{{ 'cookies.analyticsHint' | t }}</div>
+          </div>
+          <div class="row-right">
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="analytics" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="row-left">
+            <div class="label">{{ 'cookies.marketing' | t }}</div>
+            <div class="hint">{{ 'cookies.marketingHint' | t }}</div>
+          </div>
+          <div class="row-right">
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="marketing" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-actions">
+        <button type="button" class="btn btn-ghost" (click)="openCustomize()">
+          {{ 'cookies.close' | t }}
+        </button>
+
+        <button type="button" class="btn btn-primary" (click)="saveCustom()">
+          {{ 'cookies.save' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

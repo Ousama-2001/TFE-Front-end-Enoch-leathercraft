@@ -1,60 +1,119 @@
 <div class="contact-page">
   <section class="contact-hero">
     <h1>{{ 'contact.title' | t }}</h1>
-    <p>
-      {{ 'contact.subtitle' | t }}
-    </p>
+    <p class="hero-subtitle">{{ 'contact.subtitle' | t }}</p>
   </section>
 
-  <section class="contact-content">
-    <form (ngSubmit)="onSubmit()" #contactForm="ngForm" class="contact-form">
-      <div class="form-group">
-        <label for="name">{{ 'contact.form.name' | t }}</label>
-        <input
-          id="name"
-          type="text"
-          [(ngModel)]="name"
-          name="name"
-          required
-        />
+  <section class="contact-grid">
+    <!-- FORM -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge">✉️</div>
+        <div>
+          <h2 class="card-title">{{ 'contact.formTitle' | t }}</h2>
+          <p class="card-subtitle">{{ 'contact.formHelp' | t }}</p>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="email">{{ 'contact.form.email' | t }}</label>
-        <input
-          id="email"
-          type="email"
-          [(ngModel)]="email"
-          name="email"
-          required
-        />
+      <form (ngSubmit)="onSubmit()" #contactForm="ngForm" class="contact-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">{{ 'contact.form.name' | t }}</label>
+            <input
+              id="name"
+              type="text"
+              [(ngModel)]="name"
+              name="name"
+              required
+              placeholder="John Doe"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">{{ 'contact.form.email' | t }}</label>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="email"
+              name="email"
+              required
+              placeholder="john@email.com"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">{{ 'contact.form.message' | t }}</label>
+          <textarea
+            id="message"
+            rows="6"
+            [(ngModel)]="message"
+            name="message"
+            required
+            placeholder="{{ 'contact.messagePlaceholder' | t }}"
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            {{ loading ? ('contact.form.sending' | t) : ('contact.form.submit' | t) }}
+          </button>
+
+          <span class="fineprint">{{ 'contact.replyTime' | t }}</span>
+        </div>
+
+        <p class="alert success" *ngIf="success">
+          ✅ {{ 'contact.success' | t }}
+        </p>
+
+        <p class="alert error" *ngIf="error">
+          ⚠️ {{ error }}
+        </p>
+      </form>
+    </div>
+
+    <!-- INFO -->
+    <div class="card info-card">
+      <div class="card-header">
+        <div class="badge">📍</div>
+        <div>
+          <h2 class="card-title">{{ 'contact.info.title' | t }}</h2>
+          <p class="card-subtitle">{{ 'contact.info.description' | t }}</p>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="message">{{ 'contact.form.message' | t }}</label>
-        <textarea
-          id="message"
-          rows="5"
-          [(ngModel)]="message"
-          name="message"
-          required
-        ></textarea>
+      <div class="info-list">
+        <div class="info-item">
+          <div class="icon">🏠</div>
+          <div>
+            <div class="info-label">{{ 'contact.workshopLabel' | t }}</div>
+            <div class="info-value">Brussels, Belgium</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="icon">📧</div>
+          <div>
+            <div class="info-label">{{ 'contact.emailLabel' | t }}</div>
+            <a class="info-link" href="mailto:saidenoch@gmail.com">saidenoch@gmail.com</a>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="icon">📸</div>
+          <div>
+            <div class="info-label">Instagram</div>
+            <a
+              class="info-link"
+              href="https://instagram.com/enoch_leathercraft"
+              target="_blank"
+              rel="noopener"
+            >
+              @enoch_leathercraft
+            </a>
+          </div>
+        </div>
       </div>
-
-      <button type="submit" class="btn-submit">
-        {{ 'contact.form.submit' | t }}
-      </button>
-
-      <p class="success" *ngIf="success">
-        {{ 'contact.form.success' | t }}
-      </p>
-    </form>
-
-    <div class="contact-info">
-      <h2>{{ 'contact.info.title' | t }}</h2>
-      <p>{{ 'contact.info.description' | t }}</p>
-      <p>{{ 'contact.info.email' | t }}</p>
-      <p>{{ 'contact.info.instagram' | t }}</p>
     </div>
   </section>
 </div>

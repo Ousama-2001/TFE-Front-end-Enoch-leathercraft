@@ -8,6 +8,9 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (auth.isAuthenticated()) return true;
 
+  // ✅ message simple (tu peux remplacer par toast plus tard)
+  alert('Vous devez être connecté ou inscrit pour accéder au panier.');
+
   router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
 };

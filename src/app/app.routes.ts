@@ -34,11 +34,13 @@ export const routes: Routes = [
       ),
   },
 
-  // --- Panier (souvent autorisé en guest) ---
+
   {
     path: 'cart',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/cart/cart').then((m) => m.CartComponent),
   },
+
 
   // ✅ CHECKOUT protégé
   { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },

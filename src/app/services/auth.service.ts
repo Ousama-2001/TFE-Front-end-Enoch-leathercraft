@@ -90,7 +90,7 @@ export class AuthService {
     });
   }
 
-  // 🔥 nouveau : envoi de la demande de réactivation AVEC message
+  // 🔥 demande de réactivation AVEC message
   requestReactivation(email: string, message?: string) {
     return this.http.post(`${this.api}/auth/reactivation-request`, {
       email,
@@ -101,5 +101,51 @@ export class AuthService {
   isAuthPage(): boolean {
     const url = this.router.url;
     return url.startsWith('/login') || url.startsWith('/register');
+  }
+
+  // =========================================================
+  // ✅ NOUVEAU : clé utilisateur stable depuis le JWT
+  // =========================================================
+  getUserKey(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    const payload = this.parseJwt(token);
+    if (!payload) return null;
+
+    // On tente plusieurs claims possibles (selon ton backend)
+    const candidate =
+      payload.userId ??
+      payload.id ??
+      payload.sub ??
+      payload.email ??
+      payload.username ??
+      payload.login ??
+      payload.name;
+
+    if (!candidate) return null;
+    return String(candidate);
+  }
+
+  private parseJwt(token: string): any | null {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+
+      const json = decodeURIComponent(
+        atob(padded)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+
+      return JSON.parse(json);
+    } catch {
+      return null;
+    }
   }
 }

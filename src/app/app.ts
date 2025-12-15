@@ -1,13 +1,21 @@
-// src/app/app.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import { Observable } from 'rxjs';
+
 import { CartService, CartResponse } from './services/cart.service';
 import { AuthService } from './services/auth.service';
-import { Observable } from 'rxjs';
 import { TranslatePipe } from './pipes/translate.pipe';
 import { LanguageService } from './services/language.service';
 import { WishlistService, WishlistItemResponse } from './services/wishlist.service';
+
+// ✅ Cookie banner
+import { CookieBannerComponent } from './pages/cookie-banner/cookie-banner';
 
 @Component({
   selector: 'app-root',
@@ -18,6 +26,7 @@ import { WishlistService, WishlistItemResponse } from './services/wishlist.servi
     RouterLink,
     RouterLinkActive,
     TranslatePipe,
+    CookieBannerComponent, // ✅ important
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.scss'],
@@ -32,6 +41,9 @@ export class AppComponent implements OnInit {
   currentLang: 'fr' | 'en' = 'fr';
 
   wishlistCount = 0;
+
+  // ✅ message visiteur (cart)
+  authWarning = '';
 
   constructor(
     private cartService: CartService,
@@ -62,7 +74,8 @@ export class AppComponent implements OnInit {
       });
 
       this.wishlistService.load().subscribe({
-        next: (items: WishlistItemResponse[]) => (this.wishlistCount = items.length),
+        next: (items: WishlistItemResponse[]) =>
+          (this.wishlistCount = items.length),
         error: () => {},
       });
     } else {
@@ -88,14 +101,28 @@ export class AppComponent implements OnInit {
     return this.authService.isAuthPage();
   }
 
+  // ✅ panier protégé : si guest clique -> message + redirect
   goToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.authWarning = 'Vous devez être connecté ou inscrit pour accéder au panier.';
+      setTimeout(() => {
+        this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url },
+        });
+        this.authWarning = '';
+      }, 1200);
+      return;
+    }
+
     this.router.navigate(['/cart']);
   }
 
   // ✅ wishlist protégée même via bouton
   goToWishlist(): void {
     if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
       return;
     }
     this.router.navigate(['/wishlist']);
