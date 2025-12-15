@@ -478,9 +478,6 @@
   cursor: pointer;
 }
 
-/* Optionnel : léger hint pour les selects de segment/type */
-/* Si tu veux plus tard, tu peux ajouter une classe .segment-row sur la row concernée */
-
 .form-group textarea {
   resize: vertical;
   min-height: 70px;
@@ -857,182 +854,6 @@
   resize: vertical;
 }
 
-/* ================== SUPER ADMIN – USERS ================== */
-
-.sa-users {
-  margin-top: 0.5rem;
-}
-
-.sa-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.sa-header h2 {
-  font-size: 1.3rem;
-}
-
-.sa-header .hint {
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-.btn-refresh {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.9rem;
-  cursor: pointer;
-}
-
-.btn-refresh:hover {
-  background: rgba(30, 64, 175, 0.6);
-}
-
-.users-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.user-card {
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 16px;
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.user-card.user-locked {
-  opacity: 0.7;
-  border-style: dashed;
-}
-
-.user-header {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #6366f1, #ec4899);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.user-header h3 {
-  margin: 0;
-  font-size: 0.98rem;
-}
-
-.user-header .email {
-  margin: 0.1rem 0 0;
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.user-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-}
-
-.role-pill {
-  border-radius: 999px;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.role-pill.customer {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
-
-.role-pill.admin {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-}
-
-.role-pill.superadmin {
-  background: rgba(249, 115, 22, 0.2);
-  color: #fed7aa;
-}
-
-.user-meta .created-at {
-  color: #9ca3af;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.2rem;
-}
-
-.chip {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e5e7eb;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.7rem;
-  cursor: pointer;
-}
-
-.chip:hover {
-  border-color: #6366f1;
-}
-
-.chip.chip-active {
-  background: #6366f1;
-  color: #f9fafb;
-  border-color: #6366f1;
-}
-
-.footer-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.4rem;
-}
-
-.btn-delete {
-  border-radius: 999px;
-  border: 1px solid rgba(239, 68, 68, 0.7);
-  background: rgba(15, 23, 42, 0.9);
-  color: #fecaca;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.7rem;
-  cursor: pointer;
-}
-
-.btn-delete:hover {
-  background: rgba(239, 68, 68, 0.12);
-}
-
-.loading-pill {
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
 /* Responsive */
 @media (max-width: 800px) {
   .stock-header {
@@ -1053,11 +874,29 @@
     flex-direction: column;
   }
 
-  .users-grid {
-    grid-template-columns: 1fr;
-  }
-
   .order-modal {
     width: 95%;
   }
+}
+
+.status-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 1rem;
+}
+
+.status-chips .chip {
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.65);
+  color: #e5e7eb;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.status-chips .chip.active {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(15, 23, 42, 0.9);
 }

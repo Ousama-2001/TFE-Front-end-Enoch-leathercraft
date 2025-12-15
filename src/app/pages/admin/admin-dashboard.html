@@ -46,12 +46,12 @@
         Gestion des avis
       </button>
 
-      <!-- ✅ Support (ADMIN + SUPER_ADMIN) -->
+      <!-- ✅ Contact / Support (ADMIN + SUPER_ADMIN) -->
       <button class="tab-btn"
               *ngIf="isAdminOrSuperAdmin"
               [class.active]="activeTab === 'support'"
               (click)="setTab('support')">
-        Support (messages)
+        Contact / Support
       </button>
 
       <!-- 🔐 Onglets réservés au SUPER ADMIN -->
@@ -129,15 +129,28 @@
       <div>
         <h2>Gestion des commandes</h2>
         <p class="hint">
-          Vue globale des commandes clients (côté administrateur).
+          Filtre par statut + tri du plus récent au plus ancien.
         </p>
       </div>
+    </div>
+
+    <!-- ✅ Onglets de statut -->
+    <div class="status-chips">
+      <button class="chip" [class.active]="orderStatusFilter === 'ALL'" (click)="setOrderStatusFilter('ALL')">Toutes</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'PENDING'" (click)="setOrderStatusFilter('PENDING')">En attente</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'PAID'" (click)="setOrderStatusFilter('PAID')">Payées</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'SHIPPED'" (click)="setOrderStatusFilter('SHIPPED')">Expédiées</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'DELIVERED'" (click)="setOrderStatusFilter('DELIVERED')">Livrées</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'CANCELLED'" (click)="setOrderStatusFilter('CANCELLED')">Annulées</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_REQUESTED'" (click)="setOrderStatusFilter('RETURN_REQUESTED')">Retour demandé</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_APPROVED'" (click)="setOrderStatusFilter('RETURN_APPROVED')">Retour accepté</button>
+      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_REJECTED'" (click)="setOrderStatusFilter('RETURN_REJECTED')">Retour refusé</button>
     </div>
 
     <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
     <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
 
-    <table class="orders-table" *ngIf="!ordersLoading && orders.length > 0">
+    <table class="orders-table" *ngIf="!ordersLoading && filteredOrders.length > 0">
       <thead>
       <tr>
         <th>Référence</th>
@@ -148,7 +161,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let o of orders">
+      <tr *ngFor="let o of filteredOrders">
         <td>{{ o.reference }}</td>
         <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
         <td>
@@ -166,8 +179,8 @@
       </tbody>
     </table>
 
-    <p class="info" *ngIf="!ordersLoading && !orders.length">
-      Aucune commande pour le moment.
+    <p class="info" *ngIf="!ordersLoading && !filteredOrders.length">
+      Aucune commande dans ce filtre.
     </p>
 
     <!-- MODALE DÉTAIL COMMANDE -->
@@ -228,14 +241,14 @@
 
   </section>
 
-  <!-- ========= ONGLET 2bis : RETOURS ========= -->
+  <!-- ========= ONGLET RETOURS ========= -->
   <section *ngIf="activeTab === 'returns'" class="orders-page returns-page">
 
     <div class="orders-header">
       <div>
         <h2>Gestion des retours</h2>
         <p class="hint">
-          Liste des commandes pour lesquelles un client a demandé un retour (statut RETURN_REQUESTED).
+          Toutes les demandes de retour (demandé / accepté / refusé), triées du plus récent au plus ancien.
         </p>
       </div>
     </div>
@@ -243,7 +256,7 @@
     <p class="info" *ngIf="ordersLoading">Chargement des retours...</p>
     <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
 
-    <table class="orders-table" *ngIf="!ordersLoading && returnOrders.length > 0">
+    <table class="orders-table" *ngIf="!ordersLoading && sortedReturnOrdersAll.length > 0">
       <thead>
       <tr>
         <th>Référence</th>
@@ -255,7 +268,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let o of returnOrders">
+      <tr *ngFor="let o of sortedReturnOrdersAll">
         <td>{{ o.reference }}</td>
         <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
         <td>
@@ -270,20 +283,23 @@
           </button>
         </td>
         <td class="actions">
-          <button class="btn-edit" type="button" (click)="approveReturn(o)">
-            ✅ Accepter
-          </button>
-          <button class="btn-delete" type="button" (click)="openRejectModal(o)">
-            ❌ Refuser
-          </button>
+          <!-- Actions seulement si la demande est "RETURN_REQUESTED" -->
+          <ng-container *ngIf="o.status === 'RETURN_REQUESTED'; else alreadyProcessed">
+            <button class="btn-edit" type="button" (click)="approveReturn(o)">✅ Accepter</button>
+            <button class="btn-delete" type="button" (click)="openRejectModal(o)">❌ Refuser</button>
+          </ng-container>
+          <ng-template #alreadyProcessed>
+            <span class="info small">Traité</span>
+          </ng-template>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <p class="info" *ngIf="!ordersLoading && returnOrders.length === 0">
-      Aucun retour demandé pour le moment.
+    <p class="info" *ngIf="!ordersLoading && !sortedReturnOrdersAll.length">
+      Aucune demande de retour pour le moment.
     </p>
+
   </section>
 
   <!-- MODALE DÉTAIL DEMANDE DE RETOUR -->
@@ -448,7 +464,7 @@
           </div>
         </div>
 
-        <!-- Segment + type filtré -->
+        <!-- 🔥 Segment + type filtré -->
         <div class="form-row two-cols">
           <div class="form-group">
             <label for="segmentCategory">Segment *</label>
@@ -713,7 +729,7 @@
     <app-admin-reviews></app-admin-reviews>
   </section>
 
-  <!-- ✅ ONGLET SUPPORT (ADMIN + SUPER_ADMIN) -->
+  <!-- ✅ ONGLET CONTACT / SUPPORT (ADMIN + SUPER_ADMIN) -->
   <section *ngIf="activeTab === 'support' && isAdminOrSuperAdmin" class="support-tab">
     <app-super-admin-contact-messages></app-super-admin-contact-messages>
   </section>

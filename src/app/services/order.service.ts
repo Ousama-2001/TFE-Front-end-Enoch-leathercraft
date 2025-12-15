@@ -34,6 +34,10 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
+  checkout(): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.baseUrl}/checkout`, {});
+  }
+
   getMyOrders(): Observable<OrderResponse[]> {
     return this.http.get<OrderResponse[]>(`${this.baseUrl}/my-orders`);
   }
@@ -56,5 +60,10 @@ export class OrderService {
 
   downloadInvoice(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${id}/invoice`, { responseType: 'blob' });
+  }
+
+  // ✅ BON DE RETOUR PDF
+  downloadReturnLabel(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/return-label`, { responseType: 'blob' });
   }
 }

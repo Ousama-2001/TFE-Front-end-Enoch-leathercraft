@@ -5,16 +5,27 @@ import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../services/auth.service';
 import { ProductService, Product, ProductCreateRequest } from '../../services/products.service';
-import { AdminStatsService, SalesStatsResponse, AdminOrderResponse } from '../../services/admin-stats.service';
+import {
+  AdminStatsService,
+  SalesStatsResponse,
+  AdminOrderResponse,
+} from '../../services/admin-stats.service';
 
-// Gestion des avis
 import { AdminReviewsPageComponent } from '../admin-reviews/admin-reviews';
-// Gestion des utilisateurs (super admin)
 import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-users';
-// Gestion des demandes & réactivations (super admin)
 import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
-// ✅ Support messages (ADMIN + SUPER_ADMIN)
 import { SuperAdminContactMessagesComponent } from '../super-admin-contact-messages/super-admin-contact-messages';
+
+type OrderStatusFilter =
+  | 'ALL'
+  | 'PENDING'
+  | 'PAID'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'RETURN_REQUESTED'
+  | 'RETURN_APPROVED'
+  | 'RETURN_REJECTED';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,7 +38,7 @@ import { SuperAdminContactMessagesComponent } from '../super-admin-contact-messa
     AdminReviewsPageComponent,
     SuperAdminUsersPageComponent,
     SuperAdminRequestsPageComponent,
-    SuperAdminContactMessagesComponent, // ✅ IMPORTANT
+    SuperAdminContactMessagesComponent,
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
@@ -49,6 +60,9 @@ export class AdminDashboardComponent implements OnInit {
   // ------- Flags rôles -------
   isSuperAdmin = false;
   isAdminOrSuperAdmin = false;
+
+  // ✅ Commandes : filtre par statut
+  orderStatusFilter: OrderStatusFilter = 'ALL';
 
   // ------- Mode produits (actifs / archivés) -------
   productsMode: 'active' | 'archived' = 'active';
@@ -100,14 +114,14 @@ export class AdminDashboardComponent implements OnInit {
   deleteTargetId: number | null = null;
   deleteTargetName = '';
 
-  // options segments
+  // 🔥 options de segments (ids fixés par la migration Flyway)
   segmentOptions = [
     { id: 1, label: 'Homme' },
     { id: 2, label: 'Femme' },
     { id: 3, label: 'Petite maroquinerie' },
   ];
 
-  // options types
+  // 🔥 options de types de produits
   typeOptions = [
     { id: 4, label: 'Sacs & sacoches' },
     { id: 5, label: 'Ceintures' },
@@ -116,26 +130,36 @@ export class AdminDashboardComponent implements OnInit {
     { id: 8, label: 'Sets de table' },
   ];
 
+  // 🔥 types filtrés selon le segment choisi
   get filteredTypeOptions() {
-    const seg = this.newProduct.segmentCategoryId;
+    const seg = (this.newProduct as any).segmentCategoryId;
 
     if (seg === 1 || seg === 2) {
+      // Homme ou Femme → sacs & sacoches + ceintures
       return this.typeOptions.filter(t => t.id === 4 || t.id === 5);
     }
+
     if (seg === 3) {
+      // Petite maroquinerie → portefeuilles, portes-cartes, sets de table
       return this.typeOptions.filter(t => t.id === 6 || t.id === 7 || t.id === 8);
     }
+
+    // Si rien choisi, on montre tout (ou tu peux retourner [] si tu préfères)
     return this.typeOptions;
   }
 
+  // Quand on change de segment, si le type actuel n'est plus valide on le remet à null
   onSegmentChange(): void {
     const allowedIds = this.filteredTypeOptions.map(t => t.id);
-    if (this.newProduct.typeCategoryId != null && !allowedIds.includes(this.newProduct.typeCategoryId)) {
-      this.newProduct.typeCategoryId = null;
+    if (
+      (this.newProduct as any).typeCategoryId != null &&
+      !allowedIds.includes((this.newProduct as any).typeCategoryId)
+    ) {
+      (this.newProduct as any).typeCategoryId = null;
     }
   }
 
-  newProduct: any = {
+  newProduct: ProductCreateRequest = {
     sku: '',
     name: '',
     description: '',
@@ -147,7 +171,7 @@ export class AdminDashboardComponent implements OnInit {
     slug: '',
     segmentCategoryId: null,
     typeCategoryId: null,
-  };
+  } as any;
 
   // ------- RETOURS (modales) -------
   showReturnDetailsModal = false;
@@ -163,7 +187,7 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.isSuperAdmin = this.auth.isSuperAdmin();
-    this.isAdminOrSuperAdmin = this.auth.isAdmin(); // ✅ ADMIN ou SUPER_ADMIN
+    this.isAdminOrSuperAdmin = this.auth.isAdmin();
 
     this.loadStats();
     this.loadOrders();
@@ -197,6 +221,45 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  // =========================
+  // ✅ COMMANDES : tri + filtres onglets
+  // =========================
+
+  private sortOrdersByDateDesc(list: AdminOrderResponse[]): AdminOrderResponse[] {
+    return [...list].sort((a, b) => {
+      const da = new Date(a.createdAt).getTime();
+      const db = new Date(b.createdAt).getTime();
+      return db - da;
+    });
+  }
+
+  get sortedOrders(): AdminOrderResponse[] {
+    return this.sortOrdersByDateDesc(this.orders);
+  }
+
+  setOrderStatusFilter(s: OrderStatusFilter): void {
+    this.orderStatusFilter = s;
+  }
+
+  // ✅ commandes filtrées par statut (dans l’onglet Commandes)
+  get filteredOrders(): AdminOrderResponse[] {
+    const base = this.sortedOrders;
+
+    if (this.orderStatusFilter === 'ALL') return base;
+    return base.filter(o => o.status === this.orderStatusFilter);
+  }
+
+  // ✅ onglet Retours : on montre toutes les commandes RETURN_*
+  get sortedReturnOrdersAll(): AdminOrderResponse[] {
+    return this.sortOrdersByDateDesc(
+      this.orders.filter(o =>
+        o.status === 'RETURN_REQUESTED' ||
+        o.status === 'RETURN_APPROVED' ||
+        o.status === 'RETURN_REJECTED'
+      )
+    );
+  }
+
   // ========= STATS =========
   loadStats(): void {
     this.statsLoading = true;
@@ -222,7 +285,7 @@ export class AdminDashboardComponent implements OnInit {
 
     this.adminStatsService.getAllOrders().subscribe({
       next: list => {
-        this.orders = list;
+        this.orders = list ?? [];
         this.ordersLoading = false;
       },
       error: err => {
@@ -231,10 +294,6 @@ export class AdminDashboardComponent implements OnInit {
         this.ordersLoading = false;
       }
     });
-  }
-
-  get returnOrders(): AdminOrderResponse[] {
-    return this.orders.filter(o => o.status === 'RETURN_REQUESTED');
   }
 
   getStatusClass(status: string): string {
@@ -288,7 +347,7 @@ export class AdminDashboardComponent implements OnInit {
 
     this.adminStatsService.getLowStockProducts(this.lowStockThreshold).subscribe({
       next: list => {
-        this.lowStockProducts = list;
+        this.lowStockProducts = list ?? [];
         this.lowStockLoading = false;
       },
       error: err => {
@@ -346,7 +405,7 @@ export class AdminDashboardComponent implements OnInit {
 
     source$.subscribe({
       next: (list: Product[]) => {
-        this.products = list;
+        this.products = list ?? [];
         this.loading = false;
       },
       error: (err) => {
@@ -398,7 +457,8 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    if (!this.newProduct.segmentCategoryId || !this.newProduct.typeCategoryId) {
+    // 🔥 on impose le choix d’un segment + type
+    if (!(this.newProduct as any).segmentCategoryId || !(this.newProduct as any).typeCategoryId) {
       this.error = 'Merci de choisir un segment et un type de produit.';
       return;
     }
@@ -413,7 +473,7 @@ export class AdminDashboardComponent implements OnInit {
     const payload: ProductCreateRequest = {
       ...this.newProduct,
       slug,
-      currency: this.newProduct.currency ?? 'EUR',
+      currency: (this.newProduct as any).currency ?? 'EUR',
     };
 
     this.isSubmitting = true;
@@ -469,11 +529,11 @@ export class AdminDashboardComponent implements OnInit {
       price: p.price,
       weightGrams: p.weightGrams ?? 0,
       isActive: p.isActive ?? true,
-      currency: p.currency ?? 'EUR',
-      slug: p.slug ?? '',
+      currency: (p as any).currency ?? 'EUR',
+      slug: (p as any).slug ?? '',
       segmentCategoryId: (p as any).segmentCategoryId ?? null,
       typeCategoryId: (p as any).typeCategoryId ?? null,
-    };
+    } as any;
   }
 
   restoreProduct(p: Product): void {
@@ -521,7 +581,11 @@ export class AdminDashboardComponent implements OnInit {
       slug: '',
       segmentCategoryId: null,
       typeCategoryId: null,
-    };
+    } as any;
+  }
+
+  onLogout(): void {
+    this.auth.logout();
   }
 
   openDeleteConfirm(p: Product): void {
@@ -615,9 +679,5 @@ export class AdminDashboardComponent implements OnInit {
         this.ordersError = 'Impossible de refuser ce retour.';
       }
     });
-  }
-
-  onLogout(): void {
-    this.auth.logout();
   }
 }

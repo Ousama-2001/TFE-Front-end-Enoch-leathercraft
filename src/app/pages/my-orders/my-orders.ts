@@ -72,7 +72,6 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
-  // ✅ i18n status
   getStatusLabel(status: string): string {
     return this.tr(`order.status.${status}`);
   }
@@ -202,7 +201,6 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
-  // ✅ a.download ici, dans le subscribe (tu l’as bien fait)
   downloadInvoice(o: OrderResponse): void {
     if (!this.canDownloadInvoice(o)) return;
 
@@ -212,11 +210,10 @@ export class MyOrdersComponent implements OnInit {
     this.orderService.downloadInvoice(o.id).subscribe({
       next: (blob) => {
         this.actionLoading[o.id] = false;
-
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `invoice-${o.reference}.pdf`; // ✅ ICI
+        a.download = `invoice-${o.reference}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -229,26 +226,29 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
+  // ✅ PDF bon de retour
   downloadReturnLabel(o: OrderResponse): void {
     if (!this.hasReturnLabel(o)) return;
 
-    const content = `${this.tr('returns.label.title')}
+    this.actionLoading[o.id] = true;
+    this.errorMessage = '';
 
-${this.tr('returns.label.orderRef')} : ${o.reference}
-
-${this.tr('returns.label.to')}
-Enoch Leathercraft – Service Retours
-Rue de la Maroquinerie 42
-1000 Bruxelles
-Belgique
-`;
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `return-label-${o.reference}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    this.orderService.downloadReturnLabel(o.id).subscribe({
+      next: (blob) => {
+        this.actionLoading[o.id] = false;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `return-label-${o.reference}.pdf`; // ✅ ICI
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Erreur téléchargement bon retour', err);
+        this.actionLoading[o.id] = false;
+        this.errorMessage = this.tr('returns.error.labelDownload');
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    });
   }
 }

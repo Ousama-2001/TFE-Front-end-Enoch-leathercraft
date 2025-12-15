@@ -1,15 +1,46 @@
 <div class="contact-admin">
 
-  <h2>Messages de contact</h2>
+  <div class="header-row">
+    <div>
+      <h2>Contact / Support</h2>
+      <p class="hint">Messages envoyés via la page “Contact”.</p>
+    </div>
+
+    <div class="chips">
+      <button
+        type="button"
+        class="chip"
+        [class.active]="filter === 'pending'"
+        (click)="setFilter('pending')">
+        Non traités ({{ pendingCount }})
+      </button>
+
+      <button
+        type="button"
+        class="chip"
+        [class.active]="filter === 'handled'"
+        (click)="setFilter('handled')">
+        Traités ({{ handledCount }})
+      </button>
+
+      <button
+        type="button"
+        class="chip"
+        [class.active]="filter === 'all'"
+        (click)="setFilter('all')">
+        Tous ({{ totalCount }})
+      </button>
+    </div>
+  </div>
 
   <p class="info" *ngIf="loading">Chargement…</p>
   <p class="error" *ngIf="error">{{ error }}</p>
 
-  <div class="messages" *ngIf="!loading && messages.length">
+  <div class="messages" *ngIf="!loading && filteredMessages.length">
 
     <article
       class="message-card"
-      *ngFor="let m of messages"
+      *ngFor="let m of filteredMessages"
       [class.handled]="m.handled">
 
       <header>
@@ -23,9 +54,7 @@
         </span>
       </header>
 
-      <p class="message">
-        {{ m.message }}
-      </p>
+      <p class="message">{{ m.message }}</p>
 
       <footer>
         <span *ngIf="m.handled" class="handled-info">
@@ -33,10 +62,7 @@
           {{ m.handledAt | date:'dd/MM/yyyy HH:mm' }}
         </span>
 
-        <button
-          type="button"
-          class="btn"
-          (click)="toggleHandled(m)">
+        <button type="button" class="btn" (click)="toggleHandled(m)">
           {{ m.handled ? 'Marquer non traité' : 'Marquer traité' }}
         </button>
       </footer>
@@ -44,8 +70,8 @@
     </article>
   </div>
 
-  <p class="info" *ngIf="!loading && !messages.length">
-    Aucun message pour le moment.
+  <p class="info" *ngIf="!loading && !filteredMessages.length">
+    Aucun message dans ce filtre.
   </p>
 
 </div>
