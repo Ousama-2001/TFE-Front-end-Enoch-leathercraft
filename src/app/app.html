@@ -79,6 +79,13 @@
           </div>
         </div>
 
+        <a *ngIf="isAdminOrSuperAdmin"
+           routerLink="/admin"
+           class="admin-link"
+           title="Panneau Administrateur">
+          Admin
+        </a>
+
         <div class="auth-actions" *ngIf="isLoggedIn; else guest">
           <a routerLink="/profile" class="auth-link">Mon Compte</a>
           <button class="auth-link logout" (click)="logout()">Déconnexion</button>
@@ -102,6 +109,8 @@
       <a routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }" (click)="mobileNavOpen=false">{{ 'nav.smallLeather' | t }}</a>
       <a routerLink="/about" (click)="mobileNavOpen=false">{{ 'nav.about' | t }}</a>
       <a routerLink="/contact" (click)="mobileNavOpen=false">{{ 'nav.contact' | t }}</a>
+
+      <a *ngIf="isAdminOrSuperAdmin" routerLink="/admin" (click)="mobileNavOpen=false" style="color: #f59e0b;">Panneau Admin</a>
     </div>
   </header>
 

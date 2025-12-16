@@ -30,22 +30,31 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ✅ si déjà connecté, on ne reste pas sur /login
+    // ✅ SI DÉJÀ CONNECTÉ
     if (this.auth.isAuthenticated()) {
-      const returnUrl = this.getSafeReturnUrl();
-      this.router.navigateByUrl(returnUrl);
+      this.redirectBasedOnRole();
     }
+  }
+
+  // ✅ NOUVELLE MÉTHODE DE REDIRECTION INTELLIGENTE
+  private redirectBasedOnRole(): void {
+    // 1. Si Admin ou SuperAdmin -> Direction Dashboard
+    if (this.auth.isAdmin() || this.auth.isSuperAdmin()) {
+      this.router.navigate(['/admin']);
+      return;
+    }
+
+    // 2. Si Client -> On regarde s'il y a une URL de retour (ex: il voulait aller au panier)
+    const returnUrl = this.getSafeReturnUrl();
+    this.router.navigateByUrl(returnUrl);
   }
 
   private getSafeReturnUrl(): string {
     const raw = this.route.snapshot.queryParamMap.get('returnUrl');
-
     // si vide -> home
     if (!raw) return '/home';
-
     // sécurité : on autorise seulement des chemins internes
     if (!raw.startsWith('/')) return '/home';
-
     return raw;
   }
 
@@ -69,14 +78,11 @@ export class LoginComponent implements OnInit {
     this.auth.login(payload).subscribe({
       next: () => {
         this.loading = false;
-
-        // ✅ priorité au returnUrl, sinon home
-        const returnUrl = this.getSafeReturnUrl();
-        this.router.navigateByUrl(returnUrl);
+        // ✅ APPEL DE LA NOUVELLE LOGIQUE DE REDIRECTION
+        this.redirectBasedOnRole();
       },
       error: (err) => {
         this.loading = false;
-
         const code = err?.error?.message || err?.error;
 
         switch (code) {

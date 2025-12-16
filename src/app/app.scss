@@ -16,7 +16,7 @@ html, body {
    =========================== */
 .topbar {
   position: sticky; top: 0; z-index: 1000;
-  height: 75px; /* ✅ Hauteur réduite un peu pour faire plus fin */
+  height: 75px;
   background: rgba(2, 6, 23, 0.95);
   backdrop-filter: blur(15px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -25,10 +25,9 @@ html, body {
 }
 
 .topbar-container {
-  /* ✅ PLUS DE CENTRAGE : ON PREND TOUTE LA LARGEUR */
   width: 100%;
   max-width: 100%;
-  padding: 0 2rem; /* Marge de sécurité gauche/droite */
+  padding: 0 2rem;
   display: flex; align-items: center; justify-content: space-between;
   height: 100%;
 }
@@ -36,14 +35,13 @@ html, body {
 /* --- GAUCHE (Logo + Menu) --- */
 .topbar-left {
   display: flex; align-items: center;
-  gap: 2rem; /* ✅ Rapproché du logo */
+  gap: 2rem;
   height: 100%; flex-shrink: 0;
 }
 
 .brand { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
 
 .brand-logo {
-  /* ✅ LOGO RÉDUIT */
   height: 45px; width: 45px;
   border-radius: 50%; object-fit: cover;
   border: 1px solid rgba(245, 158, 11, 0.3);
@@ -108,6 +106,27 @@ html, body {
   .sep { color: rgba(255,255,255,0.1); font-size: 0.8rem; }
 }
 
+/* ✅ BOUTON ADMIN STYLE */
+.admin-link {
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #020617;
+  background: #f59e0b;
+  padding: 6px 12px;
+  border-radius: 99px;
+  transition: all 0.2s;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+
+  &:hover {
+    background: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  }
+}
+
 /* AUTH */
 .auth-actions { display: flex; align-items: center; gap: 1rem; }
 .auth-link {
@@ -124,8 +143,8 @@ html, body {
 
 /* RESPONSIVE */
 @media (max-width: 1300px) {
-  .brand-title { display: none; } /* Cache le titre sur laptop pour gagner de la place */
-  .topbar-container { padding: 0 1.5rem; } /* Réduit un peu les marges */
+  .brand-title { display: none; }
+  .topbar-container { padding: 0 1.5rem; }
 }
 @media (max-width: 1100px) {
   .main-nav { display: none; }
@@ -133,6 +152,8 @@ html, body {
   .lang-switcher { border: none; padding: 0; }
   .auth-actions { display: none; }
   .brand-title { display: block; }
+  /* Masquer le bouton admin desktop sur mobile pour gagner place */
+  .admin-link { display: none; }
 }
 
 /* MOBILE NAV */

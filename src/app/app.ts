@@ -48,8 +48,11 @@ export class AppComponent implements OnInit {
   authWarning = '';
   mobileNavOpen = false;
 
+  // ✅ Variable pour le bouton Admin
+  isAdminOrSuperAdmin = false;
+
   constructor(
-    public cartService: CartService, // ✅ IMPORTANT: public car utilisé dans le HTML
+    public cartService: CartService,
     private authService: AuthService,
     private router: Router,
     private languageService: LanguageService,
@@ -81,6 +84,9 @@ export class AppComponent implements OnInit {
     const isAuth = this.authService.isAuthenticated();
 
     if (isAuth) {
+      // ✅ Vérification des droits admin
+      this.isAdminOrSuperAdmin = this.authService.isAdmin() || this.authService.isSuperAdmin();
+
       this.cartService.loadCart().subscribe({
         next: (cart: CartResponse) => (this.cartQuantity = cart.totalQuantity),
         error: () => {},
@@ -94,6 +100,7 @@ export class AppComponent implements OnInit {
     } else {
       this.cartQuantity = 0;
       this.wishlistCount = 0;
+      this.isAdminOrSuperAdmin = false;
     }
 
     this.cart$.subscribe((cart) => {
@@ -105,7 +112,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // ✅ fallback image sans cast HTMLImageElement dans le template
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
@@ -157,6 +163,7 @@ export class AppComponent implements OnInit {
 
     this.cartQuantity = 0;
     this.wishlistCount = 0;
+    this.isAdminOrSuperAdmin = false; // ✅ Reset des droits
 
     this.cookieConsent.reloadForCurrentUser();
 
