@@ -12,14 +12,15 @@ import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-u
 import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
 import { SuperAdminContactMessagesComponent } from '../super-admin-contact-messages/super-admin-contact-messages';
 
-// Pipe pour éviter les erreurs de typage strict dans le HTML (pour userId)
 @Pipe({ name: 'any', standalone: true })
 export class AnyPipe implements PipeTransform {
   transform(value: any): any { return value; }
 }
 
-// ✅ TYPAGE MIS À JOUR AVEC RETOURS ACCEPTÉS/REFUSÉS
 type OrderStatusFilter = 'ALL' | 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURN_REQUESTED' | 'RETURN_APPROVED' | 'RETURN_REJECTED';
+// Type filtre
+type ProductFilter = 'ALL' | 'ACTIVE' | 'PROMO' | 'ARCHIVED';
+
 interface ProductImageVm { id: number; url: string; isPrimary: boolean; }
 
 @Component({
@@ -37,10 +38,18 @@ export class AdminDashboardComponent implements OnInit {
   isSuperAdmin = false;
   isAdminOrSuperAdmin = false;
 
-  // ✅ BARRE DE RECHERCHE + FILTRE
+  // Pagination
+  pageSize = 10;
+  ordersPage = 1;
+  returnsPage = 1;
+  productsPage = 1;
+
+  // Filtres
   orderStatusFilter: OrderStatusFilter = 'ALL';
   orderSearchTerm: string = '';
 
+  selectedProductFilter: ProductFilter = 'ALL';
+  productSearchTerm: string = '';
   productsMode: 'active' | 'archived' = 'active';
 
   // Data
@@ -56,14 +65,10 @@ export class AdminDashboardComponent implements OnInit {
   modalStatus: string = 'PENDING';
 
   statusOptions = [
-    { value: 'PENDING', label: 'En attente' },
-    { value: 'PAID', label: 'Payée' },
-    { value: 'SHIPPED', label: 'Expédiée' },
-    { value: 'DELIVERED', label: 'Livrée' },
-    { value: 'CANCELLED', label: 'Annulée' },
-    { value: 'RETURN_REQUESTED', label: 'Retour demandé' },
-    { value: 'RETURN_APPROVED', label: 'Retour accepté' },
-    { value: 'RETURN_REJECTED', label: 'Retour refusé' }
+    { value: 'PENDING', label: 'En attente' }, { value: 'PAID', label: 'Payée' },
+    { value: 'SHIPPED', label: 'Expédiée' }, { value: 'DELIVERED', label: 'Livrée' },
+    { value: 'CANCELLED', label: 'Annulée' }, { value: 'RETURN_REQUESTED', label: 'Retour demandé' },
+    { value: 'RETURN_APPROVED', label: 'Retour accepté' }, { value: 'RETURN_REJECTED', label: 'Retour refusé' }
   ];
 
   lowStockProducts: Product[] = [];
@@ -78,10 +83,10 @@ export class AdminDashboardComponent implements OnInit {
   editingProductId: number | null = null;
   isSubmitting = false;
 
-  // ✅ IMAGES GESTION
   selectedFiles: File[] = [];
   selectedPreviews: string[] = [];
-  currentImages: ProductImageVm[] = []; // Liste des images DB avec ID
+  currentImages: ProductImageVm[] = [];
+  previewImage: string | null = null;
 
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
@@ -92,7 +97,7 @@ export class AdminDashboardComponent implements OnInit {
 
   skuAuto = true;
   newProduct: ProductCreateRequest = {
-    sku: '', name: '', description: '', price: 0, weightGrams: 0, isActive: true, currency: 'EUR', slug: '', segmentCategoryId: null, typeCategoryId: null,
+    sku: '', name: '', description: '', price: null, weightGrams: null, isActive: true, currency: 'EUR', slug: '', segmentCategoryId: null, typeCategoryId: null,
     promoPrice: null, promoStartAt: null, promoEndAt: null
   } as any;
 
@@ -133,18 +138,100 @@ export class AdminDashboardComponent implements OnInit {
     else if (tab === 'promotions') this.loadCoupons();
   }
 
-  // ✅ LOGIQUE PROMO
-  get hasPromo(): boolean { return this.newProduct.promoPrice !== null && this.newProduct.promoPrice !== undefined; }
-  togglePromo(): void {
-    if (this.hasPromo) { this.newProduct.promoPrice = null; this.newProduct.promoStartAt = null; this.newProduct.promoEndAt = null; }
-    else { this.newProduct.promoPrice = 0 as any; this.newProduct.promoStartAt = this.todayDateOnly() as any; }
+  // ==========================================
+  // ✅ LOGIQUE PROMO CORRIGÉE
+  // ==========================================
+  get hasPromo(): boolean {
+    // On se base sur la DATE DE DÉBUT pour savoir si la section est ouverte
+    // Cela permet d'avoir un prix NULL (vide) au début
+    return this.newProduct.promoStartAt !== null;
   }
+
+  togglePromo(): void {
+    if (this.hasPromo) {
+      // Désactiver
+      this.newProduct.promoPrice = null;
+      this.newProduct.promoStartAt = null;
+      this.newProduct.promoEndAt = null;
+    } else {
+      // Activer : On met la date du jour (ce qui rend hasPromo = true)
+      // Mais on laisse le prix à NULL pour que l'input soit vide
+      this.newProduct.promoPrice = null;
+      this.newProduct.promoStartAt = this.todayDateOnly() as any;
+    }
+  }
+
   private todayDateOnly(): string {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  // ✅ LOGIQUE IMAGES
+  // ==========================================
+  // FILTRE PRODUIT
+  // ==========================================
+  onProductFilterChange(): void {
+    this.productsPage = 1;
+    this.showCreateForm = false;
+    this.productsMode = (this.selectedProductFilter === 'ARCHIVED') ? 'archived' : 'active';
+    this.loadProducts();
+  }
+
+  loadProducts(): void {
+    this.loading = true;
+    const obs = this.selectedProductFilter === 'ARCHIVED'
+      ? this.productService.getArchived()
+      : this.productService.getAll();
+
+    obs.subscribe({
+      next: (l) => { this.products = l ?? []; this.loading = false; },
+      error: () => { this.error = 'Erreur chargement produits'; this.loading = false; }
+    });
+  }
+
+  get filteredProducts() {
+    let list = this.products;
+    const term = this.productSearchTerm.toLowerCase().trim();
+
+    if (term) {
+      list = list.filter(p => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term));
+    }
+
+    if (this.selectedProductFilter === 'PROMO') {
+      list = list.filter(p => !!p.promoPrice && p.promoPrice > 0);
+    }
+
+    return list;
+  }
+
+  // PAGINATION
+  get paginatedProducts() {
+    const start = (this.productsPage - 1) * this.pageSize;
+    return this.filteredProducts.slice(start, start + this.pageSize);
+  }
+  get totalProductsPages() { return Math.ceil(this.filteredProducts.length / this.pageSize) || 1; }
+  changeProductsPage(delta: number) { this.productsPage = Math.max(1, Math.min(this.totalProductsPages, this.productsPage + delta)); }
+
+  // ORDERS PAGINATION
+  get filteredOrders() {
+    let list = this.sortedOrders;
+    if (this.orderStatusFilter !== 'ALL') { list = list.filter(o => (o as any).status === this.orderStatusFilter); }
+    if (this.orderSearchTerm.trim()) { list = list.filter(o => o.reference.toLowerCase().includes(this.orderSearchTerm.toLowerCase())); }
+    return list;
+  }
+  get paginatedOrders() { const s=(this.ordersPage-1)*this.pageSize; return this.filteredOrders.slice(s,s+this.pageSize); }
+  get totalOrdersPages() { return Math.ceil(this.filteredOrders.length/this.pageSize)||1; }
+  changeOrdersPage(d:number){ this.ordersPage=Math.max(1,Math.min(this.totalOrdersPages,this.ordersPage+d)); }
+
+  // RETURNS PAGINATION
+  get sortedReturnOrdersAll() { return this.sortedOrders.filter(o=>{const s=(o as any).status; return s==='RETURN_REQUESTED'||s==='RETURN_APPROVED'||s==='RETURN_REJECTED'}); }
+  get paginatedReturns() { const s=(this.returnsPage-1)*this.pageSize; return this.sortedReturnOrdersAll.slice(s,s+this.pageSize); }
+  get totalReturnsPages() { return Math.ceil(this.sortedReturnOrdersAll.length/this.pageSize)||1; }
+  changeReturnsPage(d:number){ this.returnsPage=Math.max(1,Math.min(this.totalReturnsPages,this.returnsPage+d)); }
+
+  // IMAGES
+  openImagePreview(url: string) { this.previewImage = url; }
+  closeImagePreview() { this.previewImage = null; }
+
   onFilesSelected(event: any): void {
     const files: File[] = Array.from(event.target.files || []);
     if (!files.length) return;
@@ -162,51 +249,23 @@ export class AdminDashboardComponent implements OnInit {
     this.selectedFiles = [];
     this.currentImages = [];
   }
-  // 🔴 DELETE IMAGE EXISTANTE
   deleteExistingImage(imageId: number): void {
-    if(imageId < 0) { alert("Impossible de supprimer une image sans ID."); return; }
+    if(imageId < 0) { alert("Impossible de supprimer."); return; }
     if(!this.editingProductId) return;
-    if(!confirm("Supprimer définitivement cette image ?")) return;
-
+    if(!confirm("Supprimer l'image ?")) return;
     (this.productService as any).deleteImage(this.editingProductId, imageId).subscribe({
       next: () => { this.currentImages = this.currentImages.filter(i => i.id !== imageId); },
-      error: () => alert("Erreur suppression image.")
+      error: () => alert("Erreur suppression.")
     });
   }
 
-  // ✅ HELPERS EMAIL & DATE
-  getOrderEmail(o: any): string {
-    return o?.customerEmail || o?.email || o?.userEmail || o?.user?.email || 'Email non trouvé';
-  }
-
+  // HELPERS
+  getOrderEmail(o: any): string { return o?.customerEmail || o?.email || o?.userEmail || o?.user?.email || 'N/A'; }
   loadStats(): void { this.statsLoading=true; this.adminStatsService.getSalesStats().subscribe({next:d=>{this.stats=d;this.statsLoading=false},error:()=>this.statsLoading=false}); }
   loadOrders(): void { this.ordersLoading=true; this.adminStatsService.getAllOrders().subscribe({next:l=>{this.orders=l??[];this.ordersLoading=false},error:()=>this.ordersLoading=false}); }
-
-  // ✅ TRI DES COMMANDES (Date réelle)
   get sortedOrders() { return [...this.orders].sort((a,b)=>new Date((b as any).createdAt).getTime()-new Date((a as any).createdAt).getTime()); }
-
-  // ✅ FILTRE COMBINÉ (Status + Recherche)
-  get filteredOrders() {
-    let list = this.sortedOrders;
-
-    // 1. Filtre Statut
-    if (this.orderStatusFilter !== 'ALL') {
-      list = list.filter(o => (o as any).status === this.orderStatusFilter);
-    }
-
-    // 2. Filtre Recherche (Reference)
-    if (this.orderSearchTerm && this.orderSearchTerm.trim()) {
-      const term = this.orderSearchTerm.toLowerCase().trim();
-      list = list.filter(o => o.reference.toLowerCase().includes(term));
-    }
-
-    return list;
-  }
-
-  get sortedReturnOrdersAll() { return this.sortedOrders.filter(o=>{const s=(o as any).status; return s==='RETURN_REQUESTED'||s==='RETURN_APPROVED'||s==='RETURN_REJECTED'}); }
   getStatusClass(s:string){ return s.toLowerCase(); }
 
-  // ✅ MODALE COMMANDE (État Correct)
   openOrderModal(o:any){ this.selectedOrder=o; this.modalStatus = o.status; this.showOrderModal=true; }
   closeOrderModal(){ this.showOrderModal=false; }
   saveOrderStatusFromModal(){ if(this.selectedOrder) this.adminStatsService.updateOrderStatus((this.selectedOrder as any).id, this.modalStatus).subscribe({next:u=>{this.orders=this.orders.map(o=>(o as any).id===(u as any).id?u:o);this.closeOrderModal()}});}
@@ -215,19 +274,17 @@ export class AdminDashboardComponent implements OnInit {
   saveStock(p:any){ if(p.id) this.adminStatsService.updateProductStock(p.id, p.stockQuantity).subscribe(); }
   onThresholdChange(){ this.loadLowStock(); }
 
-  setProductsMode(m: 'active'|'archived'){ this.productsMode=m; this.toggleCreateForm(); this.loadProducts(); }
-  loadProducts(){ this.loading=true; const obs=this.productsMode==='active'?this.productService.getAll():this.productService.getArchived(); obs.subscribe({next:l=>{this.products=l??[];this.loading=false},error:()=>this.loading=false}); }
-
+  // FORM
   toggleCreateForm(){
-    if(this.productsMode==='archived') return;
+    if(this.selectedProductFilter === 'ARCHIVED') { alert("Impossible de créer un produit dans les archives."); return; }
     if(this.editingProductId!==null) this.resetForm();
     else { this.showCreateForm=!this.showCreateForm; this.error=''; }
   }
 
-  resetForm(){ this.showCreateForm=false; this.editingProductId=null; this.isSubmitting=false; this.clearSelectedFiles(); this.newProduct={sku:'',name:'',description:'',price:0,weightGrams:0,isActive:true,currency:'EUR',slug:'',segmentCategoryId:null,typeCategoryId:null} as any; }
+  resetForm(){ this.showCreateForm=false; this.editingProductId=null; this.isSubmitting=false; this.clearSelectedFiles(); this.newProduct={sku:'',name:'',description:'',price:null,weightGrams:null,isActive:true,currency:'EUR',slug:'',segmentCategoryId:null,typeCategoryId:null} as any; }
 
   startEdit(p: Product){
-    if(this.productsMode==='archived')return;
+    if(this.selectedProductFilter === 'ARCHIVED') return;
     this.showCreateForm=true; this.editingProductId=p.id??null; this.clearSelectedFiles();
     const anyP:any=p;
     if(anyP.images && anyP.images.length) {
@@ -236,17 +293,35 @@ export class AdminDashboardComponent implements OnInit {
       this.currentImages = (p.imageUrls||[]).map((u,i)=>({id:-(i+1), url:u.startsWith('http')?u:`http://localhost:8080/${u}`, isPrimary:i===0}));
     }
     this.newProduct = {...p, segmentCategoryId:(p as any).segmentCategoryId, typeCategoryId:(p as any).typeCategoryId} as any;
+    // Date format pour input date
     if((p as any).promoStartAt) this.newProduct.promoStartAt = ((p as any).promoStartAt).substring(0,10);
     if((p as any).promoEndAt) this.newProduct.promoEndAt = ((p as any).promoEndAt).substring(0,10);
+  }
+
+  private slugify(name: string): string {
+    return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + String(Date.now()).slice(-4);
   }
 
   submitForm(){
     if(!this.newProduct.name || !this.newProduct.sku || Number(this.newProduct.price)<=0) return;
     this.isSubmitting=true;
+    if(!(this.newProduct as any).slug) (this.newProduct as any).slug = this.slugify(this.newProduct.name);
+
     const pl={...this.newProduct};
-    if(!pl.promoPrice) { pl.promoPrice=null; pl.promoStartAt=null; pl.promoEndAt=null; }
-    if(this.editingProductId===null) this.productService.create(pl,this.selectedFiles).subscribe({next:c=>{this.products.unshift(c);this.resetForm();this.isSubmitting=false},error:()=>this.isSubmitting=false});
-    else this.productService.update(this.editingProductId, pl, this.selectedFiles.length?this.selectedFiles:null).subscribe({next:u=>{this.products=this.products.map(x=>x.id===u.id?u:x);this.resetForm();this.isSubmitting=false},error:()=>this.isSubmitting=false});
+    // Nettoyage si promo désactivée (pas de date)
+    if(!pl.promoStartAt) { pl.promoPrice=null; pl.promoStartAt=null; pl.promoEndAt=null; }
+
+    if(this.editingProductId===null) {
+      this.productService.create(pl,this.selectedFiles).subscribe({
+        next:c=>{this.products.unshift(c);this.resetForm();this.isSubmitting=false},
+        error:(e)=>{console.error(e); this.error='Erreur création'; this.isSubmitting=false}
+      });
+    } else {
+      this.productService.update(this.editingProductId, pl, this.selectedFiles.length?this.selectedFiles:null).subscribe({
+        next:u=>{this.products=this.products.map(x=>x.id===u.id?u:x);this.resetForm();this.isSubmitting=false},
+        error:()=>this.isSubmitting=false
+      });
+    }
   }
 
   get filteredTypeOptions(){
@@ -260,8 +335,9 @@ export class AdminDashboardComponent implements OnInit {
   onSkuManualInput(){ this.skuAuto=false; }
   resetSkuAuto(){ this.skuAuto=true; this.ensureAutoSku(); }
   ensureAutoSku(){ if(this.skuAuto && this.newProduct.segmentCategoryId) this.newProduct.sku = 'GEN-ITM-'+String(Date.now()).slice(-4); }
-  clampPrice(){ if(this.newProduct.price<0) this.newProduct.price=0; }
-  clampPromoPrice(){ if(this.newProduct.promoPrice && this.newProduct.promoPrice<0) this.newProduct.promoPrice=0; }
+
+  clampPrice(){ if(Number(this.newProduct.price)<0) this.newProduct.price=0 as any; }
+  clampPromoPrice(){ if(this.newProduct.promoPrice && Number(this.newProduct.promoPrice)<0) this.newProduct.promoPrice=0 as any; }
 
   openDeleteConfirm(p:Product){ this.deleteTargetId=p.id??null; this.deleteTargetName=p.name; this.showDeleteConfirm=true; }
   cancelDelete(){ this.showDeleteConfirm=false; }
