@@ -22,13 +22,7 @@
           [(ngModel)]="searchTerm"
           (ngModelChange)="onFiltersChange()"
         />
-        <button
-          class="clear-btn"
-          *ngIf="searchTerm"
-          type="button"
-          (click)="clearSearch()">
-          ✕
-        </button>
+        <button class="clear-btn" *ngIf="searchTerm" type="button" (click)="clearSearch()">✕</button>
       </div>
 
       <button type="button" class="btn-reset" (click)="clearAllFilters()">
@@ -44,9 +38,7 @@
           <option value="">{{ 'products.filters.segment.all' | t }}</option>
           <option value="homme">{{ 'products.filters.segment.men' | t }}</option>
           <option value="femme">{{ 'products.filters.segment.women' | t }}</option>
-          <option value="petite-maroquinerie">
-            {{ 'products.filters.segment.smallLeather' | t }}
-          </option>
+          <option value="petite-maroquinerie">{{ 'products.filters.segment.smallLeather' | t }}</option>
         </select>
       </div>
 
@@ -64,59 +56,54 @@
 
       <div class="filter-group price-group">
         <label>{{ 'products.filters.price' | t }}</label>
-
         <div class="price-row-container">
           <div class="price-input-wrapper">
             <span class="currency-symbol">€</span>
             <input
-              type="number"
-              min="0"
-              step="10"
-              placeholder="Min"
-              [(ngModel)]="priceMin"
-              (ngModelChange)="onFiltersChange()"
-              (input)="preventNegative($event)"
+              type="number" min="0" step="10" placeholder="Min"
+              [(ngModel)]="priceMin" (ngModelChange)="onFiltersChange()" (input)="preventNegative($event)"
             />
           </div>
-
           <span class="separator">–</span>
-
           <div class="price-input-wrapper">
             <span class="currency-symbol">€</span>
             <input
-              type="number"
-              min="0"
-              step="10"
-              placeholder="Max"
-              [(ngModel)]="priceMax"
-              (ngModelChange)="onFiltersChange()"
-              (input)="preventNegative($event)"
+              type="number" min="0" step="10" placeholder="Max"
+              [(ngModel)]="priceMax" (ngModelChange)="onFiltersChange()" (input)="preventNegative($event)"
             />
           </div>
         </div>
+      </div>
 
-        <div class="price-note">
-          <ng-template #emptyNote>&nbsp;</ng-template>
-        </div>
+      <div class="filter-group">
+        <label>Offres</label>
+        <button
+          type="button"
+          class="promo-toggle-btn"
+          [class.active]="showPromosOnly"
+          (click)="togglePromoFilter()">
+          <span class="icon">🏷️</span>
+          <span>En Promo</span>
+        </button>
       </div>
 
       <div class="filter-group">
         <label>{{ 'products.filters.sort' | t }}</label>
         <select [(ngModel)]="sortBy" (ngModelChange)="onFiltersChange()">
           <option value="">{{ 'products.filters.sort.default' | t }}</option>
-          <option value="price-asc">{{ 'products.filters.sort.priceAsc' | t }}</option>
-          <option value="price-desc">{{ 'products.filters.sort.priceDesc' | t }}</option>
+          <option value="price-asc">Prix Croissant</option>
+          <option value="price-desc">Prix Décroissant</option>
           <option value="newest">{{ 'products.filters.sort.newest' | t }}</option>
         </select>
       </div>
 
     </div>
-
-
   </section>
 
   <section class="products-section" *ngIf="filteredProducts && filteredProducts.length; else noProducts">
-    <h2 class="section-title">{{ 'products.section.title' | t }}</h2>
+    <h2 class="section-title">
+      {{ showPromosOnly ? 'Nos Promotions Spéciales' : ('products.section.title' | t) }}
+    </h2>
 
     <div class="products-grid">
       <ng-container *ngIf="loading; else productsList">
@@ -135,33 +122,27 @@
       <ng-template #productsList>
         <article class="product-card" *ngFor="let p of paginatedProducts">
           <div class="product-image">
-            <img
-              [src]="p.imageUrls && p.imageUrls.length > 0
-                      ? ('http://localhost:8080' + p.imageUrls[0])
-                      : 'assets/img/products/placeholder-bag.jpg'"
-              [alt]="p.name"
-            />
-            <button
-              type="button"
-              class="fav-btn"
-              (click)="toggleFavorite(p)"
-              [class.active]="isFavorite(p)">
+            <img [src]="productService.getImageUrl(p)" [alt]="p.name" />
+
+            <div class="discount-badge" *ngIf="productService.isPromoValid(p)">
+              -{{ productService.getDiscountPercent(p) }}%
+            </div>
+
+            <button type="button" class="fav-btn" (click)="toggleFavorite(p)" [class.active]="isFavorite(p)">
               ♥
             </button>
           </div>
 
           <div class="product-body">
             <h3 class="product-name">{{ p.name }}</h3>
-            <p class="product-description" *ngIf="p.description; else noDesc">
-              {{ p.description }}
-            </p>
+            <p class="product-description" *ngIf="p.description; else noDesc">{{ p.description }}</p>
             <ng-template #noDesc>
               <p class="product-description muted">{{ 'products.description.missing' | t }}</p>
             </ng-template>
+
             <p class="stock-info" *ngIf="p.stockQuantity != null">
               <span *ngIf="p.stockQuantity > 0; else outOfStock">
-                {{ 'products.stock.inStockPrefix' | t }}{{ p.stockQuantity }}
-                {{ 'products.stock.inStockSuffix' | t }}
+                {{ 'products.stock.inStockPrefix' | t }}{{ p.stockQuantity }} {{ 'products.stock.inStockSuffix' | t }}
               </span>
               <ng-template #outOfStock>
                 <span class="out-stock">{{ 'products.stock.outOfStock' | t }}</span>
@@ -170,14 +151,21 @@
           </div>
 
           <div class="card-footer">
-            <div class="price">{{ p.price | currency : 'EUR' }}</div>
+            <div class="price-box">
+              <ng-container *ngIf="productService.isPromoValid(p); else normalPrice">
+                <div class="price-stack">
+                  <span class="old-price">{{ p.price | currency : 'EUR' }}</span>
+                  <span class="current-price promo">{{ productService.getEffectivePrice(p) | currency : 'EUR' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #normalPrice>
+                <span class="current-price">{{ p.price | currency : 'EUR' }}</span>
+              </ng-template>
+            </div>
+
             <div class="card-actions">
               <ng-container *ngIf="getQuantity(p) === 0; else qtyControls">
-                <button
-                  type="button"
-                  class="btn-icon btn-cart"
-                  (click)="increase(p)"
-                  [disabled]="isAddDisabled(p)">
+                <button type="button" class="btn-icon btn-cart" (click)="increase(p)" [disabled]="isAddDisabled(p)">
                   🛒
                 </button>
               </ng-container>
@@ -188,9 +176,8 @@
                   <button type="button" (click)="increase(p)" [disabled]="isMaxQuantityReached(p)">+</button>
                 </div>
               </ng-template>
-              <a class="btn-icon btn-eye" [routerLink]="['/products', p.id]" aria-label="Voir le produit">👁️</a>
+              <a class="btn-icon btn-eye" [routerLink]="['/products', p.id]">👁️</a>
             </div>
-            <p class="stock-warning" *ngIf="isMaxQuantityReached(p)">{{ 'products.stock.maxReached' | t }}</p>
           </div>
         </article>
       </ng-template>

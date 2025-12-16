@@ -26,7 +26,7 @@ export class ProductsComponent implements OnInit {
   page = 1;
   pageSize = 8;
 
-  // Filtres / recherche
+  // Filtres
   searchTerm = '';
   selectedSegment = '';
   selectedCategory = '';
@@ -35,6 +35,9 @@ export class ProductsComponent implements OnInit {
   priceMax: number | null = null;
   sortBy = '';
 
+  // Filtre Promo
+  showPromosOnly = false;
+
   // Wishlist
   wishlistProductIds = new Set<number>();
   wishlistLoading = false;
@@ -42,12 +45,10 @@ export class ProductsComponent implements OnInit {
 
   // Skeleton
   skeletonItems = Array(8).fill(0);
-
-  // Message visiteur
   authWarning = '';
 
   constructor(
-    private productService: ProductService,
+    public productService: ProductService,
     public cartService: CartService,
     private route: ActivatedRoute,
     private router: Router,
@@ -65,6 +66,10 @@ export class ProductsComponent implements OnInit {
       this.searchTerm = params['search'] || '';
       this.sortBy = params['sort'] || this.sortBy || '';
 
+      if (params['promo'] === 'true') {
+        this.showPromosOnly = true;
+      }
+
       if (this.products.length > 0) {
         this.applyFilters();
       }
@@ -77,7 +82,7 @@ export class ProductsComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Erreur chargement produits', err);
+        console.error(err);
         this.error = 'Impossible de charger les produits.';
         this.loading = false;
       },
@@ -91,14 +96,11 @@ export class ProductsComponent implements OnInit {
 
     this.wishlistService.wishlist$.subscribe((items) => {
       this.wishlistProductIds = new Set(
-        items
-          .filter((it) => !!it.product && !!it.product.id)
-          .map((it) => it.product.id)
+        items.filter((it) => !!it.product?.id).map((it) => it.product.id)
       );
     });
   }
 
-  // ✅ Empêche la saisie de nombres négatifs dans l'input
   preventNegative(event: any): void {
     const input = event.target;
     if (input.value < 0) {
@@ -110,35 +112,28 @@ export class ProductsComponent implements OnInit {
 
   private requireLoginOrRedirect(): boolean {
     if (this.auth.isAuthenticated()) return true;
-
     this.authWarning = 'Vous devez être connecté ou inscrit pour effectuer cette action.';
     setTimeout(() => {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       this.authWarning = '';
     }, 1200);
-
     return false;
   }
 
   private loadWishlist(): void {
     this.wishlistLoading = true;
     this.wishlistService.load().subscribe({
-      next: (items: WishlistItemResponse[]) => {
+      next: (items) => {
         this.wishlistProductIds = new Set(
-          items
-            .filter((it) => !!it.product && !!it.product.id)
-            .map((it) => it.product.id)
+          items.filter((it) => !!it.product?.id).map((it) => it.product.id)
         );
         this.wishlistLoading = false;
       },
-      error: (err) => {
-        console.error('Erreur chargement wishlist', err);
-        this.wishlistLoading = false;
-      },
+      error: () => (this.wishlistLoading = false),
     });
   }
 
-  // ====== Helpers segments / catégories ======
+  // Helpers
   private getSegmentSlug(p: Product): string | null {
     switch ((p as any).segmentCategoryId) {
       case 1: return 'homme';
@@ -160,51 +155,57 @@ export class ProductsComponent implements OnInit {
   }
 
   private normalizePrices(): void {
-    const clamp = (v: number | null) => {
-      if (v == null) return null;
-      if (Number.isNaN(v)) return null;
-      return Math.max(0, Math.floor(v));
-    };
-
+    const clamp = (v: number | null) => (v == null || Number.isNaN(v) ? null : Math.max(0, Math.floor(v)));
     this.priceMin = clamp(this.priceMin);
     this.priceMax = clamp(this.priceMax);
-
     if (this.priceMin != null && this.priceMax != null && this.priceMax < this.priceMin) {
       this.priceMax = this.priceMin;
     }
   }
 
-  // ====== FILTRES / TRI ======
+  // ====== MAIN FILTER LOGIC ======
   applyFilters(): void {
     this.normalizePrices();
     let result = [...this.products];
 
+    // 1. Search
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       result = result.filter(
         (p) =>
-          (p.name && p.name.toLowerCase().includes(term)) ||
-          ((p as any).description && (p as any).description.toLowerCase().includes(term))
+          (p.name?.toLowerCase().includes(term)) ||
+          ((p as any).description?.toLowerCase().includes(term))
       );
     }
 
-    if (this.selectedSegment) {
-      result = result.filter((p) => this.getSegmentSlug(p) === this.selectedSegment);
-    }
-    if (this.selectedCategory) {
-      result = result.filter((p) => this.getTypeSlug(p) === this.selectedCategory);
-    }
-    if (this.selectedMaterial) {
-      const mat = this.selectedMaterial.toLowerCase();
-      result = result.filter((p) => (p as any).material && (p as any).material.toLowerCase().includes(mat));
-    }
-    if (this.priceMin != null) result = result.filter((p) => p.price >= this.priceMin!);
-    if (this.priceMax != null) result = result.filter((p) => p.price <= this.priceMax!);
+    // 2. Segment & Category
+    if (this.selectedSegment) result = result.filter((p) => this.getSegmentSlug(p) === this.selectedSegment);
+    if (this.selectedCategory) result = result.filter((p) => this.getTypeSlug(p) === this.selectedCategory);
 
+    // 3. Promo
+    if (this.showPromosOnly) {
+      result = result.filter((p) => this.productService.isPromoValid(p));
+    }
+
+    // 4. Price (Using Effective Price)
+    if (this.priceMin != null) {
+      result = result.filter((p) => this.productService.getEffectivePrice(p) >= this.priceMin!);
+    }
+    if (this.priceMax != null) {
+      result = result.filter((p) => this.productService.getEffectivePrice(p) <= this.priceMax!);
+    }
+
+    // 5. Sorting (Using Effective Price)
     switch (this.sortBy) {
-      case 'price-asc': result.sort((a, b) => a.price - b.price); break;
-      case 'price-desc': result.sort((a, b) => b.price - a.price); break;
-      case 'newest': result.sort((a, b) => (b.id || 0) - (a.id || 0)); break;
+      case 'price-asc':
+        result.sort((a, b) => this.productService.getEffectivePrice(a) - this.productService.getEffectivePrice(b));
+        break;
+      case 'price-desc':
+        result.sort((a, b) => this.productService.getEffectivePrice(b) - this.productService.getEffectivePrice(a));
+        break;
+      case 'newest':
+        result.sort((a, b) => (b.id || 0) - (a.id || 0));
+        break;
     }
 
     this.filteredProducts = result;
@@ -212,6 +213,11 @@ export class ProductsComponent implements OnInit {
   }
 
   onFiltersChange(): void {
+    this.applyFilters();
+  }
+
+  togglePromoFilter(): void {
+    this.showPromosOnly = !this.showPromosOnly;
     this.applyFilters();
   }
 
@@ -224,14 +230,14 @@ export class ProductsComponent implements OnInit {
     this.searchTerm = '';
     this.selectedSegment = '';
     this.selectedCategory = '';
-    this.selectedMaterial = '';
     this.priceMin = null;
     this.priceMax = null;
     this.sortBy = '';
+    this.showPromosOnly = false;
     this.applyFilters();
   }
 
-  // ====== PAGINATION ======
+  // ====== Getters & Interactions ======
   get paginatedProducts(): Product[] {
     const start = (this.page - 1) * this.pageSize;
     return this.filteredProducts.slice(start, start + this.pageSize);
@@ -248,7 +254,6 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  // ====== PANIER & WISHLIST ======
   getQuantity(p: Product): number {
     if (!p.id) return 0;
     const item = this.cartService.items.find((i: CartItem) => i.productId === p.id);
@@ -268,29 +273,20 @@ export class ProductsComponent implements OnInit {
   }
 
   increase(p: Product): void {
-    if (!p.id) return;
-    if (!this.requireLoginOrRedirect()) return;
+    if (!p.id || !this.requireLoginOrRedirect()) return;
     if (this.isAddDisabled(p)) {
-      alert('Vous avez atteint le stock maximum disponible pour ce produit.');
+      alert('Stock maximum atteint.');
       return;
     }
     this.cartService.addProduct(p.id, 1).subscribe({
-      error: () => {
-        this.authWarning = 'Vous devez être connecté pour ajouter au panier.';
-        setTimeout(() => (this.authWarning = ''), 2000);
-      },
+      error: () => (this.authWarning = 'Erreur ajout panier'),
     });
   }
 
   decrease(p: Product): void {
-    if (!p.id) return;
-    if (!this.requireLoginOrRedirect()) return;
+    if (!p.id || !this.requireLoginOrRedirect()) return;
     const q = this.getQuantity(p);
-    if (q <= 1) {
-      this.cartService.removeItem(p.id).subscribe();
-    } else {
-      this.cartService.updateQuantity(p.id, q - 1).subscribe();
-    }
+    q <= 1 ? this.cartService.removeItem(p.id).subscribe() : this.cartService.updateQuantity(p.id, q - 1).subscribe();
   }
 
   isFavorite(p: Product): boolean {
@@ -298,15 +294,10 @@ export class ProductsComponent implements OnInit {
   }
 
   toggleFavorite(p: Product): void {
-    if (!p.id) return;
-    if (!this.requireLoginOrRedirect()) return;
+    if (!p.id || !this.requireLoginOrRedirect()) return;
     this.wishlistService.toggle(p.id).subscribe({
-      next: (items: WishlistItemResponse[]) => {
-        this.wishlistProductIds = new Set(
-          items.filter((it) => !!it.product && !!it.product.id).map((it) => it.product.id)
-        );
-      },
-      error: (err) => console.error('Erreur toggle wishlist', err),
+      next: (items) => this.wishlistProductIds = new Set(items.map(it => it.product.id)),
+      error: (err) => console.error(err),
     });
   }
 }

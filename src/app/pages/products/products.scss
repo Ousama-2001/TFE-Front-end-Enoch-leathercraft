@@ -80,30 +80,19 @@
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.14);
   }
 
-  .search-icon {
-    font-size: 1rem;
-    opacity: 0.9;
-  }
+  .search-icon { font-size: 1rem; opacity: 0.9; }
 
   input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    outline: none;
-    color: #e5e7eb;
-    font-size: 0.92rem;
+    flex: 1; border: none; background: transparent; outline: none;
+    color: #e5e7eb; font-size: 0.92rem;
     &::placeholder { color: rgba(148, 163, 184, 0.7); }
   }
 
   .clear-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 999px;
+    width: 30px; height: 30px; border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.25);
-    background: rgba(255, 255, 255, 0.03);
-    color: rgba(226, 232, 240, 0.9);
-    cursor: pointer;
-    transition: 0.15s;
+    background: rgba(255, 255, 255, 0.03); color: rgba(226, 232, 240, 0.9);
+    cursor: pointer; transition: 0.15s;
     &:hover {
       transform: translateY(-1px);
       border-color: rgba(226, 232, 240, 0.55);
@@ -113,15 +102,10 @@
 }
 
 .btn-reset {
-  height: 44px;
-  padding: 0 1.1rem;
-  border-radius: 999px;
+  height: 44px; padding: 0 1.1rem; border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(2, 6, 23, 0.65);
-  color: #e2e8f0;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.15s;
+  background: rgba(2, 6, 23, 0.65); color: #e2e8f0; font-weight: 700;
+  cursor: pointer; transition: 0.15s;
   &:hover {
     transform: translateY(-1px);
     border-color: rgba(236, 72, 153, 0.45);
@@ -129,15 +113,15 @@
   }
 }
 
+/* ✅ GRILLE D'ALIGNEMENT PARFAIT */
 .filters-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* Auto-fit adapte le nombre de colonnes, min 180px de large */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
-
-  /* ✅ IMPORTANT : au lieu de end */
-  align-items: start;
+  /* Important: Aligne tout en bas pour gérer les labels de longueurs différentes */
+  align-items: end;
 }
-
 
 .filter-group {
   display: flex;
@@ -150,10 +134,12 @@
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    white-space: nowrap; /* Evite le retour à la ligne du label */
   }
 
   select {
-    height: 42px;
+    height: 42px; /* Hauteur fixe */
+    width: 100%;
     padding: 0 0.85rem;
     border-radius: 12px;
     border: 1px solid rgba(148, 163, 184, 0.22);
@@ -163,6 +149,7 @@
     outline: none;
     transition: 0.15s;
     appearance: none;
+    /* Custom Arrow */
     background-image: linear-gradient(45deg, transparent 50%, rgba(226,232,240,0.85) 50%),
     linear-gradient(135deg, rgba(226,232,240,0.85) 50%, transparent 50%);
     background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
@@ -177,24 +164,43 @@
   }
 }
 
-/* ===== PRIX (Nouvelle version améliorée) ===== */
-.price-group {
-  min-width: 260px;
-
-  /* ✅ même structure qu'un filter-group */
+/* ✅ STYLE BOUTON PROMO ALIGNÉ */
+.promo-toggle-btn {
+  height: 42px; /* EXACTEMENT la même hauteur que les inputs */
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.6);
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s all;
+  width: 100%;
 
-  label {
-    font-size: 0.78rem;
-    color: rgba(148, 163, 184, 0.9);
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.4);
+  }
+
+  &.active {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
   }
 }
 
+/* ===== PRIX ===== */
+.price-group {
+  /* Le groupe prix prend un peu plus de place si possible */
+  min-width: 220px;
+}
 
 .price-row-container {
   display: flex;
@@ -206,14 +212,13 @@
 
 .price-input-wrapper {
   position: relative;
-  flex: 1; /* Largeurs égales */
+  flex: 1;
   display: flex;
   align-items: center;
   background: rgba(2, 6, 23, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 12px;
-  height: 42px;
-  transition: 0.2s;
+  height: 42px; /* Hauteur fixe */
   overflow: hidden;
 
   &:focus-within {
@@ -221,7 +226,6 @@
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.14);
   }
 
-  /* Symbole Euro */
   .currency-symbol {
     position: absolute;
     left: 10px;
@@ -232,70 +236,35 @@
   }
 
   input {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #e2e8f0;
-    font-size: 0.95rem;
-    padding-left: 25px; /* Espace pour le € */
-    padding-right: 5px;
+    width: 100%; height: 100%; background: transparent; border: none; outline: none;
+    color: #e2e8f0; font-size: 0.95rem; padding-left: 25px; padding-right: 5px;
     font-family: inherit;
-
-    &::placeholder {
-      color: rgba(148, 163, 184, 0.4);
-    }
+    &::placeholder { color: rgba(148, 163, 184, 0.4); }
   }
 }
 
-/* Tiret séparateur */
 .separator {
   color: rgba(148, 163, 184, 0.5);
   font-weight: bold;
 }
 
-/* ✅ AFFICHER LES FLÈCHES DU NAVIGATEUR */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-  opacity: 1;
-  cursor: pointer;
-  height: auto;
-}
-
-.price-note {
-  margin-top: 0.35rem;
-  font-size: 0.75rem;
-  color: rgba(148, 163, 184, 0.8);
-  min-height: 1.2em; /* garde une hauteur stable */
-}
-
-
-.filters-hint {
-  margin: 0.6rem 0 0;
-  font-size: 0.82rem;
-  color: rgba(148, 163, 184, 0.75);
+  opacity: 1; cursor: pointer; height: auto;
 }
 
 /* ===========================
    GRILLE PRODUITS
    =========================== */
-.products-section {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.section-title {
-  font-size: 1.55rem;
-  margin-bottom: 1.2rem;
-  font-weight: 800;
-  text-align: center;
-  color: #f8fafc;
-}
+.products-section { max-width: 1200px; margin: 0 auto; }
+.section-title { font-size: 1.55rem; margin-bottom: 1.2rem; font-weight: 800; text-align: center; color: #f8fafc; }
+
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 1.5rem;
 }
+
 .product-card {
   background: rgba(15, 23, 42, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.22);
@@ -315,12 +284,20 @@ input[type=number]::-webkit-outer-spin-button {
 .product-image {
   width: 100%; height: 180px; overflow: hidden; background: #00000040; position: relative;
   img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
   .fav-btn {
     position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 999px;
     background: rgba(2, 6, 23, 0.65); border: 1px solid rgba(148, 163, 184, 0.25); color: #e5e7eb;
     cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s;
     &.active { background: rgba(239, 68, 68, 0.9); color: #fee2e2; border-color: rgba(239, 68, 68, 0.7); }
     &:hover { transform: translateY(-1px); }
+  }
+
+  .discount-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: #ef4444; color: white; font-weight: 800; font-size: 0.85rem;
+    padding: 0.25rem 0.6rem; border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); z-index: 2;
   }
 }
 
@@ -336,7 +313,16 @@ input[type=number]::-webkit-outer-spin-button {
 
 .card-footer {
   padding: 0.8rem 1rem 0; display: flex; flex-direction: column; gap: 0.45rem;
-  .price { font-size: 1rem; font-weight: 800; color: #facc15; }
+
+  .price-box {
+    min-height: 1.8rem; display: flex; align-items: center;
+  }
+  .price-stack { display: flex; align-items: baseline; gap: 0.6rem; }
+  .current-price { font-size: 1rem; font-weight: 800; color: #facc15;
+    &.promo { color: #ef4444; font-size: 1.1rem; }
+  }
+  .old-price { font-size: 0.85rem; text-decoration: line-through; color: #64748b; }
+
   .card-actions {
     display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
     .btn-icon {
@@ -348,27 +334,15 @@ input[type=number]::-webkit-outer-spin-button {
     }
   }
 }
+
 .qty-pill {
   display: flex; align-items: center; gap: 0.45rem; background: rgba(2, 6, 23, 0.55);
   border-radius: 999px; padding: 0.25rem 0.6rem; border: 1px solid rgba(148, 163, 184, 0.25);
   button { background: none; border: none; font-size: 1rem; color: #f1f5f9; cursor: pointer; }
   span { font-size: 0.9rem; font-weight: 800; }
 }
-.stock-warning { margin: 0.4rem 0 0; font-size: 0.78rem; color: #f97316; }
 
-/* Skeleton */
-.shimmer {
-  position: relative; overflow: hidden; background: rgba(30, 41, 59, 0.9);
-  &::after {
-    content: ''; position: absolute; inset: 0; transform: translateX(-100%);
-    background: linear-gradient(120deg, transparent, rgba(148, 163, 184, 0.35), transparent);
-    animation: shimmer 1.3s infinite;
-  }
-}
-.product-card.skeleton .line { height: 10px; margin-bottom: 0.4rem; border-radius: 999px; &.short { width: 60%; } }
-@keyframes shimmer { 100% { transform: translateX(100%); } }
-
-/* Pagination */
+/* Pagination & Animation */
 .pagination {
   margin-top: 1.8rem; text-align: center; display: flex; gap: 1rem; justify-content: center; align-items: center;
   .page-btn {
@@ -381,7 +355,17 @@ input[type=number]::-webkit-outer-spin-button {
 }
 .empty-message { text-align: center; margin-top: 2rem; color: rgba(148, 163, 184, 0.9); }
 
-/* Responsive */
+.shimmer {
+  position: relative; overflow: hidden; background: rgba(30, 41, 59, 0.9);
+  &::after {
+    content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(120deg, transparent, rgba(148, 163, 184, 0.35), transparent);
+    animation: shimmer 1.3s infinite;
+  }
+}
+.product-card.skeleton .line { height: 10px; margin-bottom: 0.4rem; border-radius: 999px; &.short { width: 60%; } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
 @media (max-width: 980px) {
   .products-page { padding: 1.4rem; }
   .filters-top { flex-direction: column; align-items: stretch; }
