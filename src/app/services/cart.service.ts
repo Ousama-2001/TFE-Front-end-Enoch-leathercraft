@@ -27,6 +27,9 @@ export interface CartResponse {
   totalQuantity: number;
   totalAmount: number;
   expiresAt?: string | null;
+  // ✅ Champs nécessaires pour la synchro
+  couponCode?: string | null;
+  discountPercent?: number;
 }
 
 export interface CheckoutPayload {
@@ -59,7 +62,6 @@ export interface OrderResponse {
   createdAt: string;
 }
 
-/** ✅ réponse attendue du back: /api/coupons/validate?code=XXX */
 export interface CouponValidateResponse {
   code: string;
   valid: boolean;
@@ -96,19 +98,20 @@ export class CartService {
 
   constructor(private http: HttpClient) {}
 
+  // ✅ SYNCHRONISATION ROBUSTE
   private syncState(cart: CartResponse) {
     this.cartSubject.next(cart);
     this.items = cart.items;
     this.totalQuantity = cart.totalQuantity;
     this.totalAmount = cart.totalAmount;
     this.expiresAt = cart.expiresAt ?? null;
+
+    // Met à jour les variables locales depuis le serveur
+    // Si le serveur a vidé le coupon (via clearCart), ceci va le vider côté front aussi
+    this.promoCode = cart.couponCode || null;
+    this.discountPercent = cart.discountPercent || 0;
   }
 
-  // =========================================================
-  // ✅ IMAGE helper
-  // - si item.imageUrl vide -> fallback: /uploads/products/{sku}.jpg
-  // - si relatif -> prefix origin
-  // =========================================================
   getCartItemImage(item: CartItem): string {
     const raw = (item?.imageUrl || '').trim();
     const fallback = `/uploads/products/${encodeURIComponent(item.sku)}.jpg`;
@@ -119,7 +122,6 @@ export class CartService {
     return `${this.origin}/${path}`;
   }
 
-  // ✅ total après remise (front)
   get totalAfterDiscount(): number {
     const pct = this.discountPercent || 0;
     const base = this.totalAmount || 0;
@@ -132,10 +134,6 @@ export class CartService {
     return Math.max(0, Math.round((base - this.totalAfterDiscount) * 100) / 100);
   }
 
-  // =========================================================
-  // ✅ COUPON: vérification réelle via BACK
-  // GET /api/coupons/validate?code=...
-  // =========================================================
   validateCoupon(codeRaw: string): Observable<CouponValidateResponse> {
     const code = (codeRaw || '').trim().toUpperCase();
     return this.http.get<CouponValidateResponse>(`${this.baseUrl}/coupons/validate`, {
@@ -149,6 +147,7 @@ export class CartService {
     this.discountPercent = Math.max(0, Math.min(100, pct));
   }
 
+  // ✅ CLEAR LOCAL IMMEDIAT
   clearPromo(): void {
     this.promoCode = null;
     this.discountPercent = 0;
@@ -188,7 +187,25 @@ export class CartService {
       .pipe(tap((cart) => this.syncState(cart)));
   }
 
+  // ✅ FLUIDITÉ : RESET IMMEDIAT PUIS APPEL API
   clear() {
+    // 1. Mise à jour visuelle instantanée
+    this.items = [];
+    this.totalQuantity = 0;
+    this.totalAmount = 0;
+    this.clearPromo();
+
+    this.cartSubject.next({
+      cartId: 0,
+      items: [],
+      totalQuantity: 0,
+      totalAmount: 0,
+      expiresAt: null,
+      couponCode: null,
+      discountPercent: 0
+    });
+
+    // 2. Appel serveur pour nettoyer la DB (articles + coupon)
     return this.http
       .delete<CartResponse>(`${this.baseUrl}/cart`)
       .pipe(tap((cart) => this.syncState(cart)));
@@ -202,6 +219,7 @@ export class CartService {
 
     return this.http.post<OrderResponse>(`${this.baseUrl}/orders/checkout`, withPromo).pipe(
       tap(() => {
+        // Reset local après succès
         this.clearPromo();
         this.syncState({
           cartId: 0,
@@ -209,6 +227,8 @@ export class CartService {
           totalQuantity: 0,
           totalAmount: 0,
           expiresAt: null,
+          couponCode: null,
+          discountPercent: 0
         });
       })
     );

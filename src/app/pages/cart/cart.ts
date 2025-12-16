@@ -16,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class CartComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
+  private cartSub?: Subscription; // ✅ Pour gérer l'abonnement au cart
 
   isLoggedIn = false;
   expiryMessage = '';
@@ -35,8 +36,22 @@ export class CartComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isLoggedIn = this.auth.isAuthenticated();
 
+    // Charger le panier depuis le serveur
     this.cart.loadCart().subscribe({ error: () => {} });
 
+    // ✅ FIX : On écoute le panier pour remettre le code promo si il existe déjà en BDD
+    this.cartSub = this.cart.cart$.subscribe((cartData) => {
+      if (cartData && cartData.couponCode) {
+        // Si le back renvoie un coupon, on l'affiche dans l'input
+        this.promoCode = cartData.couponCode;
+        this.promoSuccess = `Code ${cartData.couponCode} appliqué (-${cartData.discountPercent}%).`;
+      } else if (cartData) {
+        // Si pas de coupon, on ne vide l'input que si on n'est pas en train de taper (optionnel)
+        // Mais pour la navigation, on peut laisser tel quel ou vider si besoin
+      }
+    });
+
+    // Timer expiration
     this.sub = this.cart.timeLeftMs$.subscribe((ms) => {
       if (this.cart.items.length && ms === 0) {
         this.expiryMessage = 'Temps écoulé : votre panier a été vidé.';
@@ -47,6 +62,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.cartSub?.unsubscribe(); // ✅ Nettoyage propre
   }
 
   onImgError(event: Event): void {
@@ -100,11 +116,11 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   clearCart(): void {
-    this.cart.clear().subscribe();
-    this.cart.clearPromo();
+    // ✅ On vide tout visuellement immédiatement
     this.promoCode = '';
     this.promoSuccess = '';
     this.promoError = '';
+    this.cart.clear().subscribe();
   }
 
   goToCheckout(): void {
@@ -126,9 +142,13 @@ export class CartComponent implements OnInit, OnDestroy {
     }
 
     this.promoApplying = true;
+
+    // 1. D'abord on valide
     this.cart.validateCoupon(code).subscribe({
       next: (res) => {
         if (res?.valid && typeof res.percent === 'number') {
+          // 2. Si valide, on l'applique localement ET via une route backend si tu en as une (optionnel)
+          // Ici on utilise ta méthode du service qui update l'état local
           this.cart.applyCouponValidated(res.code, res.percent);
           this.promoSuccess = `Code ${res.code} appliqué (-${res.percent}%).`;
         } else {

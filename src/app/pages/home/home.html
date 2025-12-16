@@ -1,230 +1,155 @@
 <div class="home">
 
-  <!-- ============================ HERO ============================ -->
   <section class="hero">
-    <div class="hero-overlay"></div>
-
-    <div class="hero-content">
-
-      <!-- ========== COLONNE GAUCHE ========== -->
-      <div class="hero-left">
-
-        <!-- Logo + ENOCH LEATHERCRAFT sur une ligne -->
-        <div class="hero-brand">
-          <div class="hero-logo">
-            <img [src]="logoUrl" alt="Enoch Leathercraft logo" />
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <div class="brand-tag">
+            <img [src]="logoUrl" alt="Logo" class="mini-logo">
+            <span>Enoch Leathercraft</span>
           </div>
+          <h1>L'Élégance du Cuir,<br>Façonnée Main.</h1>
+          <p class="subtitle">{{ 'home.hero.subtitle' | t }}</p>
 
-          <h1 class="hero-main-title">
-            ENOCH LEATHERCRAFT
-          </h1>
+          <div class="cta-group">
+            <button class="btn-primary" (click)="goToProducts()">
+              {{ 'home.hero.cta' | t }}
+            </button>
+            <div class="tags">
+              <span>💎 Artisanal</span>
+              <span>🌍 Durable</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Slogan sous le nom -->
-        <p class="subtitle">
-          {{ 'home.hero.subtitle' | t }}
-        </p>
-
-
-
-        <div class="hero-actions">
-          <button class="btn-primary" (click)="goToProducts()">
-            {{ 'home.hero.cta' | t }}
-          </button>
+        <div class="hero-visual">
+          <div class="highlight-card" *ngIf="latestProducts.length > 0">
+            <span class="badge-new">Nouveauté</span>
+            <img [src]="getImage(latestProducts[0])" [alt]="latestProducts[0].name" class="card-img">
+            <div class="card-info">
+              <h3>{{ latestProducts[0].name }}</h3>
+              <div class="price-row">
+                <span class="price">{{ latestProducts[0].price | currency:'EUR' }}</span>
+                <button class="btn-icon" (click)="goToProductDetail(latestProducts[0])">➜</button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="hero-tags">
-          <span>{{ 'home.hero.tag.artisanal' | t }}</span>
-          <span>{{ 'home.hero.tag.unique' | t }}</span>
-          <span>{{ 'home.hero.tag.trackedShipping' | t }}</span>
-        </div>
-      </div>
-
-      <!-- ========== COLONNE DROITE : CARTE PRODUIT ========== -->
-      <div class="hero-right">
-        <div class="highlight-card" *ngIf="latestProducts.length > 0">
-          <h4>{{ 'home.highlight.newSelection' | t }}</h4>
-          <h3>{{ latestProducts[0].name }}</h3>
-
-          <p class="highlight-desc" *ngIf="latestProducts[0].description">
-            {{ latestProducts[0].description }}
-          </p>
-
-          <p class="highlight-price">
-            {{ latestProducts[0].price | currency:'EUR' }}
-          </p>
-
-          <button
-            class="btn-highlight"
-            (click)="goToProductDetail(latestProducts[0])">
-            {{ 'home.highlight.cta' | t }}
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============================ CATÉGORIES ============================ -->
-  <section class="categories">
-    <h2 class="section-title">{{ 'home.categories.title' | t }}</h2>
-
-    <div class="categories-grid">
-      <div
-        class="cat-card"
-        routerLink="/products"
-        [queryParams]="{ segment: 'homme' }">
-        <h3>{{ 'home.categories.men.title' | t }}</h3>
-        <p>{{ 'home.categories.men.text' | t }}</p>
-        <span class="cat-link">{{ 'home.categories.men.cta' | t }}</span>
-      </div>
-
-      <div
-        class="cat-card"
-        routerLink="/products"
-        [queryParams]="{ segment: 'femme' }">
-        <h3>{{ 'home.categories.women.title' | t }}</h3>
-        <p>{{ 'home.categories.women.text' | t }}</p>
-        <span class="cat-link">{{ 'home.categories.women.cta' | t }}</span>
-      </div>
-
-      <div
-        class="cat-card"
-        routerLink="/products"
-        [queryParams]="{ segment: 'petite-maroquinerie' }">
-        <h3>{{ 'home.categories.smallLeather.title' | t }}</h3>
-        <p>{{ 'home.categories.smallLeather.text' | t }}</p>
-        <span class="cat-link">{{ 'home.categories.smallLeather.cta' | t }}</span>
       </div>
     </div>
   </section>
 
-  <!-- ============================ NOUVEAUTÉS ============================ -->
-  <section class="latest">
-    <div class="latest-header">
-      <h2 class="section-title">{{ 'home.latest.title' | t }}</h2>
-      <a class="see-all" (click)="goToProducts()">
-        {{ 'home.latest.seeAll' | t }}
-      </a>
-    </div>
-
-    <div *ngIf="loading" class="info">
-      {{ 'home.latest.loading' | t }}
-    </div>
-    <div *ngIf="error" class="error">{{ error }}</div>
-
-    <div class="latest-grid" *ngIf="latestProducts.length > 0">
-      <article class="product-card" *ngFor="let p of latestProducts">
-        <div class="product-image">
-          <img [src]="getImage(p)" [alt]="p.name" />
+  <section class="section categories">
+    <div class="container">
+      <h2 class="section-title">{{ 'home.categories.title' | t }}</h2>
+      <div class="grid-3">
+        <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'homme' }">
+          <div class="cat-content">
+            <h3>{{ 'home.categories.men.title' | t }}</h3>
+            <span class="link">Découvrir ➜</span>
+          </div>
         </div>
+        <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'femme' }">
+          <div class="cat-content">
+            <h3>{{ 'home.categories.women.title' | t }}</h3>
+            <span class="link">Découvrir ➜</span>
+          </div>
+        </div>
+        <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }">
+          <div class="cat-content">
+            <h3>{{ 'home.categories.smallLeather.title' | t }}</h3>
+            <span class="link">Découvrir ➜</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <h3 class="product-name">{{ p.name }}</h3>
-
-        <p class="product-price">
-          {{ p.price | currency:'EUR' }}
-        </p>
-
-        <button class="btn-view" (click)="goToProductDetail(p)">
-          {{ 'home.latest.viewProduct' | t }}
+  <section class="section latest">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">{{ 'home.latest.title' | t }}</h2>
+        <button class="btn-outline" (click)="goToProducts()">
+          {{ 'home.latest.seeAll' | t }}
         </button>
-      </article>
-    </div>
-  </section>
-
-  <!-- ============================ AVIS CLIENTS ============================ -->
-  <section class="reviews">
-    <h2 class="section-title">{{ 'home.reviews.title' | t }}</h2>
-
-    <div class="reviews-grid">
-      <div class="review">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>{{ 'home.reviews.1.text' | t }}</p>
-        <span class="author">{{ 'home.reviews.1.author' | t }}</span>
       </div>
 
-      <div class="review">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>{{ 'home.reviews.2.text' | t }}</p>
-        <span class="author">{{ 'home.reviews.2.author' | t }}</span>
-      </div>
-
-      <div class="review">
-        <div class="stars">⭐⭐⭐⭐⭐</div>
-        <p>{{ 'home.reviews.3.text' | t }}</p>
-        <span class="author">{{ 'home.reviews.3.author' | t }}</span>
+      <div class="grid-4" *ngIf="latestProducts.length > 0">
+        <article class="prod-card" *ngFor="let p of latestProducts" (click)="goToProductDetail(p)">
+          <div class="prod-img">
+            <img [src]="getImage(p)" [alt]="p.name">
+          </div>
+          <div class="prod-info">
+            <h4>{{ p.name }}</h4>
+            <span class="price">{{ p.price | currency:'EUR' }}</span>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- ============================ QUI SOMMES-NOUS ============================ -->
-  <section class="about">
-    <h2 class="section-title">{{ 'home.about.title' | t }}</h2>
-
-    <p>
-      {{ 'home.about.p1' | t }}
-    </p>
-
-    <p>
-      {{ 'home.about.p2' | t }}
-    </p>
+  <section class="section reviews">
+    <div class="container">
+      <h2 class="section-title">{{ 'home.reviews.title' | t }}</h2>
+      <div class="grid-3">
+        <div class="review-card">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"{{ 'home.reviews.1.text' | t }}"</p>
+          <span class="author">— {{ 'home.reviews.1.author' | t }}</span>
+        </div>
+        <div class="review-card">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"{{ 'home.reviews.2.text' | t }}"</p>
+          <span class="author">— {{ 'home.reviews.2.author' | t }}</span>
+        </div>
+        <div class="review-card">
+          <div class="stars">⭐⭐⭐⭐⭐</div>
+          <p>"{{ 'home.reviews.3.text' | t }}"</p>
+          <span class="author">— {{ 'home.reviews.3.author' | t }}</span>
+        </div>
+      </div>
+    </div>
   </section>
+
+  <footer class="footer">
+    <div class="container footer-content">
+
+      <div class="col">
+        <h4>Enoch Leathercraft</h4>
+        <p>{{ 'footer.description' | t }}</p>
+      </div>
+
+      <div class="col">
+        <h4>Boutique</h4>
+        <a routerLink="/products">{{ 'footer.shop.all' | t }}</a>
+        <a routerLink="/products" [queryParams]="{segment:'homme'}">{{ 'footer.shop.men' | t }}</a>
+        <a routerLink="/products" [queryParams]="{segment:'femme'}">{{ 'footer.shop.women' | t }}</a>
+      </div>
+
+      <div class="col">
+        <h4>Informations Légales</h4>
+        <a routerLink="/about">{{ 'footer.info.about' | t }}</a>
+        <a routerLink="/contact">{{ 'footer.info.contact' | t }}</a>
+        <a routerLink="/cgv">Conditions Générales de Vente</a>
+        <a routerLink="/privacy">Politique de Confidentialité</a>
+      </div>
+
+      <div class="col">
+        <h4>{{ 'footer.follow' | t }}</h4>
+        <div class="socials">
+          <a href="https://www.instagram.com/enoch_leathercraft/" target="_blank" rel="noopener">
+            📸 Instagram
+          </a>
+          <a href="https://www.facebook.com/enoch.leathercraft" target="_blank" rel="noopener">
+            📘 Facebook
+          </a>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      © {{ currentYear }} {{ 'footer.bottom' | t }}
+    </div>
+  </footer>
+
 </div>
-
-<!-- ============================ FOOTER ============================ -->
-<footer class="footer">
-  <div class="footer-grid">
-
-    <div class="footer-col">
-      <h3>{{ 'footer.title' | t }}</h3>
-      <p>
-        {{ 'footer.description' | t }}
-      </p>
-    </div>
-
-    <div class="footer-col">
-      <h4>{{ 'footer.shop' | t }}</h4>
-      <a routerLink="/products">{{ 'footer.shop.all' | t }}</a>
-      <a routerLink="/products" [queryParams]="{ segment: 'homme' }">
-        {{ 'footer.shop.men' | t }}
-      </a>
-      <a routerLink="/products" [queryParams]="{ segment: 'femme' }">
-        {{ 'footer.shop.women' | t }}
-      </a>
-      <a routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }">
-        {{ 'footer.shop.smallLeather' | t }}
-      </a>
-    </div>
-
-    <div class="footer-col">
-      <h4>{{ 'footer.info' | t }}</h4>
-      <a routerLink="/about">{{ 'footer.info.about' | t }}</a>
-      <a routerLink="/contact">{{ 'footer.info.contact' | t }}</a>
-      <a routerLink="/terms">{{ 'footer.info.terms' | t }}</a>
-      <a routerLink="/privacy">{{ 'footer.info.privacy' | t }}</a>
-    </div>
-
-    <div class="footer-col">
-      <h4>{{ 'footer.follow' | t }}</h4>
-      <div class="socials">
-        <a
-          href="https://www.instagram.com/enoch_leathercraft/"
-          target="_blank"
-          rel="noopener noreferrer">
-          <span>📸</span> {{ 'footer.follow.instagram' | t }}
-        </a>
-        <a
-          href="https://www.facebook.com/enoch.leathercraft"
-          target="_blank"
-          rel="noopener noreferrer">
-          <span>📘</span> {{ 'footer.follow.facebook' | t }}
-        </a>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="footer-bottom">
-    © {{ currentYear }} {{ 'footer.bottom' | t }}
-  </div>
-</footer>

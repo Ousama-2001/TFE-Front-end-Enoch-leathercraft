@@ -1,4 +1,3 @@
-// src/app/pages/account-page/account-page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -182,7 +181,6 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
-  // ✅ Demande changement email (envoi lien au nouvel email)
   submitEmailChangeRequest(): void {
     this.error = '';
     this.success = '';
@@ -196,7 +194,6 @@ export class AccountPageComponent implements OnInit {
       return;
     }
 
-    // petit check front (le back re-valide)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(email)) {
       this.error = 'Email invalide.';
@@ -236,8 +233,11 @@ export class AccountPageComponent implements OnInit {
     });
   }
 
+  // ✅ MODIFICATION ICI : Message personnalisé pour les 30 jours
   deleteAccount(): void {
-    if (!confirm(this.tr('account.confirm.delete'))) {
+    const message = "Êtes-vous sûr de vouloir supprimer votre compte ?\n\nAttention : Votre compte sera désactivé immédiatement et TOTALEMENT supprimé après 30 jours.";
+
+    if (!confirm(message)) {
       return;
     }
 
