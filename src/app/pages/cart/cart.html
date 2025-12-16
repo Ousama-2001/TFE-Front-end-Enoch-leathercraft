@@ -1,172 +1,134 @@
-<div class="cart-page">
-  <h1>Mon panier</h1>
+<div class="cart-container">
 
-  <!-- ✅ Countdown -->
-  <div class="cart-expiry" *ngIf="cart.items.length">
-    <ng-container *ngIf="(cart.timeLeftMs$ | async) as ms">
-      <div class="expiry-row" *ngIf="ms > 0">
-        ⏳ Temps restant pour valider :
-        <strong>{{ formatMs(ms) }}</strong>
-      </div>
-      <div class="expiry-row danger" *ngIf="ms === 0">
-        ⌛ Temps écoulé : votre panier a été vidé.
-      </div>
-    </ng-container>
-  </div>
+  <header class="cart-header">
+    <h1>Mon Panier</h1>
+    <span class="badge" *ngIf="cart.totalQuantity > 0">{{ cart.totalQuantity }} articles</span>
+  </header>
 
-  <div class="expiry-alert" *ngIf="expiryMessage">{{ expiryMessage }}</div>
-  <div class="stock-alert" *ngIf="stockMessage">{{ stockMessage }}</div>
+  <ng-container *ngIf="cart.items.length; else emptyState">
 
-  <ng-container *ngIf="cart.items.length; else empty">
-    <div class="guest-alert" *ngIf="guestMessage">
-      {{ guestMessage }}
-      <div class="guest-actions">
-        <a class="guest-link" routerLink="/login" [queryParams]="{ returnUrl: '/checkout' }">
-          Se connecter
-        </a>
-        <a class="guest-link outline" routerLink="/register" [queryParams]="{ returnUrl: '/checkout' }">
-          Créer un compte
-        </a>
-      </div>
-    </div>
+    <div class="cart-layout">
 
-    <table class="cart-table">
-      <thead>
-      <tr>
-        <th>Produit</th>
-        <th>Prix unitaire</th>
-        <th>Quantité</th>
-        <th>Total ligne</th>
-        <th></th>
-      </tr>
-      </thead>
+      <div class="cart-items-column">
 
-      <tbody>
-      <tr *ngFor="let item of cart.items; trackBy: trackByProductId">
-        <td>
-          <div style="display:flex; align-items:center; gap:12px;">
-            <img
-              [src]="cart.getCartItemImage(item)"
-              [alt]="item.name"
-              (error)="onImgError($event)"
-              style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid rgba(148,163,184,.25);background:rgba(2,6,23,.6);cursor:pointer;"
-              (click)="goToProduct(item)"
-              title="Voir le produit"
-            />
-
-            <div style="cursor:pointer;" (click)="goToProduct(item)" title="Voir le produit">
-              <div style="font-weight:900; text-decoration:underline;">
-                {{ item.name }}
-              </div>
-              <div class="stock-hint" *ngIf="item.stockQuantity !== undefined">
-                Stock: {{ item.stockQuantity }}
-              </div>
-            </div>
-          </div>
-        </td>
-
-        <td>{{ item.unitPrice | currency: 'EUR' }}</td>
-
-        <td class="qty-buttons">
-          <button type="button" class="btn-qty" (click)="decrease(item)">−</button>
-          <span class="qty">{{ item.quantity }}</span>
-          <button
-            type="button"
-            class="btn-qty"
-            (click)="increase(item)"
-            [disabled]="!canIncrease(item)"
-            [title]="!canIncrease(item) ? 'Stock insuffisant' : ''"
-          >
-            +
-          </button>
-        </td>
-
-        <td>{{ item.lineTotal | currency: 'EUR' }}</td>
-
-        <td>
-          <button type="button" class="btn-remove" (click)="remove(item)">
-            Supprimer
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <!-- ✅ CODE PROMO (vérifié backend) -->
-    <section class="promo-card">
-      <div class="promo-left">
-        <div class="promo-title">Code promo</div>
-        <div class="promo-sub">Ajoute un code pour bénéficier d’une réduction.</div>
-
-        <div class="promo-row">
-          <input
-            type="text"
-            class="promo-input"
-            [value]="promoCode"
-            (input)="promoCode = ($any($event.target).value || '')"
-            placeholder="Ex: OUSS10"
-            [disabled]="promoApplying"
-          />
-
-          <button type="button" class="promo-btn" (click)="applyPromo()" [disabled]="promoApplying">
-            {{ promoApplying ? '...' : 'Appliquer' }}
-          </button>
-
-          <button
-            type="button"
-            class="promo-btn outline"
-            *ngIf="promoCode || cart.discountPercent"
-            (click)="removePromo()"
-          >
-            Retirer
-          </button>
+        <div class="alert warning" *ngIf="expiryMessage">⚠️ {{ expiryMessage }}</div>
+        <div class="alert error" *ngIf="stockMessage">❌ {{ stockMessage }}</div>
+        <div class="alert info timer" *ngIf="(cart.timeLeftMs$ | async) as ms">
+          Temps restant : <strong>{{ formatMs(ms) }}</strong>
         </div>
 
-        <div class="promo-msg error" *ngIf="promoError">{{ promoError }}</div>
-        <div class="promo-msg success" *ngIf="promoSuccess">{{ promoSuccess }}</div>
+        <div class="cart-card">
+          <div class="cart-item" *ngFor="let item of cart.items; trackBy: trackByProductId">
+
+            <div class="item-image" (click)="goToProduct(item)">
+              <img [src]="cart.getCartItemImage(item)" [alt]="item.name" (error)="onImgError($event)">
+            </div>
+
+            <div class="item-details">
+              <div class="item-header">
+                <h3 (click)="goToProduct(item)">{{ item.name }}</h3>
+                <span class="unit-price">{{ item.unitPrice | currency:'EUR' }}</span>
+              </div>
+              <p class="sku">Ref: {{ item.sku }}</p>
+              <p class="stock-warn" *ngIf="item.stockQuantity && item.stockQuantity < 5">
+                Plus que {{ item.stockQuantity }} en stock !
+              </p>
+            </div>
+
+            <div class="item-actions">
+              <div class="qty-selector">
+                <button (click)="decrease(item)">−</button>
+                <span>{{ item.quantity }}</span>
+                <button (click)="increase(item)" [disabled]="!canIncrease(item)">+</button>
+              </div>
+              <div class="line-total">
+                {{ item.lineTotal | currency:'EUR' }}
+              </div>
+              <button class="btn-delete" (click)="remove(item)" title="Supprimer">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-text" (click)="clearCart()">🗑️ Vider le panier</button>
       </div>
 
-      <div class="promo-right" *ngIf="cart.discountPercent > 0">
-        <div class="promo-badge">-{{ cart.discountPercent }}%</div>
+      <div class="cart-summary-column">
+
+        <div class="summary-card guest-card" *ngIf="!isLoggedIn">
+          <p>Connectez-vous pour sauvegarder votre panier.</p>
+          <div class="guest-btns">
+            <a routerLink="/login" [queryParams]="{ returnUrl: '/checkout' }">Connexion</a>
+            <a routerLink="/register">Inscription</a>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <h2>Résumé</h2>
+
+          <div class="summary-row">
+            <span>Sous-total</span>
+            <span>{{ cart.totalAmount | currency:'EUR' }}</span>
+          </div>
+
+          <div class="summary-row promo" *ngIf="cart.discountPercent > 0">
+            <span>Remise ({{ cart.discountPercent }}%)</span>
+            <span>-{{ cart.discountAmount | currency:'EUR' }}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="summary-row total">
+            <span>Total</span>
+            <span class="total-price">{{ cart.totalAfterDiscount | currency:'EUR' }}</span>
+          </div>
+
+          <button class="btn-checkout" (click)="goToCheckout()">
+            Passer à la caisse
+          </button>
+
+          <a routerLink="/products" class="continue-link">Continuer mes achats</a>
+        </div>
+
+        <div class="summary-card promo-card">
+          <h3>Code Promo</h3>
+          <div class="promo-input-group">
+            <input
+              type="text"
+              placeholder="Ex: SOLDES20"
+              [(ngModel)]="promoCode"
+              [disabled]="promoApplying || cart.discountPercent > 0"
+            >
+            <button
+              *ngIf="!cart.discountPercent"
+              (click)="applyPromo()"
+              [disabled]="promoApplying"
+            >
+              OK
+            </button>
+            <button
+              class="btn-remove-promo"
+              *ngIf="cart.discountPercent > 0"
+              (click)="removePromo()"
+            >
+              ✕
+            </button>
+          </div>
+
+          <p class="msg error" *ngIf="promoError">{{ promoError }}</p>
+          <p class="msg success" *ngIf="promoSuccess">{{ promoSuccess }}</p>
+        </div>
+
       </div>
-    </section>
-
-    <div class="cart-summary">
-      <p>
-        Total ({{ cart.totalQuantity }} article(s)) :
-        <strong>{{ cart.totalAmount | currency : 'EUR' }}</strong>
-      </p>
-
-      <p class="promo-total" *ngIf="cart.discountPercent > 0">
-        Réduction ({{ cart.discountPercent }}%) :
-        <strong>-{{ cart.discountAmount | currency:'EUR' }}</strong>
-      </p>
-
-      <p class="promo-total" *ngIf="cart.discountPercent > 0">
-        Total après réduction :
-        <strong>{{ cart.totalAfterDiscount | currency:'EUR' }}</strong>
-      </p>
-
-      <div class="cart-actions">
-        <button type="button" class="btn-clear" (click)="clearCart()">
-          Vider le panier
-        </button>
-
-        <button type="button" class="btn-primary" (click)="goToCheckout()" [disabled]="!cart.items.length">
-          Passer à la validation de la commande
-        </button>
-
-        <a routerLink="/products"> ← Continuer mes achats </a>
-      </div>
-
-      <p class="hint" *ngIf="!isLoggedIn">
-        Astuce : connecte-toi pour valider ta commande.
-      </p>
     </div>
+
   </ng-container>
 
-  <ng-template #empty>
-    <p>Votre panier est vide.</p>
-    <a routerLink="/products">← Retour à la boutique</a>
+  <ng-template #emptyState>
+    <div class="empty-cart">
+      <div class="icon">🛒</div>
+      <h2>Votre panier est vide</h2>
+      <a routerLink="/products" class="btn-primary">Voir la boutique</a>
+    </div>
   </ng-template>
+
 </div>

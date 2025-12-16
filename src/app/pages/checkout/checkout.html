@@ -8,14 +8,12 @@
 
   <div class="checkout-grid">
 
-    <!-- ===== FORMULAIRE ===== -->
     <div class="checkout-form-card">
 
       <h2>{{ 'checkout.customerInfo.title' | t }}</h2>
 
       <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
 
-        <!-- Prénom / Nom -->
         <div class="form-row">
           <div class="form-group">
             <label for="firstName">
@@ -48,7 +46,6 @@
           </div>
         </div>
 
-        <!-- Email / Téléphone -->
         <div class="form-row">
           <div class="form-group">
             <label for="email">
@@ -83,7 +80,6 @@
 
         <h2>{{ 'checkout.shipping.title' | t }}</h2>
 
-        <!-- Rue -->
         <div class="form-group">
           <label for="street">
             {{ 'checkout.form.street.label' | t }} *
@@ -99,7 +95,6 @@
           </div>
         </div>
 
-        <!-- Code postal / Ville -->
         <div class="form-row">
           <div class="form-group">
             <label for="postalCode">
@@ -132,7 +127,6 @@
           </div>
         </div>
 
-        <!-- Pays -->
         <div class="form-group">
           <label for="country">
             {{ 'checkout.form.country.label' | t }} *
@@ -148,7 +142,6 @@
           </div>
         </div>
 
-        <!-- Notes -->
         <div class="form-group">
           <label for="notes">
             {{ 'checkout.form.notes.label' | t }}
@@ -160,7 +153,6 @@
           </textarea>
         </div>
 
-        <!-- Erreur globale -->
         <div *ngIf="error" class="alert alert-error">
           {{ error }}
         </div>
@@ -171,7 +163,6 @@
       </form>
     </div>
 
-    <!-- ===== RÉCAP PANIER ===== -->
     <div class="checkout-summary-card">
 
       <h2>{{ 'checkout.cart.title' | t }}</h2>
@@ -187,8 +178,7 @@
               {{ item.name }}
             </div>
             <div class="summary-item-qty">
-              {{ 'checkout.cart.quantityPrefix' | t }} {{ item.quantity }}
-              <!-- ex: "x 2" ou "Qty: 2" selon la langue -->
+              Qté: {{ item.quantity }}
             </div>
           </div>
           <div class="summary-item-price">
@@ -197,9 +187,24 @@
         </div>
       </div>
 
-      <div class="summary-total" *ngIf="cart.items.length > 0">
-        <span>{{ 'checkout.cart.totalLabel' | t }}</span>
-        <strong>{{ cart.totalAmount | currency:'EUR' }}</strong>
+      <div class="summary-totals" *ngIf="cart.items.length > 0">
+
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span>{{ cart.totalAmount | currency:'EUR' }}</span>
+        </div>
+
+        <div class="summary-row promo" *ngIf="cart.discountPercent > 0">
+          <span>Remise ({{ cart.discountPercent }}%)</span>
+          <span>-{{ cart.discountAmount | currency:'EUR' }}</span>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row total">
+          <span>{{ 'checkout.cart.totalLabel' | t }}</span>
+          <strong>{{ cart.totalAfterDiscount | currency:'EUR' }}</strong>
+        </div>
       </div>
 
       <button type="button" class="btn-link" (click)="backToCart()">

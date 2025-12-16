@@ -28,6 +28,7 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // On recharge le panier pour être sûr d'avoir les infos à jour (prix, promo, stock)
     this.cart.loadCart().subscribe({
       next: (cart) => {
         if (!cart.items.length) {
@@ -75,6 +76,7 @@ export class CheckoutComponent implements OnInit {
 
     const v = this.checkoutForm.value;
 
+    // ✅ CORRECTION : On inclut le promoCode stocké dans le CartService
     const payload: CheckoutPayload = {
       firstName: v.firstName,
       lastName: v.lastName,
@@ -85,6 +87,7 @@ export class CheckoutComponent implements OnInit {
       city: v.city,
       country: v.country,
       notes: v.notes,
+      promoCode: this.cart.promoCode // <--- L'élément manquant était ici !
     };
 
     this.paymentService.startStripeCheckout(payload).subscribe({
@@ -97,7 +100,7 @@ export class CheckoutComponent implements OnInit {
         console.error('Erreur Stripe checkout : ', err);
         this.loading = false;
 
-        // ✅ on affiche le message métier du back si dispo (ex: "Stock insuffisant...")
+        // Affichage erreur métier si dispo
         if (err.status === 409 && err.error?.message) {
           this.error = err.error.message;
         } else {
