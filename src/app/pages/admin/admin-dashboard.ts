@@ -12,13 +12,14 @@ import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-u
 import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
 import { SuperAdminContactMessagesComponent } from '../super-admin-contact-messages/super-admin-contact-messages';
 
-// Pipe "any" pour éviter les erreurs de typage strict dans le HTML
+// Pipe pour éviter les erreurs de typage strict dans le HTML (pour userId)
 @Pipe({ name: 'any', standalone: true })
 export class AnyPipe implements PipeTransform {
   transform(value: any): any { return value; }
 }
 
-type OrderStatusFilter = 'ALL' | 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURN_REQUESTED';
+// ✅ TYPAGE MIS À JOUR AVEC RETOURS ACCEPTÉS/REFUSÉS
+type OrderStatusFilter = 'ALL' | 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'RETURN_REQUESTED' | 'RETURN_APPROVED' | 'RETURN_REJECTED';
 interface ProductImageVm { id: number; url: string; isPrimary: boolean; }
 
 @Component({
@@ -36,24 +37,23 @@ export class AdminDashboardComponent implements OnInit {
   isSuperAdmin = false;
   isAdminOrSuperAdmin = false;
 
-  // Filtres
+  // ✅ BARRE DE RECHERCHE + FILTRE
   orderStatusFilter: OrderStatusFilter = 'ALL';
+  orderSearchTerm: string = '';
+
   productsMode: 'active' | 'archived' = 'active';
 
-  // Stats
+  // Data
   stats: SalesStatsResponse | null = null;
   statsLoading = false;
   statsError: string | null = null;
 
-  // Commandes
   orders: AdminOrderResponse[] = [];
   ordersLoading = false;
   ordersError: string | null = null;
-
-  // Modale Commande
   showOrderModal = false;
   selectedOrder: AdminOrderResponse | null = null;
-  modalStatus: string = 'PENDING'; // Stocke le statut temporaire de la modale
+  modalStatus: string = 'PENDING';
 
   statusOptions = [
     { value: 'PENDING', label: 'En attente' },
@@ -66,13 +66,11 @@ export class AdminDashboardComponent implements OnInit {
     { value: 'RETURN_REJECTED', label: 'Retour refusé' }
   ];
 
-  // Stock
   lowStockProducts: Product[] = [];
   lowStockLoading = false;
   lowStockError: string | null = null;
   lowStockThreshold = 5;
 
-  // Produits
   products: Product[] = [];
   loading = false;
   error = '';
@@ -80,28 +78,24 @@ export class AdminDashboardComponent implements OnInit {
   editingProductId: number | null = null;
   isSubmitting = false;
 
-  // Images
+  // ✅ IMAGES GESTION
   selectedFiles: File[] = [];
   selectedPreviews: string[] = [];
-  currentImages: ProductImageVm[] = [];
+  currentImages: ProductImageVm[] = []; // Liste des images DB avec ID
 
-  // Modales diverses
   showDeleteConfirm = false;
   deleteTargetId: number | null = null;
   deleteTargetName = '';
 
-  // Selects
   segmentOptions = [{ id: 1, label: 'Homme' }, { id: 2, label: 'Femme' }, { id: 3, label: 'Petite maroquinerie' }];
   typeOptions = [{ id: 4, label: 'Sacs & sacoches' }, { id: 5, label: 'Ceintures' }, { id: 6, label: 'Portefeuilles' }, { id: 7, label: 'Portes-cartes' }, { id: 8, label: 'Sets de table' }];
 
-  // Form Produit
   skuAuto = true;
   newProduct: ProductCreateRequest = {
     sku: '', name: '', description: '', price: 0, weightGrams: 0, isActive: true, currency: 'EUR', slug: '', segmentCategoryId: null, typeCategoryId: null,
     promoPrice: null, promoStartAt: null, promoEndAt: null
   } as any;
 
-  // Coupons
   coupons: Coupon[] = [];
   couponsLoading = false;
   couponsError: string | null = null;
@@ -109,7 +103,6 @@ export class AdminDashboardComponent implements OnInit {
   editingCouponId: number | null = null;
   couponSubmitting = false;
 
-  // Retours
   showReturnDetailsModal = false;
   showRejectModal = false;
   selectedReturnOrder: AdminOrderResponse | null = null;
@@ -169,6 +162,7 @@ export class AdminDashboardComponent implements OnInit {
     this.selectedFiles = [];
     this.currentImages = [];
   }
+  // 🔴 DELETE IMAGE EXISTANTE
   deleteExistingImage(imageId: number): void {
     if(imageId < 0) { alert("Impossible de supprimer une image sans ID."); return; }
     if(!this.editingProductId) return;
@@ -182,55 +176,40 @@ export class AdminDashboardComponent implements OnInit {
 
   // ✅ HELPERS EMAIL & DATE
   getOrderEmail(o: any): string {
-    // Essaie de trouver l'email un peu partout
     return o?.customerEmail || o?.email || o?.userEmail || o?.user?.email || 'Email non trouvé';
   }
 
-  // ✅ TRI DES COMMANDES (Date/Heure réelle)
-  get sortedOrders() {
-    return [...this.orders].sort((a, b) => {
-      // Convertit en timestamp (fonctionne avec ISO string ou Date object)
-      const dateA = new Date((a as any).createdAt).getTime();
-      const dateB = new Date((b as any).createdAt).getTime();
-      return dateB - dateA; // Plus récent d'abord
-    });
-  }
-
-  get filteredOrders() {
-    const b = this.sortedOrders;
-    return this.orderStatusFilter === 'ALL' ? b : b.filter(o => (o as any).status === this.orderStatusFilter);
-  }
-
-  // ✅ MODALE COMMANDE (Correction État)
-  openOrderModal(o: any) {
-    this.selectedOrder = o;
-    // IMPORTANT : On initialise le selecteur avec l'état ACTUEL de la commande
-    this.modalStatus = (o as any).status;
-    this.showOrderModal = true;
-  }
-
-  closeOrderModal() { this.showOrderModal = false; }
-
-  saveOrderStatusFromModal() {
-    if(!this.selectedOrder) return;
-    const id = (this.selectedOrder as any).id;
-
-    this.adminStatsService.updateOrderStatus(id, this.modalStatus).subscribe({
-      next: (updated) => {
-        // Mise à jour de la liste locale
-        this.orders = this.orders.map(o => (o as any).id === (updated as any).id ? updated : o);
-        this.selectedOrder = updated; // Met à jour la modale si on la garde ouverte
-        this.closeOrderModal();
-      },
-      error: (err) => alert("Erreur lors de la mise à jour du statut.")
-    });
-  }
-
-  // RESTE DU CODE (inchangé mais nécessaire)
   loadStats(): void { this.statsLoading=true; this.adminStatsService.getSalesStats().subscribe({next:d=>{this.stats=d;this.statsLoading=false},error:()=>this.statsLoading=false}); }
   loadOrders(): void { this.ordersLoading=true; this.adminStatsService.getAllOrders().subscribe({next:l=>{this.orders=l??[];this.ordersLoading=false},error:()=>this.ordersLoading=false}); }
+
+  // ✅ TRI DES COMMANDES (Date réelle)
+  get sortedOrders() { return [...this.orders].sort((a,b)=>new Date((b as any).createdAt).getTime()-new Date((a as any).createdAt).getTime()); }
+
+  // ✅ FILTRE COMBINÉ (Status + Recherche)
+  get filteredOrders() {
+    let list = this.sortedOrders;
+
+    // 1. Filtre Statut
+    if (this.orderStatusFilter !== 'ALL') {
+      list = list.filter(o => (o as any).status === this.orderStatusFilter);
+    }
+
+    // 2. Filtre Recherche (Reference)
+    if (this.orderSearchTerm && this.orderSearchTerm.trim()) {
+      const term = this.orderSearchTerm.toLowerCase().trim();
+      list = list.filter(o => o.reference.toLowerCase().includes(term));
+    }
+
+    return list;
+  }
+
   get sortedReturnOrdersAll() { return this.sortedOrders.filter(o=>{const s=(o as any).status; return s==='RETURN_REQUESTED'||s==='RETURN_APPROVED'||s==='RETURN_REJECTED'}); }
   getStatusClass(s:string){ return s.toLowerCase(); }
+
+  // ✅ MODALE COMMANDE (État Correct)
+  openOrderModal(o:any){ this.selectedOrder=o; this.modalStatus = o.status; this.showOrderModal=true; }
+  closeOrderModal(){ this.showOrderModal=false; }
+  saveOrderStatusFromModal(){ if(this.selectedOrder) this.adminStatsService.updateOrderStatus((this.selectedOrder as any).id, this.modalStatus).subscribe({next:u=>{this.orders=this.orders.map(o=>(o as any).id===(u as any).id?u:o);this.closeOrderModal()}});}
 
   loadLowStock(){ this.lowStockLoading=true; this.adminStatsService.getLowStockProducts(this.lowStockThreshold).subscribe({next:l=>{this.lowStockProducts=l??[];this.lowStockLoading=false},error:()=>this.lowStockLoading=false}); }
   saveStock(p:any){ if(p.id) this.adminStatsService.updateProductStock(p.id, p.stockQuantity).subscribe(); }
