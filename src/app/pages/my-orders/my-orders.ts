@@ -57,11 +57,23 @@ export class MyOrdersComponent implements OnInit {
 
     this.orderService.getMyOrders().subscribe({
       next: (list) => {
-        this.orders = [...list].sort((a, b) => {
+        const now = Date.now();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+
+        // ✅ FILTRE : On masque les commandes PENDING qui ont dépassé 24h
+        // (Le backend le fait aussi par sécurité, mais on filtre ici pour l'UI instantanée)
+        const visibleOrders = list.filter(o => {
+          if (o.status !== 'PENDING') return true;
+          const orderDate = new Date(o.createdAt as any).getTime();
+          return (now - orderDate) <= oneDayMs;
+        });
+
+        this.orders = visibleOrders.sort((a, b) => {
           const da = new Date(a.createdAt as any).getTime();
           const db = new Date(b.createdAt as any).getTime();
           return db - da;
         });
+
         this.loading = false;
       },
       error: (err) => {
@@ -70,6 +82,13 @@ export class MyOrdersComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // ✅ NOUVELLE FONCTION : Calcule la date limite (Création + 24h)
+  getExpirationDate(createdAt: string): Date {
+    const date = new Date(createdAt);
+    date.setHours(date.getHours() + 24);
+    return date;
   }
 
   getStatusLabel(status: string): string {
@@ -148,7 +167,15 @@ export class MyOrdersComponent implements OnInit {
       error: (err) => {
         console.error('Erreur paiement commande', err);
         this.actionLoading[o.id] = false;
-        this.errorMessage = this.tr('orders.error.pay');
+
+        // Si le backend rejette car expiré
+        const backendMsg = err.error?.message;
+        if (backendMsg && backendMsg.includes("expiré")) {
+          this.errorMessage = "Cette commande a expiré et a été annulée.";
+          this.loadOrders(); // Rafraîchir pour voir le statut annulé
+        } else {
+          this.errorMessage = this.tr('orders.error.pay');
+        }
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
@@ -226,7 +253,6 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
-  // ✅ PDF bon de retour
   downloadReturnLabel(o: OrderResponse): void {
     if (!this.hasReturnLabel(o)) return;
 
@@ -239,7 +265,7 @@ export class MyOrdersComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `return-label-${o.reference}.pdf`; // ✅ ICI
+        a.download = `return-label-${o.reference}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       },

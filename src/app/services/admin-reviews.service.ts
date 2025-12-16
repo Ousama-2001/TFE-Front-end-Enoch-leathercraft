@@ -1,24 +1,19 @@
-// src/app/services/admin-reviews.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Doit correspondre à com.enoch.leathercraft.entities.ReviewStatus
-export type ReviewStatus = 'VISIBLE' | 'HIDDEN' | 'DELETED';
+// ✅ Simplification : Uniquement VISIBLE ou DELETED
+export type ReviewStatus = 'VISIBLE' | 'DELETED';
 
-// Doit correspondre à AdminReviewResponse
 export interface AdminReview {
   id: number;
   productId: number | null;
   productName: string | null;
-
   userId: number | null;
   userEmail: string | null;
-
   authorName: string;
   rating: number;
   comment: string;
-
   status: ReviewStatus;
   createdAt: string;
   deletedAt: string | null;
@@ -35,9 +30,6 @@ export class AdminReviewsService {
 
   /**
    * GET /api/admin/reviews
-   * @param options.status   'VISIBLE' | 'HIDDEN' | 'DELETED' | undefined
-   * @param options.productId  (optionnel) pour filtrer côté back ou front
-   * @param options.email      (optionnel) – si non géré par le back, il sera ignoré
    */
   search(options?: {
     status?: ReviewStatus;
@@ -60,7 +52,7 @@ export class AdminReviewsService {
   }
 
   /**
-   * PATCH /api/admin/reviews/{id}/status?status=VISIBLE|HIDDEN|DELETED
+   * PATCH /api/admin/reviews/{id}/status
    */
   changeStatus(id: number, status: ReviewStatus): Observable<AdminReview> {
     const params = new HttpParams().set('status', status);

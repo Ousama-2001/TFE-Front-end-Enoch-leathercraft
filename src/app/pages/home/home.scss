@@ -29,15 +29,14 @@
   display: flex; align-items: center; gap: 2rem; margin-bottom: 2.5rem;
   color: #f59e0b; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; font-size: 1rem;
 
-  /* ✅ LOGO HERO : CARRÉ & GRAND & VISIBLE */
   .mini-logo {
-    width: 120px; height: 120px; /* Beaucoup plus grand */
-    border-radius: 15px; /* Carré avec bords adoucis (Premium) */
+    width: 120px; height: 120px;
+    border-radius: 15px;
     object-fit: cover;
-    border: 3px solid #f59e0b; /* Bordure Or solide */
-    background: rgba(0, 0, 0, 0.6); /* Fond sombre pour le faire ressortir */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8); /* Grosse ombre portée */
-    padding: 5px; /* Petit espace intérieur */
+    border: 3px solid #f59e0b;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    padding: 5px;
   }
 }
 

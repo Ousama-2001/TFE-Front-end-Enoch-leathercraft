@@ -1,22 +1,14 @@
-// src/app/pages/admin-reviews/admin-reviews.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import {
-  AdminReviewsService,
-  AdminReview,
-  ReviewStatus,
-} from '../../services/admin-reviews.service';
-
-type StatusFilter = ReviewStatus | 'ALL';
+import { AdminReviewsService, AdminReview, ReviewStatus } from '../../services/admin-reviews.service';
 
 @Component({
   selector: 'app-admin-reviews',
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './admin-reviews.html',
-  styleUrls: ['./admin-reviews.scss'],
+  styleUrls: ['./admin-reviews.scss']
 })
 export class AdminReviewsPageComponent implements OnInit {
 
@@ -25,26 +17,9 @@ export class AdminReviewsPageComponent implements OnInit {
   error = '';
 
   // Filtres
-  statusFilter: StatusFilter = 'ALL';
-  productIdFilter: number | null = null;
-  customerFilter = '';
-
-  // ID d'avis sur lequel on est en train d'agir (pour désactiver les boutons)
-  actionId: number | null = null;
-
-  // Constantes pour les statuts (évite les erreurs de types dans le template)
-  readonly statuses: Record<'VISIBLE' | 'HIDDEN' | 'DELETED', ReviewStatus> = {
-    VISIBLE: 'VISIBLE',
-    HIDDEN: 'HIDDEN',
-    DELETED: 'DELETED',
-  };
-
-  readonly statusOptions: { value: StatusFilter; label: string }[] = [
-    { value: 'ALL',     label: 'Tous' },
-    { value: 'VISIBLE', label: 'Visible' },
-    { value: 'HIDDEN',  label: 'Masqué' },
-    { value: 'DELETED', label: 'Supprimé' },
-  ];
+  // 'ALL' n'est pas un ReviewStatus, c'est juste pour le front
+  filterStatus: 'ALL' | ReviewStatus = 'ALL';
+  searchTerm: string = '';
 
   constructor(private reviewService: AdminReviewsService) {}
 
@@ -56,72 +31,71 @@ export class AdminReviewsPageComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    const statusParam =
-      this.statusFilter === 'ALL' ? undefined : this.statusFilter;
+    // Si le filtre est 'ALL', on envoie undefined au service pour qu'il ne filtre pas par statut
+    const statusParam = this.filterStatus === 'ALL' ? undefined : this.filterStatus;
 
-    this.reviewService
-      .search({
-        status: statusParam,
-        productId: this.productIdFilter,
-        email: this.customerFilter,
-      })
-      .subscribe({
-        next: (data) => {
-          this.reviews = data;
-          this.loading = false;
-        },
-        error: () => {
-          this.error = 'Impossible de charger les avis.';
-          this.loading = false;
-        },
-      });
-  }
-
-  applyFilters(): void {
-    this.loadReviews();
-  }
-
-  resetFilters(): void {
-    this.statusFilter = 'ALL';
-    this.productIdFilter = null;
-    this.customerFilter = '';
-    this.loadReviews();
-  }
-
-  // Changer statut (VISIBLE / HIDDEN / DELETED)
-  changeStatus(review: AdminReview, status: ReviewStatus): void {
-    if (this.actionId !== null) return;
-
-    this.actionId = review.id;
-
-    this.reviewService.changeStatus(review.id, status).subscribe({
-      next: (updated) => {
-        // on met à jour la ligne dans le tableau
-        const idx = this.reviews.findIndex(r => r.id === updated.id);
-        if (idx !== -1) {
-          this.reviews[idx] = updated;
-        }
-        this.actionId = null;
+    this.reviewService.search({ status: statusParam }).subscribe({
+      next: (data) => {
+        // Tri par date décroissante (plus récent en haut)
+        this.reviews = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        this.loading = false;
       },
-      error: () => {
-        alert("Erreur lors de la mise à jour du statut.");
-        this.actionId = null;
-      },
+      error: (err) => {
+        console.error(err);
+        this.error = 'Impossible de charger les avis.';
+        this.loading = false;
+      }
     });
   }
 
-  // CSS du badge
-  badgeClass(status: ReviewStatus): string {
-    switch (status) {
-      case 'VISIBLE': return 'status-pill status-visible';
-      case 'HIDDEN':  return 'status-pill status-hidden';
-      case 'DELETED': return 'status-pill status-deleted';
-      default:        return 'status-pill';
+  // Filtrage local pour la recherche textuelle uniquement
+  // (Le filtrage par statut est déjà fait via l'API dans loadReviews,
+  // mais on peut le refaire ici si on veut éviter de rappeler le serveur à chaque clic sur les boutons filtres)
+  get filteredReviews() {
+    let list = this.reviews;
+
+    // Si on change le filtre localement sans recharger l'API (optionnel, sinon appeler loadReviews() au changement)
+    if (this.filterStatus !== 'ALL') {
+      list = list.filter(r => r.status === this.filterStatus);
     }
+
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      list = list.filter(r =>
+        (r.authorName && r.authorName.toLowerCase().includes(term)) ||
+        (r.productName && r.productName.toLowerCase().includes(term)) ||
+        (r.userEmail && r.userEmail.toLowerCase().includes(term)) ||
+        (r.comment && r.comment.toLowerCase().includes(term))
+      );
+    }
+    return list;
   }
 
-  // petites étoiles jolies
-  getStars(rating: number): number[] {
-    return Array.from({ length: 5 }, (_, i) => i + 1);
+  // Action: Rendre visible (équivalent à Approuver/Restaurer)
+  makeVisible(id: number): void {
+    this.updateStatus(id, 'VISIBLE');
+  }
+
+  // Action: Supprimer (équivalent à Rejeter/Masquer)
+  deleteReview(id: number): void {
+    if(!confirm("Masquer cet avis du site public ?")) return;
+    this.updateStatus(id, 'DELETED');
+  }
+
+  private updateStatus(id: number, status: ReviewStatus): void {
+    this.reviewService.changeStatus(id, status).subscribe({
+      next: (updatedReview) => {
+        // Mise à jour locale
+        this.reviews = this.reviews.map(r => r.id === updatedReview.id ? updatedReview : r);
+      },
+      error: () => alert("Erreur lors de la mise à jour.")
+    });
+  }
+
+  // Méthode pour recharger lors du clic sur les filtres
+  setFilter(status: 'ALL' | ReviewStatus) {
+    this.filterStatus = status;
+    // Option 1 : Filtrage local immédiat (rapide) -> ne rien faire d'autre
+    // Option 2 : Recharger depuis le serveur (plus sûr si pagination) -> this.loadReviews();
   }
 }

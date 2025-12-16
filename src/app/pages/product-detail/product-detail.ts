@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -14,7 +14,7 @@ type PromoStatus = 'NONE' | 'UPCOMING' | 'ACTIVE' | 'EXPIRED';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })
@@ -23,11 +23,11 @@ export class ProductDetailComponent implements OnInit {
   loading = false;
   error = '';
 
-  // messages
+  // messages feedback
   addedMessage = '';
   authWarning = '';
 
-  // stock / panier
+  // stock
   stockAvailable = 0;
   isOutOfStock = false;
   stockMessage = '';
@@ -43,23 +43,24 @@ export class ProductDetailComponent implements OnInit {
   totalReviews = 0;
 
   isLoggedIn = false;
+
+  // Formulaire Nouvel avis
   reviewRating = 5;
   reviewComment = '';
   reviewSubmitting = false;
   reviewError = '';
   reviewSuccessMsg = '';
 
+  // Edition avis
   editingReviewId: number | null = null;
   editRating = 5;
   editComment = '';
   editSubmitting = false;
 
   // =======================
-  // ✅ CAROUSEL PREMIUM
+  // ✅ CAROUSEL
   // =======================
   activeImageIndex = 0;
-
-  // drag state
   isDragging = false;
   dragPointerId: number | null = null;
   dragStartX = 0;
@@ -68,7 +69,7 @@ export class ProductDetailComponent implements OnInit {
   dragOffsetX = 0;
   isAnimating = false;
 
-  // zoom modal
+  // Zoom
   zoomOpen = false;
   zoomScale = 1;
   zoomMin = 1;
@@ -98,13 +99,12 @@ export class ProductDetailComponent implements OnInit {
     this.productService.getOne(id).subscribe({
       next: (p: Product) => {
         this.product = p;
-
         this.stockAvailable = p.stockQuantity ?? 0;
         this.isOutOfStock = this.stockAvailable <= 0;
-
         this.activeImageIndex = 0;
         this.dragOffsetX = 0;
 
+        // Charger infos annexes
         this.cartService.loadCart().subscribe();
         this.loadReviews(id);
         if (this.isLoggedIn) this.refreshWishlistStatus();
@@ -119,9 +119,8 @@ export class ProductDetailComponent implements OnInit {
   }
 
   /* =========================================================
-   ✅ PROMO HELPERS (affichage détail)
+   PROMO HELPERS
    ========================================================= */
-
   get effectivePrice(): number {
     if (!this.product) return 0;
     return this.productService.getEffectivePrice(this.product);
@@ -135,14 +134,12 @@ export class ProductDetailComponent implements OnInit {
   get promoStatus(): PromoStatus {
     const p = this.product;
     if (!p) return 'NONE';
-
-    const promo = typeof p.promoPrice === 'number' ? p.promoPrice : null;
-    const start = p.promoStartAt ? new Date(p.promoStartAt).getTime() : null;
-    const end = p.promoEndAt ? new Date(p.promoEndAt).getTime() : null;
-
+    const promo = p.promoPrice;
     if (!promo || promo <= 0 || promo >= (p.price ?? 0)) return 'NONE';
 
     const now = Date.now();
+    const start = p.promoStartAt ? new Date(p.promoStartAt).getTime() : null;
+    const end = p.promoEndAt ? new Date(p.promoEndAt).getTime() : null;
 
     if (start != null && now < start) return 'UPCOMING';
     if (end != null && now > end) return 'EXPIRED';
@@ -150,36 +147,26 @@ export class ProductDetailComponent implements OnInit {
   }
 
   get hasPromo(): boolean {
-    return this.promoStatus !== 'NONE' && this.discountPercent > 0;
+    return this.promoStatus === 'ACTIVE';
   }
 
   get promoStatusLabel(): string {
     switch (this.promoStatus) {
-      case 'UPCOMING':
-        return 'Promo bientôt disponible';
-      case 'ACTIVE':
-        return 'Promo en cours';
-      case 'EXPIRED':
-        return 'Promo expirée';
-      default:
-        return '';
+      case 'UPCOMING': return 'Promo bientôt disponible';
+      case 'ACTIVE': return 'Promo en cours';
+      case 'EXPIRED': return 'Promo expirée';
+      default: return '';
     }
   }
 
   /* =======================
-   ✅ helpers images
+   CAROUSEL IMAGES
    ======================= */
   get images(): string[] {
     return this.product?.imageUrls ?? [];
   }
-
-  get hasThumbs(): boolean {
-    return this.images.length > 1;
-  }
-
-  get canSlide(): boolean {
-    return this.images.length > 1;
-  }
+  get hasThumbs(): boolean { return this.images.length > 1; }
+  get canSlide(): boolean { return this.images.length > 1; }
 
   get activeImageUrl(): string {
     if (!this.images.length) return 'assets/img/products/placeholder-bag.jpg';
@@ -201,17 +188,14 @@ export class ProductDetailComponent implements OnInit {
 
   private commitSlide(nextIndex: number, direction: 'next' | 'prev'): void {
     if (!this.canSlide) return;
-
     const w = this.getCarouselWidth();
     if (!w) {
       this.activeImageIndex = this.normalizeIndex(nextIndex);
       this.dragOffsetX = 0;
       return;
     }
-
     const out = direction === 'next' ? -w : w;
     this.animateTo(out);
-
     setTimeout(() => {
       this.activeImageIndex = this.normalizeIndex(nextIndex);
       this.isAnimating = true;
@@ -220,32 +204,20 @@ export class ProductDetailComponent implements OnInit {
     }, 200);
   }
 
-  prevImage(): void {
-    if (!this.canSlide) return;
-    this.commitSlide(this.activeImageIndex - 1, 'prev');
-  }
-
-  nextImage(): void {
-    if (!this.canSlide) return;
-    this.commitSlide(this.activeImageIndex + 1, 'next');
-  }
+  prevImage(): void { if (this.canSlide) this.commitSlide(this.activeImageIndex - 1, 'prev'); }
+  nextImage(): void { if (this.canSlide) this.commitSlide(this.activeImageIndex + 1, 'next'); }
 
   setActiveImage(i: number): void {
-    if (!this.images.length) return;
-    if (i < 0 || i >= this.images.length) return;
-    if (i === this.activeImageIndex) return;
-
-    const direction: 'next' | 'prev' = i > this.activeImageIndex ? 'next' : 'prev';
+    if (!this.images.length || i === this.activeImageIndex) return;
+    const direction = i > this.activeImageIndex ? 'next' : 'prev';
     this.commitSlide(i, direction);
   }
 
   /* =======================
-   ✅ drag / swipe (pointer)
+   DRAG / SWIPE
    ======================= */
   onCarouselPointerDown(e: PointerEvent): void {
-    if (!this.canSlide) return;
-    if ((e as any).button === 2) return;
-
+    if (!this.canSlide || (e as any).button === 2) return;
     this.isDragging = true;
     this.dragPointerId = e.pointerId;
     this.dragStartX = e.clientX;
@@ -257,48 +229,30 @@ export class ProductDetailComponent implements OnInit {
   onCarouselPointerMove(e: PointerEvent): void {
     if (!this.isDragging) return;
     if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
-
     const dx = e.clientX - this.dragStartX;
     const dy = e.clientY - this.dragStartY;
-
     if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) return;
 
     const w = this.getCarouselWidth() || 300;
     const raw = this.dragStartOffset + dx;
-
-    const resistance = 0.35;
-    const capped = Math.max(Math.min(raw, w * resistance), -w * resistance);
+    // Résistance aux bords
+    const capped = Math.max(Math.min(raw, w * 0.35), -w * 0.35);
     this.dragOffsetX = capped;
   }
 
   onCarouselPointerUp(e: PointerEvent): void {
     if (!this.isDragging) return;
     if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
-
     const dx = e.clientX - this.dragStartX;
-    const dy = e.clientY - this.dragStartY;
-
     this.isDragging = false;
     this.dragPointerId = null;
 
-    if (Math.abs(dy) > Math.abs(dx)) {
-      this.animateTo(0);
-      return;
-    }
-
     const w = this.getCarouselWidth() || 300;
-    const threshold = Math.min(120, w * 0.25);
+    const threshold = Math.min(100, w * 0.25);
 
-    if (dx <= -threshold) {
-      this.nextImage();
-      return;
-    }
-    if (dx >= threshold) {
-      this.prevImage();
-      return;
-    }
-
-    this.animateTo(0);
+    if (dx <= -threshold) this.nextImage();
+    else if (dx >= threshold) this.prevImage();
+    else this.animateTo(0);
   }
 
   onCarouselPointerCancel(): void {
@@ -312,27 +266,22 @@ export class ProductDetailComponent implements OnInit {
     return el ? el.clientWidth : 0;
   }
 
-  // clavier
   @HostListener('window:keydown', ['$event'])
   onKeyDown(e: KeyboardEvent): void {
     if (this.zoomOpen) {
       if (e.key === 'Escape') this.closeZoom();
-      if (e.key === 'ArrowLeft') this.prevImage();
-      if (e.key === 'ArrowRight') this.nextImage();
       if (e.key === '+' || e.key === '=') this.zoomIn();
       if (e.key === '-') this.zoomOut();
       return;
     }
-
     const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-
+    if (tag === 'input' || tag === 'textarea') return;
     if (e.key === 'ArrowLeft') this.prevImage();
     if (e.key === 'ArrowRight') this.nextImage();
   }
 
   /* =======================
-   ✅ zoom modal
+   ZOOM
    ======================= */
   openZoom(): void {
     if (!this.images.length) return;
@@ -340,267 +289,183 @@ export class ProductDetailComponent implements OnInit {
     this.zoomScale = 1;
     document.body.style.overflow = 'hidden';
   }
-
   closeZoom(): void {
     this.zoomOpen = false;
     this.zoomScale = 1;
     document.body.style.overflow = '';
   }
-
-  zoomIn(): void {
-    this.zoomScale = Math.min(this.zoomMax, Number((this.zoomScale + 0.25).toFixed(2)));
-  }
-
-  zoomOut(): void {
-    this.zoomScale = Math.max(this.zoomMin, Number((this.zoomScale - 0.25).toFixed(2)));
-  }
-
-  resetZoom(): void {
-    this.zoomScale = 1;
-  }
-
+  zoomIn(): void { this.zoomScale = Math.min(this.zoomMax, Number((this.zoomScale + 0.25).toFixed(2))); }
+  zoomOut(): void { this.zoomScale = Math.max(this.zoomMin, Number((this.zoomScale - 0.25).toFixed(2))); }
+  resetZoom(): void { this.zoomScale = 1; }
   onZoomWheel(e: WheelEvent): void {
     if (!this.zoomOpen) return;
     e.preventDefault();
-    if (e.deltaY < 0) this.zoomIn();
-    else this.zoomOut();
+    if (e.deltaY < 0) this.zoomIn(); else this.zoomOut();
   }
 
-  onZoomBackdropClick(e: MouseEvent): void {
-    const target = e.target as HTMLElement;
-    if (target.classList.contains('zoom-backdrop')) this.closeZoom();
-  }
-
-  /* ================== LOGIN ================== */
-
+  /* ================== ACTIONS (Auth Check) ================== */
   private requireLoginOrRedirect(): boolean {
     if (this.auth.isAuthenticated()) return true;
-
-    this.authWarning = 'Vous devez être connecté pour effectuer cette action.';
+    this.authWarning = 'Connectez-vous pour effectuer cette action.';
     setTimeout(() => {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       this.authWarning = '';
     }, 1200);
-
     return false;
   }
 
-  goBack(): void {
-    this.router.navigate(['/products']);
-  }
+  goBack(): void { this.router.navigate(['/products']); }
 
   /* ================== PANIER ================== */
-
   get quantity(): number {
     const item = this.cartService.items.find((i: CartItem) => i.productId === this.product?.id);
     return item ? item.quantity : 0;
   }
-
   get canIncrease(): boolean {
-    if (!this.product) return false;
-    if (this.isOutOfStock) return false;
+    if (!this.product || this.isOutOfStock) return false;
     return this.quantity < this.stockAvailable;
   }
 
   increase(): void {
     if (!this.requireLoginOrRedirect() || !this.product) return;
-
-    if (!this.canIncrease) {
-      this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
-      return;
-    }
-
+    if (!this.canIncrease) { this.stockMessage = 'Stock insuffisant.'; return; }
     this.cartService.addProduct(this.product.id!, 1).subscribe({
-      next: () => {
-        this.stockMessage = '';
-        this.cartService.loadCart().subscribe();
-      },
-      error: () => {
-        this.stockMessage = "Erreur lors de l'ajout au panier.";
-      },
+      next: () => { this.stockMessage = ''; this.cartService.loadCart().subscribe(); },
+      error: () => { this.stockMessage = "Erreur d'ajout."; },
     });
   }
 
   decrease(): void {
-    if (!this.requireLoginOrRedirect() || !this.product) return;
-    if (this.quantity <= 0) return;
-
+    if (!this.requireLoginOrRedirect() || !this.product || this.quantity <= 0) return;
     if (this.quantity === 1) {
-      this.cartService.removeItem(this.product.id!).subscribe({
-        next: () => this.cartService.loadCart().subscribe(),
-      });
+      this.cartService.removeItem(this.product.id!).subscribe({ next: () => this.cartService.loadCart().subscribe() });
     } else {
-      this.cartService.updateQuantity(this.product.id!, this.quantity - 1).subscribe({
-        next: () => this.cartService.loadCart().subscribe(),
-      });
+      this.cartService.updateQuantity(this.product.id!, this.quantity - 1).subscribe({ next: () => this.cartService.loadCart().subscribe() });
     }
-
     this.stockMessage = '';
   }
 
   addToCart(): void {
     if (!this.requireLoginOrRedirect() || !this.product) return;
-
-    if (!this.canIncrease) {
-      this.stockMessage = 'Stock insuffisant pour ajouter plus d’exemplaires.';
-      return;
-    }
-
+    if (!this.canIncrease) { this.stockMessage = 'Stock insuffisant.'; return; }
     this.cartService.addProduct(this.product.id!, 1).subscribe({
       next: () => {
         this.cartService.loadCart().subscribe();
         this.addedMessage = 'Produit ajouté ✔';
-        this.stockMessage = '';
         setTimeout(() => (this.addedMessage = ''), 1500);
       },
-      error: () => {
-        this.addedMessage = "Erreur lors de l'ajout";
-        setTimeout(() => (this.addedMessage = ''), 1500);
-      },
+      error: () => this.addedMessage = "Erreur d'ajout",
     });
   }
 
   /* ================== WISHLIST ================== */
-
   private refreshWishlistStatus(): void {
     this.wishlistService.load().subscribe((items: WishlistItemResponse[]) => {
       this.isInWishlist = items.some((i) => i.product?.id === this.product?.id);
     });
   }
-
   toggleWishlist(): void {
     if (!this.requireLoginOrRedirect() || !this.product) return;
-
     this.wishlistService.toggle(this.product.id!).subscribe((items: WishlistItemResponse[]) => {
       this.isInWishlist = items.some((i) => i.product?.id === this.product?.id);
     });
   }
 
   /* ================== AVIS ================== */
-
   private recomputeAverage(): void {
-    if (!this.reviews.length) {
+    // Calcul basé uniquement sur les avis visibles pour l'affichage global
+    // Mais ici 'reviews' contient aussi les DELETED de l'user courant.
+    // Idéalement, on ne compte que les VISIBLE pour la moyenne.
+    const visibleReviews = this.reviews.filter(r => r.status === 'VISIBLE');
+    if (!visibleReviews.length) {
       this.averageRating = 0;
       this.totalReviews = 0;
       return;
     }
-    this.totalReviews = this.reviews.length;
-    this.averageRating = this.reviews.reduce((a, r) => a + r.rating, 0) / this.totalReviews;
+    this.totalReviews = visibleReviews.length;
+    this.averageRating = visibleReviews.reduce((a, r) => a + r.rating, 0) / this.totalReviews;
   }
 
-  get roundedAverage(): number {
-    return Math.round(this.averageRating || 0);
-  }
+  get roundedAverage(): number { return Math.round(this.averageRating || 0); }
 
   private loadReviews(productId: number): void {
     this.reviewsLoading = true;
-    this.reviewsError = '';
-
     this.reviewService.getForProduct(productId).subscribe({
       next: (list: ProductReview[]) => {
         this.reviews = list;
         this.recomputeAverage();
         this.reviewsLoading = false;
       },
-      error: () => {
-        this.reviewsError = 'Impossible de charger les avis.';
-        this.reviewsLoading = false;
-      },
+      error: () => { this.reviewsError = 'Erreur chargement avis.'; this.reviewsLoading = false; },
     });
   }
 
   submitReview(): void {
     if (!this.requireLoginOrRedirect() || !this.product) return;
+    if (!this.reviewComment.trim()) { this.reviewError = 'Commentaire requis.'; return; }
 
-    if (!this.reviewComment.trim()) {
-      this.reviewError = 'Veuillez entrer un commentaire.';
-      return;
-    }
-
-    this.reviewError = '';
     this.reviewSubmitting = true;
-
-    this.reviewService
-      .addReview({
-        productId: this.product.id!,
-        rating: this.reviewRating,
-        comment: this.reviewComment.trim(),
-      })
+    this.reviewService.addReview({ productId: this.product.id!, rating: this.reviewRating, comment: this.reviewComment.trim() })
       .subscribe({
-        next: (r: ProductReview) => {
+        next: (r) => {
           this.reviews.unshift(r);
           this.recomputeAverage();
           this.reviewComment = '';
           this.reviewRating = 5;
           this.reviewSubmitting = false;
-          this.reviewSuccessMsg = 'Merci pour votre avis !';
+          this.reviewSuccessMsg = 'Avis publié !';
           setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
         },
-        error: () => {
-          this.reviewSubmitting = false;
-          this.reviewError = "Impossible d’enregistrer votre avis.";
-        },
+        error: () => { this.reviewSubmitting = false; this.reviewError = "Erreur envoi."; },
       });
   }
 
   startEdit(r: ProductReview): void {
-    if (!this.requireLoginOrRedirect()) return;
-    if (!r.mine) return;
-
+    if (!this.requireLoginOrRedirect() || !r.mine) return;
     this.editingReviewId = r.id;
     this.editRating = r.rating;
     this.editComment = r.comment;
-    this.reviewError = '';
-    this.reviewSuccessMsg = '';
   }
 
-  cancelEdit(): void {
-    this.editingReviewId = null;
-    this.editSubmitting = false;
-  }
+  cancelEdit(): void { this.editingReviewId = null; this.editSubmitting = false; }
 
   submitEdit(r: ProductReview): void {
-    if (!this.requireLoginOrRedirect()) return;
-    if (!r.mine) return;
-
-    if (!this.editComment.trim()) {
-      this.reviewError = 'Veuillez entrer un commentaire.';
-      return;
-    }
+    if (!this.requireLoginOrRedirect() || !r.mine) return;
+    if (!this.editComment.trim()) return;
 
     this.editSubmitting = true;
-
-    this.reviewService
-      .updateReview(r.id, { rating: this.editRating, comment: this.editComment.trim() })
+    this.reviewService.updateReview(r.id, { rating: this.editRating, comment: this.editComment.trim() })
       .subscribe({
-        next: (updated: ProductReview) => {
-          this.reviews = this.reviews.map((x) => (x.id === updated.id ? updated : x));
+        next: (u) => {
+          this.reviews = this.reviews.map((x) => (x.id === u.id ? u : x));
           this.cancelEdit();
           this.recomputeAverage();
-          this.reviewSuccessMsg = 'Votre avis a été mis à jour.';
-          setTimeout(() => (this.reviewSuccessMsg = ''), 2000);
         },
-        error: () => {
-          this.editSubmitting = false;
-          this.reviewError = "Impossible de mettre à jour votre avis.";
-        },
+        error: () => { this.editSubmitting = false; },
       });
   }
 
   deleteReview(r: ProductReview): void {
-    if (!this.requireLoginOrRedirect()) return;
-    if (!r.mine) return;
+    if (!this.requireLoginOrRedirect() || !r.mine) return;
     if (!confirm('Supprimer cet avis ?')) return;
 
     this.reviewService.deleteReview(r.id).subscribe({
       next: () => {
-        this.reviews = this.reviews.filter((x) => x.id !== r.id);
+        // En front, soit on le retire, soit on le marque DELETED.
+        // Le back le marque DELETED. Pour l'UI instantanée :
+        // Option A: On le retire de la liste
+        // this.reviews = this.reviews.filter((x) => x.id !== r.id);
+
+        // Option B: On le marque DELETED pour voir l'alerte tout de suite
+        const idx = this.reviews.findIndex(x => x.id === r.id);
+        if(idx !== -1) {
+          this.reviews[idx].status = 'DELETED';
+        }
+
         this.recomputeAverage();
         if (this.editingReviewId === r.id) this.cancelEdit();
       },
-      error: () => {
-        this.reviewError = 'Impossible de supprimer cet avis.';
-      },
+      error: () => { this.reviewError = 'Erreur suppression.'; },
     });
   }
 }

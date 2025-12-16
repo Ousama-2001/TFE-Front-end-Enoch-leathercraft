@@ -1,6 +1,5 @@
 <div class="product-detail-page" *ngIf="product; else loadingTpl">
 
-  <!-- TOP BAR -->
   <div class="topbar">
     <button class="back-pill" type="button" (click)="goBack()">
       <span class="arrow">←</span>
@@ -12,12 +11,10 @@
 
   <div class="product-detail-card">
 
-    <!-- ===== GALERIE ===== -->
     <div class="left">
       <div class="gallery">
-
-        <button class="nav prev" type="button" (click)="prevImage()" [disabled]="!canSlide" aria-label="Image précédente">‹</button>
-        <button class="nav next" type="button" (click)="nextImage()" [disabled]="!canSlide" aria-label="Image suivante">›</button>
+        <button class="nav prev" type="button" (click)="prevImage()" [disabled]="!canSlide">‹</button>
+        <button class="nav next" type="button" (click)="nextImage()" [disabled]="!canSlide">›</button>
 
         <div class="image-wrapper"
              [class.dragging]="isDragging"
@@ -27,7 +24,6 @@
              (pointerup)="onCarouselPointerUp($event)"
              (pointercancel)="onCarouselPointerCancel()"
              (click)="openZoom()">
-
           <div class="slide-track" [style.transform]="'translateX(' + dragOffsetX + 'px)'">
             <img class="main-img" [src]="activeImageUrl" [alt]="product.name" draggable="false" />
           </div>
@@ -38,59 +34,32 @@
                   *ngFor="let img of images; let i = index"
                   [class.active]="i === activeImageIndex"
                   (click)="setActiveImage(i); $event.stopPropagation()">
-            <img [src]="'http://localhost:8080' + img" [alt]="product.name + ' ' + (i + 1)" draggable="false" />
+            <img [src]="'http://localhost:8080' + img" [alt]="product.name" draggable="false" />
           </button>
         </div>
-
-        <p class="swipe-hint" *ngIf="canSlide">Swipe / drag • ← → • Clique pour zoom</p>
       </div>
     </div>
 
-    <!-- ===== INFOS ===== -->
     <div class="right">
       <h1>{{ product.name }}</h1>
 
-      <!-- ✅ PRIX + PROMO -->
       <div class="price-block">
-
         <div class="price-row" *ngIf="hasPromo; else normalPriceTpl">
-          <div class="sale-badge">
-            -{{ discountPercent }}%
-          </div>
-
+          <div class="sale-badge">-{{ discountPercent }}%</div>
           <div class="prices">
-            <div class="old">
-              {{ product.price | currency:'EUR' }}
-            </div>
-            <div class="new">
-              {{ effectivePrice | currency:'EUR' }}
-            </div>
+            <div class="old">{{ product.price | currency:'EUR' }}</div>
+            <div class="new">{{ effectivePrice | currency:'EUR' }}</div>
           </div>
         </div>
-
         <ng-template #normalPriceTpl>
           <p class="price">{{ product.price | currency:'EUR' }}</p>
         </ng-template>
 
-        <!-- ✅ ETAT PROMO + DATES -->
         <div class="promo-meta" *ngIf="promoStatus !== 'NONE'">
-          <span class="promo-pill"
-                [class.active]="promoStatus === 'ACTIVE'"
-                [class.upcoming]="promoStatus === 'UPCOMING'"
-                [class.expired]="promoStatus === 'EXPIRED'">
+          <span class="promo-pill" [class.active]="promoStatus === 'ACTIVE'" [class.expired]="promoStatus === 'EXPIRED'">
             {{ promoStatusLabel }}
           </span>
-
-          <div class="promo-dates" *ngIf="product.promoStartAt || product.promoEndAt">
-            <span *ngIf="product.promoStartAt">
-              Début : {{ product.promoStartAt | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-            <span *ngIf="product.promoEndAt">
-              Fin : {{ product.promoEndAt | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-          </div>
         </div>
-
       </div>
 
       <div class="wishlist-row">
@@ -103,13 +72,8 @@
         <p *ngIf="product.description">{{ product.description }}</p>
       </div>
 
-      <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
-        Stock disponible : {{ stockAvailable }} pièce(s).
-      </p>
-
-      <p class="stock-msg stock-error" *ngIf="isOutOfStock">
-        Produit actuellement en rupture de stock.
-      </p>
+      <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">Stock : {{ stockAvailable }}</p>
+      <p class="stock-msg stock-error" *ngIf="isOutOfStock">Rupture de stock</p>
 
       <div class="qty-row">
         <button type="button" class="round-btn" (click)="decrease()" [disabled]="quantity === 0">−</button>
@@ -117,26 +81,18 @@
         <button type="button" class="round-btn" (click)="increase()" [disabled]="!canIncrease">+</button>
       </div>
 
-      <p class="stock-msg inline-msg" *ngIf="stockMessage">{{ stockMessage }}</p>
-
       <button class="btn-cart-animated" type="button" (click)="addToCart()" [disabled]="isOutOfStock || !canIncrease">
         Ajouter au panier
       </button>
-
       <span class="added-msg" *ngIf="addedMessage">{{ addedMessage }}</span>
     </div>
   </div>
 
-  <!-- ========= SECTION AVIS (VERTICALE) ========= -->
   <section class="reviews-section">
-
     <header class="reviews-header-block">
       <h3>Avis clients</h3>
       <div class="rating-overview">
-        <div class="big-rating">
-          {{ totalReviews > 0 ? (averageRating | number:'1.1-1') : '-' }}
-          <span class="max">/5</span>
-        </div>
+        <div class="big-rating">{{ totalReviews > 0 ? (averageRating | number:'1.1-1') : '-' }} <span class="max">/5</span></div>
         <div class="stars-display">
           <span *ngFor="let s of [1,2,3,4,5]" class="star big" [class.filled]="s <= roundedAverage">★</span>
         </div>
@@ -146,14 +102,11 @@
 
     <div class="reviews-list-container">
       <p *ngIf="reviewsLoading" class="loading-text">Chargement des avis...</p>
-      <p *ngIf="reviewsError" class="error-text">{{ reviewsError }}</p>
+      <div *ngIf="!reviewsLoading && reviews.length === 0" class="empty-state">Aucun avis pour le moment.</div>
 
-      <div *ngIf="!reviewsLoading && !reviewsError && reviews.length === 0" class="empty-state">
-        Sois le premier à donner votre avis sur ce produit !
-      </div>
-
-      <ul class="review-list" *ngIf="!reviewsLoading && !reviewsError && reviews.length > 0">
+      <ul class="review-list" *ngIf="!reviewsLoading && reviews.length > 0">
         <li *ngFor="let r of reviews" class="review-card">
+
           <div class="review-card-header">
             <div class="user-info">
               <div class="avatar">{{ r.authorName ? r.authorName.charAt(0).toUpperCase() : '?' }}</div>
@@ -162,47 +115,46 @@
                 <span class="review-date">{{ r.createdAt | date:'dd MMM yyyy' }}</span>
               </div>
             </div>
-
             <div class="review-rating-stars">
               <span *ngFor="let s of [1,2,3,4,5]" class="star" [class.filled]="s <= r.rating">★</span>
             </div>
           </div>
 
-          <div class="review-content">
+          <div *ngIf="r.status === 'DELETED'" class="alert-deleted">
+            ⛔ Cet avis a été supprimé par l'équipe de modération (non-respect des conditions).
+          </div>
+
+          <div class="review-content" [class.content-muted]="r.status === 'DELETED'">
             <div *ngIf="editingReviewId !== r.id">
               <p class="comment-text">{{ r.comment }}</p>
 
-              <div class="review-actions" *ngIf="r.mine">
+              <div class="review-actions" *ngIf="r.mine && r.status !== 'DELETED'">
                 <button type="button" class="text-btn" (click)="startEdit(r)">Modifier</button>
                 <span class="separator">•</span>
                 <button type="button" class="text-btn danger" (click)="deleteReview(r)">Supprimer</button>
+              </div>
+
+              <div class="review-actions" *ngIf="r.mine && r.status === 'DELETED'">
+                <button type="button" class="text-btn danger" (click)="deleteReview(r)">Supprimer définitivement</button>
               </div>
             </div>
 
             <div *ngIf="editingReviewId === r.id" class="edit-box">
               <div class="form-row">
-                <label>Note :</label>
                 <select [(ngModel)]="editRating" class="input-dark">
-                  <option [value]="5">★★★★★ - Excellent</option>
-                  <option [value]="4">★★★★☆ - Très bon</option>
-                  <option [value]="3">★★★☆☆ - Correct</option>
-                  <option [value]="2">★★☆☆☆ - Moyen</option>
-                  <option [value]="1">★☆☆☆☆ - Mauvais</option>
+                  <option [value]="5">★★★★★</option>
+                  <option [value]="4">★★★★☆</option>
+                  <option [value]="3">★★★☆☆</option>
+                  <option [value]="2">★★☆☆☆</option>
+                  <option [value]="1">★☆☆☆☆</option>
                 </select>
               </div>
-
-              <div class="form-row">
-                <textarea rows="3" [(ngModel)]="editComment" class="input-dark"></textarea>
-              </div>
-
+              <textarea rows="3" [(ngModel)]="editComment" class="input-dark"></textarea>
               <div class="edit-buttons">
                 <button type="button" class="btn-cancel" (click)="cancelEdit()">Annuler</button>
-                <button type="button" class="btn-save" (click)="submitEdit(r)" [disabled]="editSubmitting">
-                  Enregistrer
-                </button>
+                <button type="button" class="btn-save" (click)="submitEdit(r)">Enregistrer</button>
               </div>
             </div>
-
           </div>
         </li>
       </ul>
@@ -211,79 +163,42 @@
     <div class="write-review-area">
       <div class="write-card">
         <h4>Donnez votre avis</h4>
-
-        <p *ngIf="!isLoggedIn" class="login-prompt">
-          <a routerLink="/login">Connectez-vous</a> pour partager votre expérience.
-        </p>
+        <p *ngIf="!isLoggedIn" class="login-prompt"><a routerLink="/login">Connectez-vous</a> pour donner votre avis.</p>
 
         <form *ngIf="isLoggedIn" (ngSubmit)="submitReview()" class="write-form">
-          <div class="rating-select-wrapper">
-            <label>Votre note globale</label>
-            <select name="rating" [(ngModel)]="reviewRating" class="input-dark large-select">
-              <option [value]="5">★★★★★ (Excellent)</option>
-              <option [value]="4">★★★★☆ (Très bon)</option>
-              <option [value]="3">★★★☆☆ (Correct)</option>
-              <option [value]="2">★★☆☆☆ (Moyen)</option>
-              <option [value]="1">★☆☆☆☆ (Mauvais)</option>
-            </select>
-          </div>
+          <label>Note</label>
+          <select name="rating" [(ngModel)]="reviewRating" class="input-dark">
+            <option [value]="5">★★★★★ Excellent</option>
+            <option [value]="4">★★★★☆ Très bon</option>
+            <option [value]="3">★★★☆☆ Correct</option>
+            <option [value]="2">★★☆☆☆ Moyen</option>
+            <option [value]="1">★☆☆☆☆ Mauvais</option>
+          </select>
 
-          <div class="comment-input-wrapper">
-            <label>Votre commentaire</label>
-            <textarea
-              name="comment"
-              rows="4"
-              placeholder="Qu'avez-vous pensé de la qualité, du design..."
-              [(ngModel)]="reviewComment"
-              class="input-dark"></textarea>
-          </div>
+          <label>Commentaire</label>
+          <textarea name="comment" rows="3" [(ngModel)]="reviewComment" class="input-dark" placeholder="Votre expérience..."></textarea>
 
           <div class="form-footer">
-            <p *ngIf="reviewError" class="error-msg">{{ reviewError }}</p>
-            <p *ngIf="reviewSuccessMsg" class="success-msg">{{ reviewSuccessMsg }}</p>
-
-            <button type="submit" class="btn-submit" [disabled]="reviewSubmitting">
-              {{ reviewSubmitting ? 'Envoi...' : 'Publier mon avis' }}
-            </button>
+            <span *ngIf="reviewError" class="error-msg">{{ reviewError }}</span>
+            <span *ngIf="reviewSuccessMsg" class="success-msg">{{ reviewSuccessMsg }}</span>
+            <button type="submit" class="btn-submit" [disabled]="reviewSubmitting">Publier</button>
           </div>
         </form>
       </div>
     </div>
-
   </section>
 </div>
 
-  <!-- ✅ ZOOM MODAL -->
-  <div class="zoom-backdrop" *ngIf="zoomOpen" (click)="onZoomBackdropClick($event)" (wheel)="onZoomWheel($event)">
-    <div class="zoom-panel" (click)="$event.stopPropagation()">
-      <div class="zoom-topbar">
-        <div class="zoom-title">Zoom image</div>
-
-        <div class="zoom-actions">
-          <button type="button" class="zbtn" (click)="zoomOut()" [disabled]="zoomScale <= zoomMin">−</button>
-          <button type="button" class="zbtn" (click)="resetZoom()">1:1</button>
-          <button type="button" class="zbtn" (click)="zoomIn()" [disabled]="zoomScale >= zoomMax">+</button>
-          <button type="button" class="zbtn danger" (click)="closeZoom()">✕</button>
-        </div>
-      </div>
-
-      <div class="zoom-body">
-        <img class="zoom-img"
-             [src]="activeImageUrl"
-             [style.transform]="'scale(' + zoomScale + ')'"
-             draggable="false"
-             alt="Zoom" />
-      </div>
-
-      <div class="zoom-hint">
-        Molette pour zoom • ESC pour fermer • ← → pour changer
-      </div>
+<div class="zoom-backdrop" *ngIf="zoomOpen" (click)="closeZoom()" (wheel)="onZoomWheel($event)">
+  <div class="zoom-panel" (click)="$event.stopPropagation()">
+    <div class="zoom-topbar">
+      <span>Zoom</span>
+      <button class="zbtn danger" (click)="closeZoom()">✕</button>
+    </div>
+    <div class="zoom-body">
+      <img [src]="activeImageUrl" class="zoom-img" [style.transform]="'scale(' + zoomScale + ')'">
     </div>
   </div>
+</div>
 
-<ng-template #loadingTpl>
-  <div class="product-detail-page center">
-    <p *ngIf="loading">Chargement…</p>
-    <p *ngIf="!loading && error">{{ error }}</p>
-  </div>
-</ng-template>
+<ng-template #loadingTpl><p class="center">Chargement...</p></ng-template>

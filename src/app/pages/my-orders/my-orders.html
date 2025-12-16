@@ -14,6 +14,7 @@
 
   <div class="orders-list" *ngIf="!loading && !error && orders.length > 0">
     <article class="order-card" *ngFor="let o of orders">
+
       <div class="order-main">
         <div>
           <h2>{{ 'orders.card.titlePrefix' | t }} {{ o.reference }}</h2>
@@ -35,6 +36,12 @@
 
       <div class="order-summary">
         {{ o.items.length }} {{ 'orders.itemsSuffix' | t }}
+      </div>
+
+      <div class="pending-warning" *ngIf="o.status === 'PENDING'">
+        ⚠️ <strong>Attention :</strong> Vous avez jusqu'au
+        <b>{{ getExpirationDate(o.createdAt) | date:'dd/MM/yyyy à HH:mm' }}</b>
+        pour régler cette commande. Passé ce délai, elle sera automatiquement annulée.
       </div>
 
       <div class="return-info" *ngIf="o.status === 'RETURN_REQUESTED'">

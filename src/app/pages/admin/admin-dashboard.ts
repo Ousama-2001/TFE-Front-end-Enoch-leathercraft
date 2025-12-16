@@ -51,7 +51,6 @@ export class AdminDashboardComponent implements OnInit {
   productSearchTerm: string = '';
   productsMode: 'active' | 'archived' = 'active';
 
-  // ✅ Variable pour message d'erreur formulaire
   productFormError: string | null = null;
 
   stats: SalesStatsResponse | null = null;
@@ -126,6 +125,9 @@ export class AdminDashboardComponent implements OnInit {
   couponForm: CouponRequest = { code: '', percent: 10, startsAt: null, endsAt: null, active: true, maxUses: null };
   editingCouponId: number | null = null;
   couponSubmitting = false;
+
+  // ✅ NOUVEAU : Objet pour erreurs par champ
+  couponErrors: { [key: string]: string } = {};
 
   showReturnDetailsModal = false;
   showRejectModal = false;
@@ -214,11 +216,9 @@ export class AdminDashboardComponent implements OnInit {
   get totalProductsPages() { return Math.ceil(this.filteredProducts.length / this.pageSize) || 1; }
   changeProductsPage(delta: number) { this.productsPage = Math.max(1, Math.min(this.totalProductsPages, this.productsPage + delta)); }
 
-  // FILTRE COMMANDES
   get filteredOrders() {
     let list = this.sortedOrders;
     list = list.filter(o => !['RETURN_REQUESTED', 'RETURN_APPROVED', 'RETURN_REJECTED'].includes(o.status));
-
     if (this.orderStatusFilter !== 'ALL') { list = list.filter(o => (o as any).status === this.orderStatusFilter); }
     if (this.orderSearchTerm.trim()) { list = list.filter(o => o.reference.toLowerCase().includes(this.orderSearchTerm.toLowerCase())); }
     return list;
@@ -227,24 +227,17 @@ export class AdminDashboardComponent implements OnInit {
   get totalOrdersPages() { return Math.ceil(this.filteredOrders.length/this.pageSize)||1; }
   changeOrdersPage(d:number){ this.ordersPage=Math.max(1,Math.min(this.totalOrdersPages,this.ordersPage+d)); }
 
-  // FILTRE RETOURS
   get sortedReturnOrdersAll() { return this.sortedOrders.filter(o=>{const s=(o as any).status; return s==='RETURN_REQUESTED'||s==='RETURN_APPROVED'||s==='RETURN_REJECTED'}); }
-
   get filteredReturns() {
     let list = this.sortedReturnOrdersAll;
-    if (this.returnStatusFilter !== 'ALL') {
-      list = list.filter(o => o.status === this.returnStatusFilter);
-    }
+    if (this.returnStatusFilter !== 'ALL') { list = list.filter(o => o.status === this.returnStatusFilter); }
     if (this.returnSearchTerm.trim()) {
       const term = this.returnSearchTerm.toLowerCase().trim();
       list = list.filter(o => o.reference.toLowerCase().includes(term));
     }
     return list;
   }
-  get paginatedReturns() {
-    const s=(this.returnsPage-1)*this.pageSize;
-    return this.filteredReturns.slice(s,s+this.pageSize);
-  }
+  get paginatedReturns() { const s=(this.returnsPage-1)*this.pageSize; return this.filteredReturns.slice(s,s+this.pageSize); }
   get totalReturnsPages() { return Math.ceil(this.filteredReturns.length/this.pageSize)||1; }
   changeReturnsPage(d:number){ this.returnsPage=Math.max(1,Math.min(this.totalReturnsPages,this.returnsPage+d)); }
 
@@ -284,7 +277,6 @@ export class AdminDashboardComponent implements OnInit {
   get sortedOrders() { return [...this.orders].sort((a,b)=>new Date((b as any).createdAt).getTime()-new Date((a as any).createdAt).getTime()); }
   getStatusClass(s:string){ return s.toLowerCase(); }
 
-  // Helper pour afficher le statut propre
   getStatusLabel(status: string): string {
     const allOptions = [...this.orderStatusOptions, ...this.returnStatusOptions];
     const found = allOptions.find(o => o.value === status);
@@ -295,22 +287,13 @@ export class AdminDashboardComponent implements OnInit {
   closeOrderModal(){ this.showOrderModal=false; }
   saveOrderStatusFromModal(){ if(this.selectedOrder) this.adminStatsService.updateOrderStatus((this.selectedOrder as any).id, this.modalStatus).subscribe({next:u=>{this.orders=this.orders.map(o=>(o as any).id===(u as any).id?u:o);this.closeOrderModal()}});}
 
-  openReturnDetails(o:any){
-    this.selectedReturnOrder=o;
-    this.modalStatus = o.status;
-    this.showReturnDetailsModal=true;
-  }
+  openReturnDetails(o:any){ this.selectedReturnOrder=o; this.modalStatus = o.status; this.showReturnDetailsModal=true; }
   closeReturnDetails(){ this.showReturnDetailsModal=false; }
-
   saveReturnStatusFromModal(){
     if(!this.selectedReturnOrder) return;
     const id = (this.selectedReturnOrder as any).id;
-
     this.adminStatsService.updateOrderStatus(id, this.modalStatus).subscribe({
-      next: u => {
-        this.orders = this.orders.map(o => (o as any).id === (u as any).id ? u : o);
-        this.closeReturnDetails();
-      },
+      next: u => { this.orders = this.orders.map(o => (o as any).id === (u as any).id ? u : o); this.closeReturnDetails(); },
       error: () => alert("Erreur mise à jour retour")
     });
   }
@@ -357,83 +340,25 @@ export class AdminDashboardComponent implements OnInit {
     return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + String(Date.now()).slice(-4);
   }
 
-  // ✅ VALIDATION STRICTE
   submitForm(){
     this.productFormError = null;
-
-    // 1. Validation Nom
-    if (!this.newProduct.name || this.newProduct.name.trim() === '') {
-      this.productFormError = "Le nom du produit est obligatoire.";
-      return;
-    }
-
-    // 2. Validation Catégories
-    if (!this.newProduct.segmentCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Segment.";
-      return;
-    }
-    if (!this.newProduct.typeCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Type.";
-      return;
-    }
-
-    // 3. Validation SKU
-    if (!this.newProduct.sku || this.newProduct.sku.trim() === '') {
-      this.productFormError = "Le SKU est obligatoire.";
-      return;
-    }
-
-    // 4. Validation Prix (Max 1000€)
-    if (this.newProduct.price === null || this.newProduct.price === undefined) {
-      this.productFormError = "Le prix est obligatoire.";
-      return;
-    }
-    if (Number(this.newProduct.price) < 0) {
-      this.productFormError = "Le prix ne peut pas être négatif.";
-      return;
-    }
-    if (Number(this.newProduct.price) > 1000) {
-      this.productFormError = "Le prix ne peut pas dépasser 1000€.";
-      return;
-    }
-
-    // 5. Validation Poids (Max 5kg)
+    if (!this.newProduct.name || this.newProduct.name.trim() === '') { this.productFormError = "Le nom du produit est obligatoire."; return; }
+    if (!this.newProduct.segmentCategoryId) { this.productFormError = "Veuillez sélectionner un Segment."; return; }
+    if (!this.newProduct.typeCategoryId) { this.productFormError = "Veuillez sélectionner un Type."; return; }
+    if (!this.newProduct.sku || this.newProduct.sku.trim() === '') { this.productFormError = "Le SKU est obligatoire."; return; }
+    if (this.newProduct.price === null || this.newProduct.price === undefined) { this.productFormError = "Le prix est obligatoire."; return; }
+    if (Number(this.newProduct.price) < 0) { this.productFormError = "Le prix ne peut pas être négatif."; return; }
+    if (Number(this.newProduct.price) > 1000) { this.productFormError = "Le prix ne peut pas dépasser 1000€."; return; }
     if (this.newProduct.weightGrams !== null && this.newProduct.weightGrams !== undefined) {
-      if(Number(this.newProduct.weightGrams) < 0) {
-        this.productFormError = "Le poids ne peut pas être négatif.";
-        return;
-      }
-      if(Number(this.newProduct.weightGrams) > 5000) {
-        this.productFormError = "Le poids ne peut pas dépasser 5000g (5kg).";
-        return;
-      }
+      if(Number(this.newProduct.weightGrams) < 0) { this.productFormError = "Le poids ne peut pas être négatif."; return; }
+      if(Number(this.newProduct.weightGrams) > 5000) { this.productFormError = "Le poids ne peut pas dépasser 5000g (5kg)."; return; }
     }
-
-    // 6. Validation Description (Max 1000 chars)
-    if (this.newProduct.description && this.newProduct.description.length > 1000) {
-      this.productFormError = "La description est trop longue (max 1000 caractères).";
-      return;
-    }
-
-    // 7. Validation Promo
+    if (this.newProduct.description && this.newProduct.description.length > 1000) { this.productFormError = "La description est trop longue (max 1000 caractères)."; return; }
     if (this.hasPromo) {
-      if (this.newProduct.promoPrice === null || this.newProduct.promoPrice === undefined) {
-        this.productFormError = "Le prix promo est obligatoire.";
-        return;
-      }
-      if (Number(this.newProduct.promoPrice) >= Number(this.newProduct.price)) {
-        this.productFormError = "Le prix promo doit être inférieur au prix normal.";
-        return;
-      }
-      if (!this.newProduct.promoStartAt) {
-        this.productFormError = "La date de début est obligatoire.";
-        return;
-      }
-      // Validation dates
-      if (this.newProduct.promoEndAt && new Date(this.newProduct.promoStartAt) > new Date(this.newProduct.promoEndAt)) {
-        this.productFormError = "La date de début ne peut pas être postérieure à la date de fin.";
-        return;
-      }
+      if (this.newProduct.promoPrice === null || this.newProduct.promoPrice === undefined) { this.productFormError = "Le prix promo est obligatoire."; return; }
+      if (Number(this.newProduct.promoPrice) >= Number(this.newProduct.price)) { this.productFormError = "Le prix promo doit être inférieur au prix normal."; return; }
+      if (!this.newProduct.promoStartAt) { this.productFormError = "La date de début est obligatoire."; return; }
+      if (this.newProduct.promoEndAt && new Date(this.newProduct.promoStartAt) > new Date(this.newProduct.promoEndAt)) { this.productFormError = "La date de début ne peut pas être postérieure à la date de fin."; return; }
     }
 
     this.isSubmitting=true;
@@ -476,14 +401,66 @@ export class AdminDashboardComponent implements OnInit {
   restoreProduct(p:Product){ if(p.id) this.productService.restore(p.id).subscribe({next:()=>this.loadProducts()}); }
 
   loadCoupons(){ this.couponsLoading=true; this.couponService.getAllAdmin().subscribe({next:l=>{this.coupons=(l??[]).sort((a,b)=>(a.code||'').localeCompare(b.code||''));this.couponsLoading=false},error:()=>this.couponsLoading=false}); }
-  clampCouponPercent(){ let v=Number(this.couponForm.percent); if(v<1)v=1; if(v>90)v=90; this.couponForm.percent=v; }
-  resetCouponForm(){ this.editingCouponId=null; this.couponForm={code:'',percent:10,startsAt:null,endsAt:null,active:true,maxUses:null}; }
-  submitCouponForm(){
-    const pl={...this.couponForm, code:this.couponForm.code.toUpperCase(), startsAt:this.couponForm.startsAt?`${this.couponForm.startsAt}T00:00:00Z`:null, endsAt:this.couponForm.endsAt?`${this.couponForm.endsAt}T23:59:59Z`:null};
-    if(this.editingCouponId==null) this.couponService.createAdmin(pl).subscribe({next:c=>{this.coupons.unshift(c);this.resetCouponForm()},error:()=>alert('Erreur')});
-    else this.couponService.updateAdmin(this.editingCouponId, pl).subscribe({next:u=>{this.coupons=this.coupons.map(c=>c.id===u.id?u:c);this.resetCouponForm()},error:()=>alert('Erreur')});
+
+  resetCouponForm(){
+    this.editingCouponId=null;
+    this.couponErrors={}; // Reset erreurs
+    this.couponForm={code:'',percent:10,startsAt:null,endsAt:null,active:true,maxUses:null};
   }
-  editCoupon(c:any){ this.editingCouponId=c.id; this.couponForm={...c, startsAt:c.startsAt?c.startsAt.substring(0,10):null, endsAt:c.endsAt?c.endsAt.substring(0,10):null}; }
+
+  // ✅ VALIDATION COUPON AVEC MESSAGES PAR CHAMP
+  submitCouponForm(){
+    this.couponErrors = {}; // Reset erreurs
+    let isValid = true;
+
+    // 1. Code
+    if (!this.couponForm.code || this.couponForm.code.trim() === '') {
+      this.couponErrors['code'] = "Le code est obligatoire.";
+      isValid = false;
+    }
+
+    // 2. Pourcentage
+    if (this.couponForm.percent === null || this.couponForm.percent === undefined) {
+      this.couponErrors['percent'] = "Le pourcentage est requis.";
+      isValid = false;
+    } else if (this.couponForm.percent < 1 || this.couponForm.percent > 100) {
+      this.couponErrors['percent'] = "Le pourcentage doit être entre 1 et 100.";
+      isValid = false;
+    }
+
+    // 3. Dates
+    if (this.couponForm.startsAt && this.couponForm.endsAt) {
+      const start = new Date(this.couponForm.startsAt);
+      const end = new Date(this.couponForm.endsAt);
+      if (end < start) {
+        this.couponErrors['dates'] = "La date de fin doit être après la date de début.";
+        isValid = false;
+      }
+    }
+
+    if (!isValid) return;
+
+    this.couponSubmitting = true;
+    const pl={...this.couponForm, code:this.couponForm.code.toUpperCase(), startsAt:this.couponForm.startsAt?`${this.couponForm.startsAt}T00:00:00Z`:null, endsAt:this.couponForm.endsAt?`${this.couponForm.endsAt}T23:59:59Z`:null};
+
+    if(this.editingCouponId==null) {
+      this.couponService.createAdmin(pl).subscribe({
+        next:c=>{this.coupons.unshift(c);this.resetCouponForm();this.couponSubmitting=false},
+        error:()=>{alert('Erreur création');this.couponSubmitting=false}
+      });
+    } else {
+      this.couponService.updateAdmin(this.editingCouponId, pl).subscribe({
+        next:u=>{this.coupons=this.coupons.map(c=>c.id===u.id?u:c);this.resetCouponForm();this.couponSubmitting=false},
+        error:()=>{alert('Erreur mise à jour');this.couponSubmitting=false}
+      });
+    }
+  }
+
+  editCoupon(c:any){
+    this.editingCouponId=c.id;
+    this.couponErrors={};
+    this.couponForm={...c, startsAt:c.startsAt?c.startsAt.substring(0,10):null, endsAt:c.endsAt?c.endsAt.substring(0,10):null};
+  }
   deleteCoupon(c:any){ if(confirm('Supprimer?')) this.couponService.deleteAdmin(c.id).subscribe({next:()=>this.coupons=this.coupons.filter(x=>x.id!==c.id)}); }
   getCouponStatusLabel(c:any){ return c.active?'Actif':'Inactif'; }
   getCouponStatusClass(c:any){ return c.active?'pill-ok':'pill-off'; }

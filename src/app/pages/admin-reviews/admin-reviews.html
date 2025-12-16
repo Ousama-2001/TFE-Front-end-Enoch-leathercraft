@@ -1,188 +1,78 @@
-<!-- src/app/pages/admin-reviews/admin-reviews.html -->
-<div class="admin-reviews-root">
-
-  <!-- HEADER -->
-  <header class="page-header">
-    <div>
-      <h1>Gestion des avis produits</h1>
-      <p class="subtitle">
-        Modérez les avis laissés par les clients sur les produits Enoch Leathercraft.
-      </p>
-    </div>
-  </header>
-
-  <!-- FILTRES -->
-  <section class="panel filters-panel">
-    <h2 class="section-title">Filtres</h2>
-
-    <div class="filters-row">
-      <!-- Statut -->
-      <div class="form-group">
-        <label for="statusFilter">Statut</label>
-        <select
-          id="statusFilter"
-          [(ngModel)]="statusFilter"
-          (ngModelChange)="applyFilters()">
-          <option *ngFor="let opt of statusOptions" [ngValue]="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </div>
-
-      <!-- ID produit -->
-      <div class="form-group">
-        <label for="productIdFilter">ID Produit</label>
-        <input
-          id="productIdFilter"
-          type="number"
-          [(ngModel)]="productIdFilter"
-          (keyup.enter)="applyFilters()"
-          placeholder="ex : 12" />
-      </div>
-
-      <!-- Client (email ou nom) -->
-      <div class="form-group">
-        <label for="customerFilter">Email / nom client</label>
-        <input
-          id="customerFilter"
-          type="text"
-          [(ngModel)]="customerFilter"
-          (keyup.enter)="applyFilters()"
-          placeholder="Filtrer par email ou nom..." />
-      </div>
-
-      <!-- Boutons -->
-      <div class="filters-actions">
-        <button class="btn primary" type="button" (click)="applyFilters()">
-          Filtrer
-        </button>
-        <button class="btn btn-reset" type="button" (click)="resetFilters()">
-          Réinitialiser
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ÉTAT GÉNÉRAL -->
-  <div class="state-messages">
-    <p *ngIf="loading" class="loading-message">
-      <span class="spinner">⏳</span> Chargement des avis...
-    </p>
-
-    <p *ngIf="error" class="error-message">
-      ⚠️ {{ error }}
-    </p>
+<div class="admin-page">
+  <div class="header">
+    <h1>Gestion des Avis</h1>
+    <p>Modérez les avis clients (Visibles / Supprimés)</p>
   </div>
 
-  <!-- TABLEAU AVIS -->
-  <section class="panel reviews-panel">
-    <h2 class="section-title">Liste des avis</h2>
+  <div class="toolbar">
+    <div class="filters-group">
+      <button class="filter-btn" [class.active]="filterStatus === 'ALL'" (click)="setFilter('ALL')">Tous</button>
+      <button class="filter-btn visible" [class.active]="filterStatus === 'VISIBLE'" (click)="setFilter('VISIBLE')">Visibles</button>
+      <button class="filter-btn deleted" [class.active]="filterStatus === 'DELETED'" (click)="setFilter('DELETED')">Supprimés</button>
+    </div>
+    <div class="search-box">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="🔍 Rechercher (client, produit, avis)...">
+    </div>
+  </div>
 
-    <p *ngIf="!loading && reviews.length === 0 && !error" class="empty-message">
-      Aucun avis ne correspond aux filtres actuels.
-    </p>
+  <div *ngIf="loading" class="loading">Chargement...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
 
-    <table class="reviews-table" *ngIf="!loading && reviews.length > 0">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Produit</th>
-        <th>Client</th>
-        <th>Note</th>
-        <th>Commentaire</th>
-        <th>Statut</th>
-        <th>Créé le</th>
-        <th class="col-actions">Actions</th>
-      </tr>
-      </thead>
+  <div class="reviews-grid" *ngIf="!loading">
 
-      <tbody>
-      <tr *ngFor="let r of reviews">
-        <!-- ID -->
-        <td>#{{ r.id }}</td>
+    <div
+      class="review-card"
+      *ngFor="let r of filteredReviews"
+      [ngClass]="{
+        'status-visible': r.status === 'VISIBLE',
+        'status-deleted': r.status === 'DELETED'
+      }"
+    >
+      <div class="card-header">
+        <span class="product-name" [title]="r.productName || 'Produit Inconnu'">
+          {{ r.productName || 'Produit Inconnu' }}
+        </span>
 
-        <!-- Produit -->
-        <td>
-          <div class="product-cell">
-            <div class="product-name">{{ r.productName || 'Produit supprimé' }}</div>
-            <div class="product-id" *ngIf="r.productId">ID : {{ r.productId }}</div>
-          </div>
-        </td>
+        <span class="status-badge">
+          <ng-container *ngIf="r.status === 'VISIBLE'">✅ Visible</ng-container>
+          <ng-container *ngIf="r.status === 'DELETED'">🗑 Supprimé</ng-container>
+        </span>
+      </div>
 
-        <!-- Client -->
-        <td>
-          <div class="customer-cell">
-            <div class="customer-name">
-              {{ r.authorName || 'Client' }}
-            </div>
-            <div class="customer-email" *ngIf="r.userEmail">
-              {{ r.userEmail }}
-            </div>
-          </div>
-        </td>
+      <div class="card-body">
+        <div class="meta">
+          <span class="author">👤 {{ r.userEmail || r.authorName || 'Anonyme' }}</span>
+          <span class="date">📅 {{ r.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
 
-        <!-- Note -->
-        <td>
-          <div class="rating-stars">
-            <ng-container *ngFor="let s of getStars(r.rating); let i = index">
-              <span class="star" [class.filled]="i < r.rating">★</span>
-            </ng-container>
-            <span class="rating-value">{{ r.rating }}/5</span>
-          </div>
-        </td>
+        <div class="rating">
+          <span *ngFor="let i of [1,2,3,4,5]" [class.filled]="i <= r.rating">★</span>
+        </div>
 
-        <!-- Commentaire -->
-        <td>
-          <div class="comment-cell">
-            {{ r.comment || '—' }}
-          </div>
-        </td>
+        <p class="comment">"{{ r.comment }}"</p>
+      </div>
 
-        <!-- Statut -->
-        <td>
-          <span [ngClass]="badgeClass(r.status)">
-            {{ r.status }}
-          </span>
-        </td>
+      <div class="card-actions">
+        <button
+          *ngIf="r.status === 'DELETED'"
+          class="btn-approve"
+          (click)="makeVisible(r.id)">
+          ♻️ Restaurer
+        </button>
 
-        <!-- Date -->
-        <td>
-          {{ r.createdAt | date : 'dd/MM/yyyy HH:mm' }}
-        </td>
+        <button
+          *ngIf="r.status === 'VISIBLE'"
+          class="btn-delete"
+          (click)="deleteReview(r.id)"
+          title="Masquer cet avis">
+          🚫 Supprimer
+        </button>
+      </div>
+    </div>
 
-        <!-- Actions -->
-        <td class="col-actions">
-          <div class="actions">
-            <!-- Rendre visible -->
-            <button
-              type="button"
-              class="btn btn-small"
-              [disabled]="actionId === r.id || r.status === statuses.VISIBLE"
-              (click)="changeStatus(r, statuses.VISIBLE)">
-              Visible
-            </button>
+  </div>
 
-            <!-- Masquer -->
-            <button
-              type="button"
-              class="btn btn-small"
-              [disabled]="actionId === r.id || r.status === statuses.HIDDEN"
-              (click)="changeStatus(r, statuses.HIDDEN)">
-              Masqué
-            </button>
-
-            <!-- Mettre en DELETED (soft-delete admin) -->
-            <button
-              type="button"
-              class="btn btn-small btn-danger"
-              [disabled]="actionId === r.id || r.status === statuses.DELETED"
-              (click)="changeStatus(r, statuses.DELETED)">
-              Supprimer
-            </button>
-          </div>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
+  <div *ngIf="!loading && filteredReviews.length === 0" class="empty">
+    Aucun avis trouvé.
+  </div>
 </div>
