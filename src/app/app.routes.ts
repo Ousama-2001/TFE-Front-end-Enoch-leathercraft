@@ -17,7 +17,8 @@ export const routes: Routes = [
   // --- Homepage ---
   {
     path: 'home',
-    loadComponent: () => import('./pages/home/home').then((m) => m.HomeComponent),
+    loadComponent: () =>
+      import('./pages/home/home').then((m) => m.HomeComponent),
   },
 
   // --- Routes Publiques ---
@@ -34,18 +35,18 @@ export const routes: Routes = [
       ),
   },
 
-
+  // --- Panier ---
   {
     path: 'cart',
     canActivate: [authGuard],
-    loadComponent: () => import('./pages/cart/cart').then((m) => m.CartComponent),
+    loadComponent: () =>
+      import('./pages/cart/cart').then((m) => m.CartComponent),
   },
 
-
-  // ✅ CHECKOUT protégé
+  // --- Checkout ---
   { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
 
-  // ✅ WISHLIST protégé
+  // --- Wishlist ---
   {
     path: 'wishlist',
     canActivate: [authGuard],
@@ -53,7 +54,7 @@ export const routes: Routes = [
       import('./pages/wishlist/wishlist').then((m) => m.WishlistComponent),
   },
 
-  // ✅ Profil protégé
+  // --- Profil / Compte ---
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -63,12 +64,14 @@ export const routes: Routes = [
       ),
   },
 
-  // ✅ Commandes client protégées
+  // --- Commandes client ---
   {
     path: 'my-orders',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./pages/my-orders/my-orders').then((m) => m.MyOrdersComponent),
+      import('./pages/my-orders/my-orders').then(
+        (m) => m.MyOrdersComponent
+      ),
   },
   {
     path: 'my-orders/:id',
@@ -95,13 +98,23 @@ export const routes: Routes = [
       ),
   },
 
-  // --- Page de Succès ---
+  // ✅ CONFIRMATION CHANGEMENT EMAIL (PUBLIC)
+  {
+    path: 'confirm-email-change',
+    loadComponent: () =>
+      import('./pages/confirm-email-change/confirm-email-change').then(
+        (m) => m.ConfirmEmailChangeComponent
+      ),
+  },
+
+  // --- Page de Succès commande ---
   { path: 'order-success/:reference', component: OrderSuccessComponent },
 
   // --- Pages simples ---
   {
     path: 'about',
-    loadComponent: () => import('./pages/about/about').then((m) => m.AboutComponent),
+    loadComponent: () =>
+      import('./pages/about/about').then((m) => m.AboutComponent),
   },
   {
     path: 'contact',
@@ -110,7 +123,8 @@ export const routes: Routes = [
   },
   {
     path: 'terms',
-    loadComponent: () => import('./pages/terms/terms').then((m) => m.TermsComponent),
+    loadComponent: () =>
+      import('./pages/terms/terms').then((m) => m.TermsComponent),
   },
   {
     path: 'privacy',

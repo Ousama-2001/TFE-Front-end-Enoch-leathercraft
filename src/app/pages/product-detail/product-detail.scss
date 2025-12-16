@@ -1,4 +1,6 @@
-/* ========= CONFIGURATION GLOBALE ========= */
+/* =============================================
+   1. CONFIGURATION GLOBALE & LAYOUT
+   ============================================= */
 .product-detail-page {
   min-height: 100vh;
   padding: 22px 20px 60px;
@@ -12,7 +14,9 @@
   &.center { justify-content: center; }
 }
 
-/* ===== TOPBAR + RETOUR (mieux) ===== */
+/* =============================================
+   2. TOPBAR & RETOUR
+   ============================================= */
 .topbar {
   width: 100%;
   max-width: 1100px;
@@ -20,7 +24,6 @@
   top: 10px;
   z-index: 5;
   display: flex;
-  align-items: center;
   justify-content: flex-start;
   padding: 6px 0 14px;
 }
@@ -52,8 +55,8 @@
 
   .txt {
     font-weight: 700;
-    letter-spacing: 0.2px;
     font-size: 0.92rem;
+    letter-spacing: 0.2px;
   }
 
   &:hover {
@@ -65,7 +68,22 @@
   &:active { transform: translateY(0); }
 }
 
-/* ========= CARTE PRODUIT ========= */
+.auth-warning {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 165, 0, 0.12);
+  border: 1px solid rgba(255, 165, 0, 0.35);
+  color: #ffd08a;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* =============================================
+   3. CARTE PRODUIT PRINCIPALE
+   ============================================= */
 .product-detail-card {
   width: 100%;
   max-width: 1100px;
@@ -81,7 +99,7 @@
   margin-bottom: 25px;
 }
 
-/* ========= GALERIE ========= */
+/* --- GALERIE PREMIUM --- */
 .gallery {
   position: relative;
   display: flex;
@@ -95,33 +113,36 @@
   aspect-ratio: 1;
   border-radius: 16px;
   background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   user-select: none;
-  touch-action: pan-y; /* important: permet scroll vertical mais swipe horizontal ok */
+  cursor: zoom-in;
+  touch-action: pan-y;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.35);
 
-  img {
+  &.dragging { cursor: grabbing; }
+
+  .slide-track {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    will-change: transform;
+    transition: none;
+  }
+
+  &.animating .slide-track {
+    transition: transform 220ms cubic-bezier(.2,.9,.2,1);
+  }
+
+  .main-img {
     max-width: 90%;
     max-height: 90%;
     object-fit: contain;
     filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
-    will-change: transform, opacity;
+    user-select: none;
+    pointer-events: none;
   }
-}
-
-/* Anim slide (mieux) */
-.slide-left { animation: slideLeft 0.22s ease-out; }
-.slide-right { animation: slideRight 0.22s ease-out; }
-
-@keyframes slideLeft {
-  from { transform: translateX(18px); opacity: 0.55; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideRight {
-  from { transform: translateX(-18px); opacity: 0.55; }
-  to { transform: translateX(0); opacity: 1; }
 }
 
 .nav {
@@ -175,6 +196,8 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    user-select: none;
+    pointer-events: none;
   }
 
   &:hover {
@@ -195,7 +218,7 @@
   opacity: 0.9;
 }
 
-/* ========= INFO DROITE ========= */
+/* --- INFO DROITE (TEXTE, PRIX, META) --- */
 .right {
   display: flex;
   flex-direction: column;
@@ -206,13 +229,6 @@
     font-size: 2rem;
     line-height: 1.1;
     font-weight: 700;
-  }
-
-  .price {
-    font-size: 1.5rem;
-    color: #fbbf24;
-    font-weight: 700;
-    margin: 0;
   }
 
   .wishlist-row {
@@ -266,7 +282,93 @@
   }
 }
 
-/* ========= STOCK MESSAGES ========= */
+/* --- PRIX & PROMOS --- */
+.price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sale-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.45);
+  color: #bbf7d0;
+}
+
+.prices {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prices .old {
+  color: #94a3b8;
+  text-decoration: line-through;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.prices .new {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+.promo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promo-pill {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.65);
+  color: #e5e7eb;
+}
+
+.promo-pill.active {
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.promo-pill.upcoming {
+  border-color: rgba(59, 130, 246, 0.55);
+  background: rgba(59, 130, 246, 0.12);
+  color: #bfdbfe;
+}
+
+.promo-pill.expired {
+  border-color: rgba(239, 68, 68, 0.55);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+}
+
+.promo-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+/* --- STOCK & BOUTONS --- */
 .stock-msg {
   font-size: 0.85rem;
   margin-top: 4px;
@@ -276,7 +378,6 @@
   &.inline-msg { margin-top: 10px; }
 }
 
-/* ========= BOUTONS + / - (comme avant) ========= */
 .qty-row {
   display: flex;
   align-items: center;
@@ -311,7 +412,6 @@
   }
 }
 
-/* ========= BOUTON PANIER ========= */
 .btn-cart-animated {
   background: linear-gradient(135deg, #a855f7, #ec4899);
   color: white;
@@ -345,7 +445,9 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== AVIS (inchangé) ===== */
+/* =============================================
+   4. AVIS / REVIEWS (Réintégré depuis l'ancien)
+   ============================================= */
 .reviews-section {
   width: 100%;
   max-width: 1100px;
@@ -540,6 +642,108 @@
 .error-msg { color: #f87171; font-size: 0.9rem; }
 .success-msg { color: #4ade80; font-size: 0.9rem; }
 
+/* =============================================
+   5. ZOOM MODAL
+   ============================================= */
+.zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.zoom-panel {
+  width: min(1100px, 96vw);
+  height: min(720px, 90vh);
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 18px;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.zoom-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(2, 6, 23, 0.35);
+
+  .zoom-title {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: #e5e7eb;
+  }
+
+  .zoom-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .zbtn {
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: #e5e7eb;
+    cursor: pointer;
+    font-weight: 800;
+    transition: transform 0.12s ease, background 0.12s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: rgba(99,102,241,0.18);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    &.danger:hover:not(:disabled) {
+      background: rgba(239,68,68,0.18);
+      border-color: rgba(239,68,68,0.35);
+    }
+  }
+}
+
+.zoom-body {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 23, 0.25);
+  overflow: auto;
+}
+
+.zoom-img {
+  max-width: 92%;
+  max-height: 92%;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.6));
+  transform-origin: center center;
+  transition: transform 120ms ease-out;
+  user-select: none;
+}
+
+.zoom-hint {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(2, 6, 23, 0.28);
+}
+
+/* =============================================
+   6. RESPONSIVE
+   ============================================= */
 @media (max-width: 900px) {
   .product-detail-page { padding: 16px 15px 80px; }
 
@@ -549,20 +753,8 @@
     padding: 24px;
   }
 
+  /* Responsive Avis */
   .review-content { margin-left: 0; margin-top: 10px; }
   .edit-box { margin-left: 0; }
   .btn-submit { width: 100%; }
-}
-
-.auth-warning {
-  max-width: 1100px;
-  width: 100%;
-  margin: 0 auto 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(255, 165, 0, 0.12);
-  border: 1px solid rgba(255, 165, 0, 0.35);
-  color: #ffd08a;
-  font-weight: 600;
-  text-align: center;
 }

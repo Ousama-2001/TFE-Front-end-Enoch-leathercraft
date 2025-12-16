@@ -52,9 +52,22 @@ export class AccountService {
     });
   }
 
+  // ✅ -------- SÉCURITÉ : CHANGEMENT EMAIL (demande) --------
+  requestEmailChange(payload: { newEmail: string; currentPassword: string }): Observable<string> {
+    return this.http.post(`${this.api}/profile/email-change-request`, payload, {
+      responseType: 'text'
+    });
+  }
+
+  // ✅ -------- SÉCURITÉ : CONFIRMATION EMAIL (token) --------
+  confirmEmailChange(payload: { token: string }): Observable<string> {
+    return this.http.post(`${this.api}/profile/email-change-confirm`, payload, {
+      responseType: 'text'
+    });
+  }
+
   // -------- SUPPRESSION COMPTE --------
   deleteMyAccount() {
     return this.http.delete('/api/me');
   }
-
 }

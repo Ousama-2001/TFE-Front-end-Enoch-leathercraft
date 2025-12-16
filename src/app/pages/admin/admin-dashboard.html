@@ -1,728 +1,624 @@
-<!-- src/app/pages/admin/admin-dashboard.html -->
 <div class="admin-dashboard">
 
-  <!-- HEADER + ONGLET -->
   <div class="admin-header">
-    <h1>Tableau de bord administrateur</h1>
-    <p class="subtitle">
-      Gestion des ventes, des produits, du stock et des utilisateurs pour Enoch Leathercraft.
-    </p>
-
-    <div class="admin-tabs">
-      <button class="tab-btn"
-              [class.active]="activeTab === 'stats'"
-              (click)="setTab('stats')">
-        Statistiques de vente
-      </button>
-
-      <button class="tab-btn"
-              [class.active]="activeTab === 'orders'"
-              (click)="setTab('orders')">
-        Commandes
-      </button>
-
-      <button class="tab-btn"
-              [class.active]="activeTab === 'returns'"
-              (click)="setTab('returns')">
-        Retours
-      </button>
-
-      <button class="tab-btn"
-              [class.active]="activeTab === 'products'"
-              (click)="setTab('products')">
-        Gestion des produits
-      </button>
-
-      <button class="tab-btn"
-              [class.active]="activeTab === 'stock'"
-              (click)="setTab('stock')">
-        Gestion du stock
-      </button>
-
-      <button class="tab-btn"
-              [class.active]="activeTab === 'reviews'"
-              (click)="setTab('reviews')">
-        Gestion des avis
-      </button>
-
-      <!-- ✅ Contact / Support (ADMIN + SUPER_ADMIN) -->
-      <button class="tab-btn"
-              *ngIf="isAdminOrSuperAdmin"
-              [class.active]="activeTab === 'support'"
-              (click)="setTab('support')">
-        Contact / Support
-      </button>
-
-      <!-- 🔐 Onglets réservés au SUPER ADMIN -->
-      <button class="tab-btn"
-              *ngIf="isSuperAdmin"
-              [class.active]="activeTab === 'users'"
-              (click)="setTab('users')">
-        Gestion des utilisateurs
-      </button>
-
-      <button class="tab-btn"
-              *ngIf="isSuperAdmin"
-              [class.active]="activeTab === 'requests'"
-              (click)="setTab('requests')">
-        Demandes & réactivations
-      </button>
+    <div class="left">
+      <h1>Tableau de bord administrateur</h1>
+      <p class="subtitle">Gestion des ventes, des produits, du stock et des promotions.</p>
     </div>
+
+    <!-- ✅ supprimé : bouton Déconnexion -->
   </div>
 
-  <!-- ========= ONGLET 1 : STATS ========= -->
-  <section *ngIf="activeTab === 'stats'">
-    <section class="stats-section">
-      <div class="stats-row" *ngIf="!statsLoading && stats; else statsLoadingTpl">
+  <!-- TABS -->
+  <div class="admin-tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'stats'" (click)="setTab('stats')">Stats</button>
+    <button class="tab-btn" [class.active]="activeTab === 'orders'" (click)="setTab('orders')">Commandes</button>
+    <button class="tab-btn" [class.active]="activeTab === 'returns'" (click)="setTab('returns')">Retours</button>
+    <button class="tab-btn" [class.active]="activeTab === 'products'" (click)="setTab('products')">Produits</button>
+    <button class="tab-btn" [class.active]="activeTab === 'promotions'" (click)="setTab('promotions')">Promos / Coupons</button>
+    <button class="tab-btn" [class.active]="activeTab === 'stock'" (click)="setTab('stock')">Stock</button>
+    <button class="tab-btn" [class.active]="activeTab === 'reviews'" (click)="setTab('reviews')">Avis</button>
+    <button class="tab-btn" [class.active]="activeTab === 'support'" (click)="setTab('support')">Contact</button>
 
-        <article class="stat-card">
-          <h3>Chiffre d’affaires total</h3>
-          <p class="value">{{ stats.totalRevenue | currency:'EUR' }}</p>
-          <p class="hint">Toutes commandes confondues</p>
-        </article>
+    <button *ngIf="isSuperAdmin" class="tab-btn" [class.active]="activeTab === 'users'" (click)="setTab('users')">Utilisateurs</button>
+    <button *ngIf="isSuperAdmin" class="tab-btn" [class.active]="activeTab === 'requests'" (click)="setTab('requests')">Demandes</button>
+  </div>
 
-        <article class="stat-card">
-          <h3>Nombre de commandes</h3>
-          <p class="value">{{ stats.totalOrders }}</p>
-          <p class="hint">Commandes enregistrées</p>
-        </article>
+  <div class="admin-content">
 
-        <article class="stat-card">
-          <h3>Articles vendus</h3>
-          <p class="value">{{ stats.totalItemsSold }}</p>
-          <p class="hint">Total des pièces vendues</p>
-        </article>
-
-        <article class="stat-card">
-          <h3>Panier moyen</h3>
-          <p class="value">{{ stats.averageOrderValue | currency:'EUR' }}</p>
-          <p class="hint">Montant moyen par commande</p>
-        </article>
-
-        <article class="stat-card">
-          <h3>Revenu moyen par article</h3>
-          <p class="value">
-            {{ (stats.totalRevenue / (stats.totalItemsSold || 1)) | currency:'EUR' }}
-          </p>
-          <p class="hint">Chiffre d’affaires ÷ articles vendus</p>
-        </article>
+    <!-- ===================== STATS ===================== -->
+    <section *ngIf="activeTab === 'stats'" class="panel">
+      <div class="panel-head">
+        <h2>Statistiques</h2>
       </div>
 
-      <ng-template #statsLoadingTpl>
-        <p class="info">Chargement des statistiques...</p>
-      </ng-template>
+      <div *ngIf="statsLoading" class="muted">Chargement…</div>
+      <div *ngIf="statsError" class="error">{{ statsError }}</div>
 
-      <p class="info small">
-        Ces statistiques sont calculées sur l'ensemble des commandes enregistrées (tous statuts confondus).
-      </p>
-
-      <p class="error" *ngIf="statsError">{{ statsError }}</p>
+      <div *ngIf="stats" class="grid-3">
+        <div class="kpi">
+          <div class="kpi-label">Chiffre d’affaires</div>
+          <div class="kpi-value">{{ stats.totalRevenue | currency:'EUR' }}</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Commandes</div>
+          <div class="kpi-value">{{ stats.totalOrders }}</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Panier moyen</div>
+          <div class="kpi-value">{{ stats.averageOrderValue | currency:'EUR' }}</div>
+        </div>
+      </div>
     </section>
-  </section>
 
-  <!-- ========= ONGLET 2 : GESTION DES COMMANDES ========= -->
-  <section *ngIf="activeTab === 'orders'" class="orders-page">
+    <!-- ===================== COMMANDES ===================== -->
+    <section *ngIf="activeTab === 'orders'" class="panel">
+      <div class="panel-head">
+        <h2>Commandes</h2>
 
-    <div class="orders-header">
-      <div>
-        <h2>Gestion des commandes</h2>
-        <p class="hint">
-          Filtre par statut + tri du plus récent au plus ancien.
-        </p>
-      </div>
-    </div>
-
-    <div class="status-chips">
-      <button class="chip" [class.active]="orderStatusFilter === 'ALL'" (click)="setOrderStatusFilter('ALL')">Toutes</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'PENDING'" (click)="setOrderStatusFilter('PENDING')">En attente</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'PAID'" (click)="setOrderStatusFilter('PAID')">Payées</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'SHIPPED'" (click)="setOrderStatusFilter('SHIPPED')">Expédiées</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'DELIVERED'" (click)="setOrderStatusFilter('DELIVERED')">Livrées</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'CANCELLED'" (click)="setOrderStatusFilter('CANCELLED')">Annulées</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_REQUESTED'" (click)="setOrderStatusFilter('RETURN_REQUESTED')">Retour demandé</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_APPROVED'" (click)="setOrderStatusFilter('RETURN_APPROVED')">Retour accepté</button>
-      <button class="chip" [class.active]="orderStatusFilter === 'RETURN_REJECTED'" (click)="setOrderStatusFilter('RETURN_REJECTED')">Retour refusé</button>
-    </div>
-
-    <p class="info" *ngIf="ordersLoading">Chargement des commandes...</p>
-    <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
-
-    <table class="orders-table" *ngIf="!ordersLoading && filteredOrders.length > 0">
-      <thead>
-      <tr>
-        <th>Référence</th>
-        <th>Date</th>
-        <th>Statut</th>
-        <th>Montant</th>
-        <th>Détails</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let o of filteredOrders">
-        <td>{{ o.reference }}</td>
-        <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>
-          <span class="status-pill" [ngClass]="getStatusClass(o.status)">
-            {{ o.status }}
-          </span>
-        </td>
-        <td>{{ o.totalAmount | currency:'EUR' }}</td>
-        <td>
-          <button class="link-btn" type="button" (click)="openOrderModal(o)">
-            Détail de la commande
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-    <p class="info" *ngIf="!ordersLoading && !filteredOrders.length">
-      Aucune commande dans ce filtre.
-    </p>
-
-    <!-- MODALE DÉTAIL COMMANDE -->
-    <div class="modal-overlay" *ngIf="showOrderModal" (click)="closeOrderModal()">
-      <div class="modal order-modal" (click)="$event.stopPropagation()">
-        <div class="order-modal-header">
-          <div>
-            <h3>Commande {{ selectedOrder?.reference }}</h3>
-            <p class="order-subtitle">
-              Créée le {{ selectedOrder?.createdAt | date:'dd/MM/yyyy HH:mm' }}
-            </p>
-          </div>
-          <button class="close-btn" type="button" (click)="closeOrderModal()">✕</button>
-        </div>
-
-        <div class="order-meta">
-          <div class="meta-line">
-            <span class="label">Statut actuel :</span>
-            <span class="status-pill" [ngClass]="getStatusClass(selectedOrder?.status || '')">
-              {{ selectedOrder?.status }}
-            </span>
-          </div>
-
-          <div class="meta-line">
-            <span class="label">Montant :</span>
-            <span class="value">
-              {{ selectedOrder?.totalAmount | currency:'EUR' }}
-            </span>
-          </div>
-        </div>
-
-        <div class="order-status-edit">
-          <label for="status-select">Modifier le statut :</label>
-          <select id="status-select" [(ngModel)]="modalStatus">
-            <option *ngFor="let opt of statusOptions" [value]="opt.value">
-              {{ opt.label }}
-            </option>
+        <div class="filters">
+          <select [(ngModel)]="orderStatusFilter">
+            <option value="ALL">Toutes</option>
+            <option value="PENDING">En attente</option>
+            <option value="PAID">Payées</option>
+            <option value="SHIPPED">Expédiées</option>
+            <option value="DELIVERED">Livrées</option>
+            <option value="CANCELLED">Annulées</option>
+            <option value="RETURN_REQUESTED">Retour demandé</option>
+            <option value="RETURN_APPROVED">Retour accepté</option>
+            <option value="RETURN_REJECTED">Retour refusé</option>
           </select>
-
-          <button class="primary small" type="button" (click)="saveOrderStatusFromModal()">
-            Mettre à jour
-          </button>
         </div>
+      </div>
 
-        <div class="order-items" *ngIf="selectedOrder">
-          <h4>Articles de la commande</h4>
-          <ul>
-            <li *ngFor="let item of selectedOrder.items">
-              <span>{{ item.quantity }} × {{ item.productName }}</span>
-              <span class="line-price">
-                {{ item.unitPrice | currency:'EUR' }}
+      <div *ngIf="ordersLoading" class="muted">Chargement…</div>
+      <div *ngIf="ordersError" class="error">{{ ordersError }}</div>
+
+      <div class="table-wrap" *ngIf="!ordersLoading">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Réf</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let o of filteredOrders">
+            <td class="mono">{{ o.reference }}</td>
+            <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ getOrderEmail(o) }}</td>
+            <td>{{ o.totalAmount | currency:'EUR' }}</td>
+            <td>
+              <span class="status-pill" [ngClass]="getStatusClass(o.status)">
+                {{ o.status }}
               </span>
-            </li>
-          </ul>
-        </div>
+            </td>
+            <td class="right">
+              <button class="btn small" (click)="openOrderModal(o)">Détails</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
 
-  </section>
-
-  <!-- ========= ONGLET RETOURS ========= -->
-  <section *ngIf="activeTab === 'returns'" class="orders-page returns-page">
-
-    <div class="orders-header">
-      <div>
-        <h2>Gestion des retours</h2>
-        <p class="hint">
-          Toutes les demandes de retour (demandé / accepté / refusé), triées du plus récent au plus ancien.
-        </p>
+    <!-- ===================== RETOURS ===================== -->
+    <section *ngIf="activeTab === 'returns'" class="panel">
+      <div class="panel-head">
+        <h2>Retours</h2>
       </div>
-    </div>
 
-    <p class="info" *ngIf="ordersLoading">Chargement des retours...</p>
-    <p class="error" *ngIf="ordersError">{{ ordersError }}</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Réf</th>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Total</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let o of sortedReturnOrdersAll">
+            <td class="mono">{{ o.reference }}</td>
+            <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ getOrderEmail(o) }}</td>
+            <td>{{ o.totalAmount | currency:'EUR' }}</td>
+            <td>
+              <span class="status-pill" [ngClass]="getStatusClass(o.status)">
+                {{ o.status }}
+              </span>
+            </td>
+            <td class="right">
+              <div class="row-actions" style="justify-content:flex-end; gap:8px;">
+                <button class="btn small" (click)="openReturnDetails(o)">Détails</button>
+                <button class="btn small ok" (click)="approveReturn(o)" *ngIf="o.status === 'RETURN_REQUESTED'">Accepter</button>
+                <button class="btn small danger" (click)="openRejectModal(o)" *ngIf="o.status === 'RETURN_REQUESTED'">Refuser</button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <table class="orders-table" *ngIf="!ordersLoading && sortedReturnOrdersAll.length > 0">
-      <thead>
-      <tr>
-        <th>Référence</th>
-        <th>Date</th>
-        <th>Statut</th>
-        <th>Montant</th>
-        <th>Détails</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let o of sortedReturnOrdersAll">
-        <td>{{ o.reference }}</td>
-        <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>
-          <span class="status-pill" [ngClass]="getStatusClass(o.status)">
-            {{ o.status }}
-          </span>
-        </td>
-        <td>{{ o.totalAmount | currency:'EUR' }}</td>
-        <td>
-          <button class="link-btn" type="button" (click)="openReturnDetails(o)">
-            Voir la demande
-          </button>
-        </td>
-        <td class="actions">
-          <ng-container *ngIf="o.status === 'RETURN_REQUESTED'; else alreadyProcessed">
-            <button class="btn-edit" type="button" (click)="approveReturn(o)">✅ Accepter</button>
-            <button class="btn-delete" type="button" (click)="openRejectModal(o)">❌ Refuser</button>
-          </ng-container>
-          <ng-template #alreadyProcessed>
-            <span class="info small">Traité</span>
-          </ng-template>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <!-- ===================== PRODUITS ===================== -->
+    <section *ngIf="activeTab === 'products'" class="panel">
 
-    <p class="info" *ngIf="!ordersLoading && !sortedReturnOrdersAll.length">
-      Aucune demande de retour pour le moment.
-    </p>
-
-  </section>
-
-  <!-- MODALE DÉTAIL DEMANDE DE RETOUR -->
-  <div class="modal-overlay"
-       *ngIf="showReturnDetailsModal"
-       (click)="closeReturnDetails()">
-    <div class="modal order-modal return-modal"
-         (click)="$event.stopPropagation()">
-
-      <div class="order-modal-header">
+      <div class="panel-head">
         <div>
-          <h3>Demande de retour – {{ selectedReturnOrder?.reference }}</h3>
-          <p class="order-subtitle">
-            Créée le {{ selectedReturnOrder?.createdAt | date:'dd/MM/yyyy HH:mm' }}
-          </p>
+          <h2>Produits</h2>
         </div>
-        <button class="close-btn" type="button" (click)="closeReturnDetails()">✕</button>
-      </div>
 
-      <div class="order-meta">
-        <div class="meta-line">
-          <span class="label">Statut actuel :</span>
-          <span class="status-pill"
-                [ngClass]="getStatusClass(selectedReturnOrder?.status || '')">
-            {{ selectedReturnOrder?.status }}
-          </span>
+        <div class="right">
+          <button class="btn small ghost"
+                  [class.active]="productsMode === 'active'"
+                  (click)="setProductsMode('active')">
+            Actifs
+          </button>
+          <button class="btn small ghost"
+                  [class.active]="productsMode === 'archived'"
+                  (click)="setProductsMode('archived')">
+            Archivés
+          </button>
+
+          <button class="btn small primary"
+                  *ngIf="productsMode === 'active'"
+                  (click)="openCreateProduct()">
+            + Nouveau produit
+          </button>
         </div>
-        <div class="meta-line">
-          <span class="label">Montant :</span>
-          <span class="value">
-            {{ selectedReturnOrder?.totalAmount | currency:'EUR' }}
-          </span>
+      </div>
+
+      <div *ngIf="loading" class="muted">Chargement…</div>
+      <div *ngIf="error" class="error">{{ error }}</div>
+
+      <!-- FORM PRODUIT -->
+      <div class="card dark" id="product-form-panel" *ngIf="showProductForm && productsMode === 'active'">
+
+        <div class="form-title-row">
+          <h3 style="margin:0;">
+            {{ editingProductId ? 'Modifier le produit' : 'Créer un produit' }}
+          </h3>
+          <span class="pill pill-soft" *ngIf="editingProductId">Édition</span>
+          <span class="pill pill-soft" *ngIf="!editingProductId">Création</span>
         </div>
-      </div>
 
-      <div class="return-reason-block">
-        <h4>Raison du retour (client)</h4>
-        <pre class="reason-text">{{ selectedReturnOrder?.notes || 'Aucun motif enregistré.' }}</pre>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODALE REFUS RETOUR -->
-  <div class="modal-overlay"
-       *ngIf="showRejectModal"
-       (click)="closeRejectModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h3>Refuser ce retour</h3>
-      <p>Expliquez pourquoi le retour est refusé. Ce message sera envoyé au client.</p>
-
-      <textarea
-        rows="4"
-        [(ngModel)]="rejectReason"
-        class="reject-textarea"
-        placeholder="Exemple : délai de retour dépassé, article utilisé, conditions non respectées...">
-      </textarea>
-
-      <div class="modal-actions">
-        <button class="btn-cancel" type="button" (click)="closeRejectModal()">Annuler</button>
-        <button class="btn-confirm" type="button" (click)="confirmReject()">Confirmer le refus</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========= ONGLET 3 : GESTION DES PRODUITS (CRUD) ========= -->
-  <section *ngIf="activeTab === 'products'" class="admin-page">
-
-    <div class="admin-header-row">
-      <div>
-        <h2>Gestion des produits</h2>
-        <p class="hint">
-          Crée, modifie ou archive les produits de la boutique.
-        </p>
-      </div>
-
-      <div class="products-mode-switch">
-        <button type="button"
-                class="mode-btn"
-                [class.active]="productsMode === 'active'"
-                (click)="setProductsMode('active')">
-          Produits actifs
-        </button>
-
-        <button type="button"
-                class="mode-btn"
-                [class.active]="productsMode === 'archived'"
-                (click)="setProductsMode('archived')">
-          Produits archivés
-        </button>
-      </div>
-    </div>
-
-    <div class="admin-actions" *ngIf="productsMode === 'active'">
-      <button type="button"
-              class="primary"
-              (click)="toggleCreateForm()">
-        {{ showCreateForm ? 'Fermer le formulaire' : 'Créer un produit' }}
-      </button>
-    </div>
-
-    <section class="panel create-panel" *ngIf="showCreateForm">
-      <h3 class="section-title">
-        {{ editingProductId === null ? 'Nouveau produit' : 'Modifier le produit' }}
-      </h3>
-
-      <form class="create-form" (ngSubmit)="submitForm()">
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label for="sku">SKU *</label>
-            <input id="sku"
-                   type="text"
-                   [(ngModel)]="newProduct.sku"
-                   name="sku"
-                   (blur)="normalizeSku()" />
-            <p class="file-info">SKU auto-généré selon Segment + Type (modifiable).</p>
+        <div class="row-2">
+          <div>
+            <label>Nom *</label>
+            <input [(ngModel)]="newProduct.name" placeholder="Ex: Sac bandoulière" />
           </div>
 
-          <div class="form-group">
-            <label for="name">Nom *</label>
-            <input id="name" type="text" [(ngModel)]="newProduct.name" name="name" />
+          <div>
+            <label>SKU *</label>
+            <div class="row-actions" style="justify-content:flex-start; gap:8px; align-items:center;">
+              <input [(ngModel)]="newProduct.sku"
+                     (input)="onSkuManualInput()"
+                     placeholder="Ex: HOM-BAG-12345" />
+              <button type="button" class="btn small ghost" (click)="resetSkuAuto()">SKU auto</button>
+            </div>
           </div>
         </div>
 
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label for="price">Prix (€) *</label>
-            <input id="price"
-                   type="number"
-                   min="0"
-                   step="0.01"
-                   [(ngModel)]="newProduct.price"
-                   name="price"
-                   (input)="clampPrice()" />
-          </div>
-
-          <div class="form-group">
-            <label for="weight">Poids (g)</label>
-            <input id="weight" type="number" min="0" [(ngModel)]="newProduct.weightGrams" name="weightGrams" />
-          </div>
-        </div>
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label for="segmentCategory">Segment *</label>
-            <select id="segmentCategory"
-                    [(ngModel)]="newProduct.segmentCategoryId"
-                    name="segmentCategoryId"
-                    (ngModelChange)="onSegmentChange()">
-              <option [ngValue]="null">-- Choisir un segment --</option>
-              <option *ngFor="let s of segmentOptions" [ngValue]="s.id">
-                {{ s.label }}
-              </option>
+        <div class="row-2">
+          <div>
+            <label>Segment *</label>
+            <select [(ngModel)]="newProduct.segmentCategoryId" (change)="onSegmentChange()">
+              <option [ngValue]="null">— Choisir —</option>
+              <option *ngFor="let s of segmentOptions" [ngValue]="s.id">{{ s.label }}</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="typeCategory">Type de produit *</label>
-            <select id="typeCategory"
-                    [(ngModel)]="newProduct.typeCategoryId"
-                    name="typeCategoryId"
-                    (ngModelChange)="onTypeChange()">
-              <option [ngValue]="null">-- Choisir un type --</option>
-              <option *ngFor="let t of filteredTypeOptions" [ngValue]="t.id">
-                {{ t.label }}
-              </option>
+          <div>
+            <label>Type *</label>
+            <select [(ngModel)]="newProduct.typeCategoryId" (change)="onTypeChange()">
+              <option [ngValue]="null">— Choisir —</option>
+              <option *ngFor="let t of filteredTypeOptions" [ngValue]="t.id">{{ t.label }}</option>
             </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description"
-                    rows="3"
-                    [(ngModel)]="newProduct.description"
-                    name="description"></textarea>
-        </div>
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-
-            <!-- ✅ Images existantes (édition) : avec delete -->
-            <div class="current-img-preview" *ngIf="currentImages.length">
-              <div class="preview-label">Images actuelles</div>
-
-              <div class="img-grid">
-                <div class="img-box" *ngFor="let img of currentImages">
-                  <img [src]="img.url" alt="Image produit" />
-
-                  <span class="primary-badge" *ngIf="img.isPrimary">Principale</span>
-
-                  <button
-                    type="button"
-                    class="remove-img-outside"
-                    title="Supprimer cette image"
-                    (click)="deleteExistingImage(img.id)">
-                    ✕
-                  </button>
-
-                </div>
-              </div>
-
-              <p class="file-info">
-                Supprime une image existante (DB) via l'endpoint admin.
-              </p>
-            </div>
-
-            <label for="images">Images du produit {{ editingProductId === null ? '*' : '' }}</label>
-            <input id="images"
-                   type="file"
-                   multiple
-                   accept="image/*"
-                   (change)="onFilesSelected($event)" />
-
-            <p class="file-info">Tu peux sélectionner plusieurs images (JPG/PNG).</p>
-
-            <!-- ✅ Preview nouvelles images -->
-            <div class="current-img-preview" *ngIf="selectedPreviews.length">
-              <div class="preview-label">Nouvelles images sélectionnées</div>
-
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <div *ngFor="let p of selectedPreviews; let i = index" style="position:relative;">
-                  <img [src]="p"
-                       alt="Preview"
-                       style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid rgba(148, 163, 184, 0.5);" />
-
-                  <button type="button"
-                          (click)="removeSelectedFile(i)"
-                          style="position:absolute; top:-8px; right:-8px; width:26px; height:26px; border-radius:999px; border:none; cursor:pointer;">
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-
+        <div class="row-2">
+          <div>
+            <label>Prix (€) *</label>
+            <input type="number" min="0" [(ngModel)]="newProduct.price" (input)="clampPrice()" />
           </div>
 
-          <div class="form-footer">
-            <label>
-              <input type="checkbox" [(ngModel)]="newProduct.isActive" name="isActive" />
-              Produit visible sur le site
-            </label>
+          <div>
+            <label>Poids (g)</label>
+            <input type="number" min="0" [(ngModel)]="newProduct.weightGrams" />
           </div>
         </div>
 
-        <div class="form-footer">
-          <span class="info">
-            Les champs marqués d’une * sont obligatoires.
+        <label>Description</label>
+        <textarea [(ngModel)]="newProduct.description" rows="4" placeholder="Description du produit..."></textarea>
+
+        <!-- PROMO (date only / sans promoCode / sans texte dessous) -->
+        <div class="divider"></div>
+        <div class="section-head">
+          <h4 style="margin:0;">Promotion (optionnel)</h4>
+          <span class="pill" [ngClass]="newProduct.promoPrice ? 'promo-active' : 'promo-inactive'">
+            {{ newProduct.promoPrice ? 'Promo activée' : 'Aucune promo' }}
           </span>
-
-          <button type="submit" class="primary small" [disabled]="isSubmitting">
-            {{ editingProductId === null ? 'Créer le produit' : 'Enregistrer les modifications' }}
-          </button>
         </div>
 
-        <p class="error" *ngIf="error">{{ error }}</p>
-      </form>
-    </section>
+        <div class="row-2">
+          <div>
+            <label>Prix promo (€)</label>
+            <input type="number" min="0" [(ngModel)]="newProduct.promoPrice" (input)="clampPromoPrice()" />
+          </div>
+          <div>
+            <label>Début (date)</label>
+            <input type="date" [(ngModel)]="newProduct.promoStartAt" />
+          </div>
+        </div>
 
-    <section class="panel">
-      <h3 class="section-title">
-        Produits {{ productsMode === 'active' ? 'actifs' : 'archivés' }}
-      </h3>
+        <div class="row-2">
+          <div>
+            <label>Fin (date)</label>
+            <input type="date" [(ngModel)]="newProduct.promoEndAt" />
+          </div>
+          <div class="ghost-card">
+            <div class="muted small">Astuce</div>
+            <div class="small">Si tu mets un prix promo, la date du jour se met automatiquement si vide.</div>
+          </div>
+        </div>
 
-      <div class="state-messages">
-        <p class="loading-message" *ngIf="loading">
-          <span class="spinner">⏳</span> Chargement des produits...
-        </p>
-        <p class="error-message" *ngIf="!loading && error">
-          {{ error }}
-        </p>
+        <!-- IMAGES -->
+        <div class="divider"></div>
+        <div class="section-head">
+          <h4 style="margin:0;">Images</h4>
+          <span class="pill pill-soft">{{ selectedFiles.length || 0 }} sélectionnée(s)</span>
+        </div>
+
+        <input type="file" multiple (change)="onFilesSelected($event)" />
+
+        <div class="grid-3" *ngIf="selectedPreviews.length" style="margin-top:12px;">
+          <div class="img-card" *ngFor="let img of selectedPreviews; let i = index">
+            <img [src]="img" alt="preview" />
+            <button type="button" class="btn small danger" (click)="removeSelectedFile(i)">Retirer</button>
+          </div>
+        </div>
+
+        <div *ngIf="currentImagesFromApi.length" style="margin-top:12px;">
+          <div class="grid-3" style="margin-top:8px;">
+            <div class="img-card" *ngFor="let url of currentImagesFromApi">
+              <img [src]="url" alt="product-img" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row-actions" style="margin-top:14px;">
+          <button class="btn primary" (click)="submitForm()" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Envoi…' : (editingProductId ? 'Enregistrer' : 'Créer') }}
+          </button>
+          <button class="btn ghost" type="button" (click)="closeProductForm()">Annuler</button>
+        </div>
       </div>
 
-      <table class="product-table" *ngIf="!loading && products.length > 0">
-        <thead>
-        <tr>
-          <th>Image</th>
-          <th>Nom</th>
-          <th>SKU</th>
-          <th>Prix</th>
-          <th>Stock</th>
-          <th>Actif</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let p of products" [class.editing-row]="editingProductId === p.id">
+      <!-- LISTE PRODUITS -->
+      <div class="table-wrap" *ngIf="!loading">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Nom</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Promo</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let p of products">
+            <td class="mono">{{ p.sku }}</td>
+            <td class="cell-main">
+              <div class="cell-title">{{ p.name }}</div>
+              <div class="cell-sub muted small" *ngIf="p.segmentSlug || p.typeSlug">
+                <span *ngIf="p.segmentSlug">{{ p.segmentSlug }}</span>
+                <span *ngIf="p.segmentSlug && p.typeSlug"> • </span>
+                <span *ngIf="p.typeSlug">{{ p.typeSlug }}</span>
+              </div>
+            </td>
+            <td>{{ p.price | currency:'EUR' }}</td>
+            <td>
+              <span class="pill pill-soft">{{ p.stockQuantity ?? 0 }}</span>
+            </td>
+            <td>
+              <span class="pill" [ngClass]="getPromoStatusClass(p)">
+                {{ getPromoStatusLabel(p) }}
+              </span>
+            </td>
+            <td class="right">
+              <ng-container *ngIf="productsMode === 'active'; else archivedActions">
+                <div class="row-actions" style="justify-content:flex-end; gap:8px;">
+                  <button class="btn small" (click)="startEdit(p)">Éditer</button>
+                  <button class="btn small danger" (click)="openDeleteConfirm(p)">Archiver</button>
+                </div>
+              </ng-container>
 
-          <td class="product-thumb">
-            <img *ngIf="p.imageUrls && p.imageUrls.length > 0"
-                 [src]="'http://localhost:8080' + p.imageUrls[0]"
-                 [alt]="p.name" />
-          </td>
+              <ng-template #archivedActions>
+                <button class="btn small ok" (click)="restoreProduct(p)">Restaurer</button>
+              </ng-template>
+            </td>
+          </tr>
+          </tbody>
+        </table>
 
-          <td>{{ p.name }}</td>
-          <td>{{ p.sku }}</td>
-          <td>{{ p.price | currency:'EUR' }}</td>
-          <td>{{ p.stockQuantity ?? 0 }}</td>
-          <td>{{ p.isActive ? 'Oui' : 'Non' }}</td>
+        <div class="muted small" *ngIf="!products.length && !loading">
+          Aucun produit.
+        </div>
+      </div>
 
-          <td class="actions">
-            <button type="button"
-                    class="btn-edit"
-                    *ngIf="productsMode === 'active'"
-                    (click)="startEdit(p)">
-              Éditer
-            </button>
-
-            <button type="button"
-                    class="btn-delete"
-                    *ngIf="productsMode === 'active'"
-                    (click)="openDeleteConfirm(p)">
-              Archiver
-            </button>
-
-            <button type="button"
-                    class="btn-restore"
-                    *ngIf="productsMode === 'archived'"
-                    (click)="restoreProduct(p)">
-              Restaurer
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <p class="empty-message" *ngIf="!loading && !products.length">
-        Aucun produit {{ productsMode === 'active' ? 'actif' : 'archivé' }} pour le moment.
-      </p>
     </section>
-  </section>
 
-  <!-- MODALE CONFIRMATION SUPPRESSION PRODUIT -->
-  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h3>Archiver ce produit ?</h3>
-      <p>
-        Le produit <strong>{{ deleteTargetName }}</strong> sera retiré du catalogue
-        public, mais restera disponible dans la liste des produits archivés.
-      </p>
+    <!-- ===================== PROMOS / COUPONS ===================== -->
+    <section *ngIf="activeTab === 'promotions'" class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Promos / Coupons</h2>
+        </div>
+      </div>
+
+      <div *ngIf="couponsLoading" class="muted">Chargement…</div>
+      <div *ngIf="couponsError" class="error">{{ couponsError }}</div>
+
+      <div class="promo-layout">
+        <div class="card dark">
+          <div class="form-title-row">
+            <h3 style="margin:0;">{{ editingCouponId ? 'Modifier coupon' : 'Créer un coupon' }}</h3>
+            <span class="pill pill-soft" *ngIf="editingCouponId">Édition</span>
+            <span class="pill pill-soft" *ngIf="!editingCouponId">Création</span>
+          </div>
+
+          <label>Code *</label>
+          <input [(ngModel)]="couponForm.code" placeholder="EX: NOEL-20" />
+
+          <div class="row-2">
+            <div>
+              <label>Réduction (%) *</label>
+              <input type="number" [(ngModel)]="couponForm.percent" (input)="clampCouponPercent()" />
+            </div>
+            <div>
+              <label>Actif</label>
+              <select [(ngModel)]="couponForm.active">
+                <option [ngValue]="true">Oui</option>
+                <option [ngValue]="false">Non</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div>
+              <label>Début (date)</label>
+              <input type="date" [(ngModel)]="couponForm.startsAt" />
+            </div>
+            <div>
+              <label>Fin (date)</label>
+              <input type="date" [(ngModel)]="couponForm.endsAt" />
+            </div>
+          </div>
+
+          <label>Utilisations max (optionnel)</label>
+          <input type="number" [(ngModel)]="couponForm.maxUses" placeholder="Ex: 200" />
+
+          <div class="row-actions">
+            <button class="btn primary" (click)="submitCouponForm()" [disabled]="couponSubmitting">
+              {{ couponSubmitting ? 'Envoi…' : (editingCouponId ? 'Enregistrer' : 'Créer') }}
+            </button>
+            <button class="btn ghost" type="button" (click)="resetCouponForm()">Reset</button>
+          </div>
+        </div>
+
+        <div class="card dark">
+          <div class="section-head" style="margin-bottom:10px;">
+            <h3 style="margin:0;">Coupons</h3>
+            <span class="pill pill-soft">{{ coupons.length || 0 }}</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+              <tr>
+                <th>Code</th>
+                <th>%</th>
+                <th>Fenêtre</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let c of coupons">
+                <td class="mono">{{ c.code }}</td>
+                <td><b>{{ c.percent }}%</b></td>
+
+                <td class="muted small">
+                  <div *ngIf="c.startsAt">Début: {{ c.startsAt | date:'dd/MM/yyyy' }}</div>
+                  <div *ngIf="c.endsAt">Fin: {{ c.endsAt | date:'dd/MM/yyyy' }}</div>
+                  <div *ngIf="!c.startsAt && !c.endsAt">—</div>
+                </td>
+
+                <td>
+                  <span class="pill" [ngClass]="getCouponStatusClass(c)">
+                    {{ getCouponStatusLabel(c) }}
+                  </span>
+                </td>
+
+                <td class="right">
+                  <div class="row-actions" style="justify-content:flex-end; gap:8px;">
+                    <button class="btn small" (click)="editCoupon(c)">Éditer</button>
+                    <button class="btn small" (click)="toggleCouponActive(c)">
+                      {{ c.active ? 'Désactiver' : 'Activer' }}
+                    </button>
+                    <button class="btn small danger" (click)="deleteCoupon(c)">Supprimer</button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="muted small" *ngIf="!coupons.length && !couponsLoading">
+            Aucun coupon.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STOCK ===================== -->
+    <section *ngIf="activeTab === 'stock'" class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Stock</h2>
+        </div>
+
+        <div class="filters">
+          <label class="muted small" style="margin-right:8px;">Seuil</label>
+          <input type="number" min="0" style="width:90px;"
+                 [(ngModel)]="lowStockThreshold"
+                 (input)="onThresholdChange()" />
+        </div>
+      </div>
+
+      <div *ngIf="lowStockLoading" class="muted">Chargement…</div>
+      <div *ngIf="lowStockError" class="error">{{ lowStockError }}</div>
+
+      <div class="table-wrap" *ngIf="!lowStockLoading">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Nom</th>
+            <th>Stock</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let p of lowStockProducts">
+            <td class="mono">{{ p.sku }}</td>
+            <td>{{ p.name }}</td>
+            <td style="max-width:140px;">
+              <input type="number" min="0" [(ngModel)]="p.stockQuantity" />
+            </td>
+            <td class="right">
+              <button class="btn small primary" (click)="saveStock(p)">Enregistrer</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div class="muted small" *ngIf="!lowStockProducts.length && !lowStockLoading">
+          Aucun produit sous le seuil.
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== AVIS ===================== -->
+    <section *ngIf="activeTab === 'reviews'" class="panel">
+      <app-admin-reviews></app-admin-reviews>
+    </section>
+
+    <!-- ===================== SUPPORT ===================== -->
+    <section *ngIf="activeTab === 'support'" class="panel">
+      <app-super-admin-contact-messages></app-super-admin-contact-messages>
+    </section>
+
+    <!-- ===================== SUPER ADMIN ===================== -->
+    <section *ngIf="activeTab === 'users'" class="panel">
+      <app-super-admin-users></app-super-admin-users>
+    </section>
+
+    <section *ngIf="activeTab === 'requests'" class="panel">
+      <app-super-admin-requests></app-super-admin-requests>
+    </section>
+
+  </div>
+
+  <!-- ===================== MODALE SUPPRESSION PRODUIT ===================== -->
+  <div class="modal-backdrop" *ngIf="showDeleteConfirm">
+    <div class="modal">
+      <h3>Archiver le produit</h3>
+      <p>Confirmer l’archivage de <b>{{ deleteTargetName }}</b> ?</p>
+
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="cancelDelete()">
-          Annuler
-        </button>
-        <button type="button" class="btn-confirm-delete" (click)="confirmDelete()">
-          Confirmer l’archivage
-        </button>
+        <button class="btn ghost" (click)="cancelDelete()">Annuler</button>
+        <button class="btn danger" (click)="confirmDelete()">Archiver</button>
       </div>
     </div>
   </div>
 
-  <!-- ========= ONGLET 4 : GESTION DU STOCK ========= -->
-  <section *ngIf="activeTab === 'stock'" class="stock-section">
-
-    <div class="stock-header">
-      <div>
-        <h2>Gestion du stock</h2>
-        <p class="hint">
-          Surveille les produits en quantité faible et mets à jour le stock.
-        </p>
+  <!-- ===================== MODALE DETAIL COMMANDE ===================== -->
+  <div class="modal-backdrop" *ngIf="showOrderModal && selectedOrder">
+    <div class="modal wide">
+      <div class="modal-top">
+        <h3>Détails commande <span class="mono">{{ selectedOrder.reference }}</span></h3>
+        <button class="xclose" (click)="closeOrderModal()">×</button>
       </div>
 
-      <div class="threshold-control">
-        <label for="threshold">Seuil d’alerte :</label>
-        <input id="threshold"
-               type="number"
-               min="0"
-               [(ngModel)]="lowStockThreshold"
-               (change)="onThresholdChange()"
-               [ngModelOptions]="{ standalone: true }" />
+      <div class="muted small">
+        {{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }} • {{ getOrderEmail(selectedOrder) }}
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row-2">
+        <div>
+          <label>Statut</label>
+          <select [(ngModel)]="modalStatus">
+            <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
+          </select>
+        </div>
+        <div class="right">
+          <div class="muted small">Total</div>
+          <div class="big">{{ selectedOrder.totalAmount | currency:'EUR' }}</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn ghost" (click)="closeOrderModal()">Fermer</button>
+        <button class="btn primary" (click)="saveOrderStatusFromModal()">Enregistrer</button>
       </div>
     </div>
+  </div>
 
-    <p class="info" *ngIf="lowStockLoading">Chargement des produits en stock faible...</p>
-    <p class="error" *ngIf="lowStockError">{{ lowStockError }}</p>
+  <!-- ===================== MODALES RETOUR ===================== -->
+  <div class="modal-backdrop" *ngIf="showReturnDetailsModal && selectedReturnOrder">
+    <div class="modal">
+      <div class="modal-top">
+        <h3>Retour - {{ selectedReturnOrder.reference }}</h3>
+        <button class="xclose" (click)="closeReturnDetails()">×</button>
+      </div>
 
-    <table class="stock-table" *ngIf="!lowStockLoading && lowStockProducts.length > 0">
-      <thead>
-      <tr>
-        <th>Produit</th>
-        <th>SKU</th>
-        <th>Stock actuel</th>
-        <th>Mettre à jour</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let p of lowStockProducts">
-        <td>{{ p.name }}</td>
-        <td>{{ p.sku }}</td>
-        <td>{{ p.stockQuantity ?? 0 }}</td>
-        <td>
-          <input type="number"
-                 min="0"
-                 [(ngModel)]="p.stockQuantity"
-                 [ngModelOptions]="{ standalone: true }"
-                 style="width: 80px; margin-right: 0.4rem;" />
-          <button type="button" class="primary small" (click)="saveStock(p)">
-            Enregistrer
-          </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+      <p class="muted small">Statut: <b>{{ selectedReturnOrder.status }}</b></p>
 
-    <p class="info" *ngIf="!lowStockLoading && !lowStockProducts.length">
-      Aucun produit n’est en dessous du seuil de {{ lowStockThreshold }} unités.
-    </p>
-  </section>
+      <div class="modal-actions">
+        <button class="btn ghost" (click)="closeReturnDetails()">Fermer</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- ========= ONGLET 5 : GESTION DES AVIS ========= -->
-  <section *ngIf="activeTab === 'reviews'" class="reviews-tab">
-    <app-admin-reviews></app-admin-reviews>
-  </section>
+  <div class="modal-backdrop" *ngIf="showRejectModal && selectedReturnOrder">
+    <div class="modal">
+      <div class="modal-top">
+        <h3>Refuser le retour</h3>
+        <button class="xclose" (click)="closeRejectModal()">×</button>
+      </div>
 
-  <!-- ✅ ONGLET CONTACT / SUPPORT (ADMIN + SUPER_ADMIN) -->
-  <section *ngIf="activeTab === 'support' && isAdminOrSuperAdmin" class="support-tab">
-    <app-super-admin-contact-messages></app-super-admin-contact-messages>
-  </section>
+      <label>Raison</label>
+      <textarea [(ngModel)]="rejectReason" rows="4"></textarea>
 
-  <!-- ========= ONGLET 6 : GESTION DES UTILISATEURS (SUPER ADMIN) ========= -->
-  <section *ngIf="activeTab === 'users' && isSuperAdmin" class="users-tab">
-    <app-super-admin-users></app-super-admin-users>
-  </section>
-
-  <!-- ========= ONGLET 7 : DEMANDES & RÉACTIVATIONS (SUPER ADMIN) ========= -->
-  <section *ngIf="activeTab === 'requests' && isSuperAdmin" class="requests-tab">
-    <app-super-admin-requests></app-super-admin-requests>
-  </section>
+      <div class="modal-actions">
+        <button class="btn ghost" (click)="closeRejectModal()">Annuler</button>
+        <button class="btn danger" (click)="confirmReject()">Refuser</button>
+      </div>
+    </div>
+  </div>
 
 </div>

@@ -1,0 +1,29 @@
+<div class="page">
+  <div class="card">
+
+    <h1>Confirmation email</h1>
+
+    <p class="muted" *ngIf="state === 'loading'">
+      Confirmation en cours…
+    </p>
+
+    <p class="alert success" *ngIf="state === 'success'">
+      {{ message }}
+    </p>
+
+    <p class="alert error" *ngIf="state === 'error'">
+      {{ message }}
+    </p>
+
+    <div class="actions" *ngIf="state !== 'loading'">
+      <button class="btn primary" *ngIf="showRelogin" (click)="relogin()">
+        Se reconnecter
+      </button>
+
+      <button class="btn ghost" *ngIf="state === 'error'" (click)="goAccount()">
+        Retour au profil
+      </button>
+    </div>
+
+  </div>
+</div>

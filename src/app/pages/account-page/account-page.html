@@ -171,12 +171,10 @@
 
       <p *ngIf="loadingOrders">{{ 'account.orders.loading' | t }}</p>
 
-      <!-- Aucun historique -->
       <p *ngIf="!loadingOrders && !myOrders.length" class="muted">
         {{ 'account.orders.empty' | t }}
       </p>
 
-      <!-- Mini-liste des 3 dernières commandes -->
       <ul *ngIf="!loadingOrders && myOrders.length" class="mini-orders-list">
         <li *ngFor="let o of myOrders | slice:0:3">
           <div class="mini-order-main">
@@ -189,11 +187,9 @@
           <span class="mini-status">
               {{ getOrderStatusLabel(o.status) }}
           </span>
-
         </li>
       </ul>
 
-      <!-- Lien vers la vraie page commandes -->
       <div class="orders-link-wrapper" *ngIf="myOrders.length">
         <a routerLink="/my-orders" class="btn primary">
           {{ 'account.orders.seeAll' | t }} →
@@ -205,6 +201,7 @@
   <!-- ========== SÉCURITÉ ========== -->
   <section *ngIf="activeTab === 'security'" class="section security-section">
 
+    <!-- Changement mot de passe -->
     <div class="card">
       <h2>{{ 'account.security.title' | t }}</h2>
 
@@ -230,6 +227,33 @@
       </form>
     </div>
 
+    <!-- ✅ Changement email -->
+    <div class="card">
+      <h2>Changer mon email</h2>
+      <p class="muted">
+        Un lien de confirmation sera envoyé sur le nouvel email.
+      </p>
+
+      <form (ngSubmit)="submitEmailChangeRequest()">
+        <label>
+          Nouvel email
+          <input type="email" [(ngModel)]="newEmail" name="newEmail" placeholder="nouvel@email.com">
+        </label>
+
+        <label>
+          Mot de passe actuel
+          <input type="password" [(ngModel)]="emailCurrentPassword" name="emailPwd" placeholder="••••••••">
+        </label>
+
+        <button class="btn primary" [disabled]="requestingEmailChange">
+          {{ requestingEmailChange ? 'Envoi...' : 'Envoyer le lien' }}
+        </button>
+
+        <p *ngIf="emailChangeInfo" class="alert success">{{ emailChangeInfo }}</p>
+      </form>
+    </div>
+
+    <!-- Danger zone -->
     <div class="card danger-card">
       <h2>{{ 'account.security.dangerZone' | t }}</h2>
       <p class="muted">{{ 'account.security.deleteHint' | t }}</p>

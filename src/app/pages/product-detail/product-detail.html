@@ -1,6 +1,6 @@
 <div class="product-detail-page" *ngIf="product; else loadingTpl">
 
-  <!-- ✅ TOP BAR (bouton retour plus clean) -->
+  <!-- TOP BAR -->
   <div class="topbar">
     <button class="back-pill" type="button" (click)="goBack()">
       <span class="arrow">←</span>
@@ -10,81 +10,91 @@
 
   <p class="auth-warning" *ngIf="authWarning">{{ authWarning }}</p>
 
-  <!-- ===== CARTE PRODUIT ===== -->
   <div class="product-detail-card">
 
     <!-- ===== GALERIE ===== -->
     <div class="left">
       <div class="gallery">
 
-        <button
-          class="nav prev"
-          type="button"
-          (click)="prevImage()"
-          [disabled]="images.length <= 1"
-          aria-label="Image précédente">
-          ‹
-        </button>
+        <button class="nav prev" type="button" (click)="prevImage()" [disabled]="!canSlide" aria-label="Image précédente">‹</button>
+        <button class="nav next" type="button" (click)="nextImage()" [disabled]="!canSlide" aria-label="Image suivante">›</button>
 
-        <button
-          class="nav next"
-          type="button"
-          (click)="nextImage()"
-          [disabled]="images.length <= 1"
-          aria-label="Image suivante">
-          ›
-        </button>
+        <div class="image-wrapper"
+             [class.dragging]="isDragging"
+             [class.animating]="isAnimating"
+             (pointerdown)="onCarouselPointerDown($event)"
+             (pointermove)="onCarouselPointerMove($event)"
+             (pointerup)="onCarouselPointerUp($event)"
+             (pointercancel)="onCarouselPointerCancel()"
+             (click)="openZoom()">
 
-        <div
-          class="image-wrapper"
-          (pointerdown)="onPointerDown($event)"
-          (pointermove)="onPointerMove($event)"
-          (pointerup)="onPointerUp($event)"
-          (pointercancel)="onPointerCancel()"
-          role="group"
-          aria-label="Galerie images">
-
-          <img
-            [src]="activeImageUrl"
-            [alt]="product.name"
-            [class]="imageAnimClass"
-            draggable="false"
-          />
+          <div class="slide-track" [style.transform]="'translateX(' + dragOffsetX + 'px)'">
+            <img class="main-img" [src]="activeImageUrl" [alt]="product.name" draggable="false" />
+          </div>
         </div>
 
         <div class="thumbs" *ngIf="hasThumbs">
-          <button
-            type="button"
-            class="thumb"
-            *ngFor="let img of images; let i = index"
-            [class.active]="i === activeImageIndex"
-            (click)="setActiveImage(i)">
-            <img
-              [src]="'http://localhost:8080' + img"
-              [alt]="product.name + ' ' + (i + 1)"
-              draggable="false"
-            />
+          <button type="button" class="thumb"
+                  *ngFor="let img of images; let i = index"
+                  [class.active]="i === activeImageIndex"
+                  (click)="setActiveImage(i); $event.stopPropagation()">
+            <img [src]="'http://localhost:8080' + img" [alt]="product.name + ' ' + (i + 1)" draggable="false" />
           </button>
         </div>
 
-        <p class="swipe-hint" *ngIf="images.length > 1">
-          Glisse (swipe) ou utilise ← →
-        </p>
-
+        <p class="swipe-hint" *ngIf="canSlide">Swipe / drag • ← → • Clique pour zoom</p>
       </div>
     </div>
 
     <!-- ===== INFOS ===== -->
     <div class="right">
       <h1>{{ product.name }}</h1>
-      <p class="price">{{ product.price | currency:'EUR' }}</p>
+
+      <!-- ✅ PRIX + PROMO -->
+      <div class="price-block">
+
+        <div class="price-row" *ngIf="hasPromo; else normalPriceTpl">
+          <div class="sale-badge">
+            -{{ discountPercent }}%
+          </div>
+
+          <div class="prices">
+            <div class="old">
+              {{ product.price | currency:'EUR' }}
+            </div>
+            <div class="new">
+              {{ effectivePrice | currency:'EUR' }}
+            </div>
+          </div>
+        </div>
+
+        <ng-template #normalPriceTpl>
+          <p class="price">{{ product.price | currency:'EUR' }}</p>
+        </ng-template>
+
+        <!-- ✅ ETAT PROMO + DATES -->
+        <div class="promo-meta" *ngIf="promoStatus !== 'NONE'">
+          <span class="promo-pill"
+                [class.active]="promoStatus === 'ACTIVE'"
+                [class.upcoming]="promoStatus === 'UPCOMING'"
+                [class.expired]="promoStatus === 'EXPIRED'">
+            {{ promoStatusLabel }}
+          </span>
+
+          <div class="promo-dates" *ngIf="product.promoStartAt || product.promoEndAt">
+            <span *ngIf="product.promoStartAt">
+              Début : {{ product.promoStartAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span *ngIf="product.promoEndAt">
+              Fin : {{ product.promoEndAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+        </div>
+
+      </div>
 
       <div class="wishlist-row">
-        <button
-          type="button"
-          class="wishlist-btn"
-          [class.active]="isInWishlist"
-          (click)="toggleWishlist()">
+        <button type="button" class="wishlist-btn" [class.active]="isInWishlist" (click)="toggleWishlist()">
           {{ isInWishlist ? '❤️ Retirer' : '🤍 Wishlist' }}
         </button>
       </div>
@@ -93,7 +103,6 @@
         <p *ngIf="product.description">{{ product.description }}</p>
       </div>
 
-      <!-- ✅ MESSAGES STOCK -->
       <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
         Stock disponible : {{ stockAvailable }} pièce(s).
       </p>
@@ -102,35 +111,15 @@
         Produit actuellement en rupture de stock.
       </p>
 
-      <!-- ✅ + / - style rond -->
       <div class="qty-row">
-        <button
-          type="button"
-          class="round-btn"
-          (click)="decrease()"
-          [disabled]="quantity === 0">
-          −
-        </button>
-
+        <button type="button" class="round-btn" (click)="decrease()" [disabled]="quantity === 0">−</button>
         <span class="qty-label">{{ quantity }}</span>
-
-        <button
-          type="button"
-          class="round-btn"
-          (click)="increase()"
-          [disabled]="!canIncrease">
-          +
-        </button>
+        <button type="button" class="round-btn" (click)="increase()" [disabled]="!canIncrease">+</button>
       </div>
 
-      <!-- ✅ message stock insuffisant -->
       <p class="stock-msg inline-msg" *ngIf="stockMessage">{{ stockMessage }}</p>
 
-      <button
-        class="btn-cart-animated"
-        type="button"
-        (click)="addToCart()"
-        [disabled]="isOutOfStock || !canIncrease">
+      <button class="btn-cart-animated" type="button" (click)="addToCart()" [disabled]="isOutOfStock || !canIncrease">
         Ajouter au panier
       </button>
 
@@ -263,6 +252,34 @@
 
   </section>
 </div>
+
+  <!-- ✅ ZOOM MODAL -->
+  <div class="zoom-backdrop" *ngIf="zoomOpen" (click)="onZoomBackdropClick($event)" (wheel)="onZoomWheel($event)">
+    <div class="zoom-panel" (click)="$event.stopPropagation()">
+      <div class="zoom-topbar">
+        <div class="zoom-title">Zoom image</div>
+
+        <div class="zoom-actions">
+          <button type="button" class="zbtn" (click)="zoomOut()" [disabled]="zoomScale <= zoomMin">−</button>
+          <button type="button" class="zbtn" (click)="resetZoom()">1:1</button>
+          <button type="button" class="zbtn" (click)="zoomIn()" [disabled]="zoomScale >= zoomMax">+</button>
+          <button type="button" class="zbtn danger" (click)="closeZoom()">✕</button>
+        </div>
+      </div>
+
+      <div class="zoom-body">
+        <img class="zoom-img"
+             [src]="activeImageUrl"
+             [style.transform]="'scale(' + zoomScale + ')'"
+             draggable="false"
+             alt="Zoom" />
+      </div>
+
+      <div class="zoom-hint">
+        Molette pour zoom • ESC pour fermer • ← → pour changer
+      </div>
+    </div>
+  </div>
 
 <ng-template #loadingTpl>
   <div class="product-detail-page center">

@@ -14,18 +14,10 @@
     </ng-container>
   </div>
 
-  <!-- ✅ message expiration -->
-  <div class="expiry-alert" *ngIf="expiryMessage">
-    {{ expiryMessage }}
-  </div>
-
-  <!-- ✅ message stock -->
-  <div class="stock-alert" *ngIf="stockMessage">
-    {{ stockMessage }}
-  </div>
+  <div class="expiry-alert" *ngIf="expiryMessage">{{ expiryMessage }}</div>
+  <div class="stock-alert" *ngIf="stockMessage">{{ stockMessage }}</div>
 
   <ng-container *ngIf="cart.items.length; else empty">
-    <!-- ✅ Message guest -->
     <div class="guest-alert" *ngIf="guestMessage">
       {{ guestMessage }}
       <div class="guest-actions">
@@ -52,9 +44,24 @@
       <tbody>
       <tr *ngFor="let item of cart.items; trackBy: trackByProductId">
         <td>
-          {{ item.name }}
-          <div class="stock-hint" *ngIf="item.stockQuantity !== undefined">
-            Stock: {{ item.stockQuantity }}
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img
+              [src]="cart.getCartItemImage(item)"
+              [alt]="item.name"
+              (error)="onImgError($event)"
+              style="width:52px;height:52px;border-radius:12px;object-fit:cover;border:1px solid rgba(148,163,184,.25);background:rgba(2,6,23,.6);cursor:pointer;"
+              (click)="goToProduct(item)"
+              title="Voir le produit"
+            />
+
+            <div style="cursor:pointer;" (click)="goToProduct(item)" title="Voir le produit">
+              <div style="font-weight:900; text-decoration:underline;">
+                {{ item.name }}
+              </div>
+              <div class="stock-hint" *ngIf="item.stockQuantity !== undefined">
+                Stock: {{ item.stockQuantity }}
+              </div>
+            </div>
           </div>
         </td>
 
@@ -62,9 +69,7 @@
 
         <td class="qty-buttons">
           <button type="button" class="btn-qty" (click)="decrease(item)">−</button>
-
           <span class="qty">{{ item.quantity }}</span>
-
           <button
             type="button"
             class="btn-qty"
@@ -87,10 +92,59 @@
       </tbody>
     </table>
 
+    <!-- ✅ CODE PROMO (vérifié backend) -->
+    <section class="promo-card">
+      <div class="promo-left">
+        <div class="promo-title">Code promo</div>
+        <div class="promo-sub">Ajoute un code pour bénéficier d’une réduction.</div>
+
+        <div class="promo-row">
+          <input
+            type="text"
+            class="promo-input"
+            [value]="promoCode"
+            (input)="promoCode = ($any($event.target).value || '')"
+            placeholder="Ex: OUSS10"
+            [disabled]="promoApplying"
+          />
+
+          <button type="button" class="promo-btn" (click)="applyPromo()" [disabled]="promoApplying">
+            {{ promoApplying ? '...' : 'Appliquer' }}
+          </button>
+
+          <button
+            type="button"
+            class="promo-btn outline"
+            *ngIf="promoCode || cart.discountPercent"
+            (click)="removePromo()"
+          >
+            Retirer
+          </button>
+        </div>
+
+        <div class="promo-msg error" *ngIf="promoError">{{ promoError }}</div>
+        <div class="promo-msg success" *ngIf="promoSuccess">{{ promoSuccess }}</div>
+      </div>
+
+      <div class="promo-right" *ngIf="cart.discountPercent > 0">
+        <div class="promo-badge">-{{ cart.discountPercent }}%</div>
+      </div>
+    </section>
+
     <div class="cart-summary">
       <p>
         Total ({{ cart.totalQuantity }} article(s)) :
         <strong>{{ cart.totalAmount | currency : 'EUR' }}</strong>
+      </p>
+
+      <p class="promo-total" *ngIf="cart.discountPercent > 0">
+        Réduction ({{ cart.discountPercent }}%) :
+        <strong>-{{ cart.discountAmount | currency:'EUR' }}</strong>
+      </p>
+
+      <p class="promo-total" *ngIf="cart.discountPercent > 0">
+        Total après réduction :
+        <strong>{{ cart.totalAfterDiscount | currency:'EUR' }}</strong>
       </p>
 
       <div class="cart-actions">
@@ -98,12 +152,7 @@
           Vider le panier
         </button>
 
-        <button
-          type="button"
-          class="btn-primary"
-          (click)="goToCheckout()"
-          [disabled]="!cart.items.length"
-        >
+        <button type="button" class="btn-primary" (click)="goToCheckout()" [disabled]="!cart.items.length">
           Passer à la validation de la commande
         </button>
 

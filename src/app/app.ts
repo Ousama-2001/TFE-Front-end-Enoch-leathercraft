@@ -40,8 +40,6 @@ export class AppComponent implements OnInit {
   cartQuantity = 0;
 
   cart$!: Observable<CartResponse | null>;
-
-  // ✅ FIX : déclaré ici, assigné dans constructor
   timeLeftMs$!: Observable<number>;
 
   currentLang: 'fr' | 'en' = 'fr';
@@ -51,7 +49,7 @@ export class AppComponent implements OnInit {
   mobileNavOpen = false;
 
   constructor(
-    private cartService: CartService,
+    public cartService: CartService, // ✅ IMPORTANT: public car utilisé dans le HTML
     private authService: AuthService,
     private router: Router,
     private languageService: LanguageService,
@@ -59,7 +57,7 @@ export class AppComponent implements OnInit {
     private cookieConsent: CookieConsentService
   ) {
     this.cart$ = this.cartService.cart$;
-    this.timeLeftMs$ = this.cartService.timeLeftMs$; // ✅ plus rouge
+    this.timeLeftMs$ = this.cartService.timeLeftMs$;
   }
 
   get isLoggedIn(): boolean {
@@ -89,7 +87,8 @@ export class AppComponent implements OnInit {
       });
 
       this.wishlistService.load().subscribe({
-        next: (items: WishlistItemResponse[]) => (this.wishlistCount = items.length),
+        next: (items: WishlistItemResponse[]) =>
+          (this.wishlistCount = items.length),
         error: () => {},
       });
     } else {
@@ -106,7 +105,13 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // ✅ format timer pour navbar
+  // ✅ fallback image sans cast HTMLImageElement dans le template
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    img.src = 'assets/placeholder.png';
+  }
+
   formatMs(ms: number): string {
     const totalSec = Math.floor(ms / 1000);
     const m = Math.floor(totalSec / 60);
@@ -127,7 +132,9 @@ export class AppComponent implements OnInit {
       this.authWarning =
         'Vous devez être connecté ou inscrit pour accéder au panier.';
       setTimeout(() => {
-        this.router.navigate(['/login'], { queryParams: { returnUrl: '/cart' } });
+        this.router.navigate(['/login'], {
+          queryParams: { returnUrl: '/cart' },
+        });
         this.authWarning = '';
       }, 1200);
       return;

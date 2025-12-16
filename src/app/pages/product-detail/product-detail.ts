@@ -9,12 +9,12 @@ import { ProductReviewService, ProductReview } from '../../services/product-revi
 import { WishlistService, WishlistItemResponse } from '../../services/wishlist.service';
 import { AuthService } from '../../services/auth.service';
 
-type SlideDir = 'left' | 'right';
+type PromoStatus = 'NONE' | 'UPCOMING' | 'ACTIVE' | 'EXPIRED';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, RouterLink],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })
@@ -54,22 +54,30 @@ export class ProductDetailComponent implements OnInit {
   editComment = '';
   editSubmitting = false;
 
-  // galerie
+  // =======================
+  // ✅ CAROUSEL PREMIUM
+  // =======================
   activeImageIndex = 0;
 
-  // animation slide
-  imageAnimClass: '' | 'slide-left' | 'slide-right' = '';
+  // drag state
+  isDragging = false;
+  dragPointerId: number | null = null;
+  dragStartX = 0;
+  dragStartY = 0;
+  dragStartOffset = 0;
+  dragOffsetX = 0;
+  isAnimating = false;
 
-  // swipe / drag
-  private dragging = false;
-  private dragStartX = 0;
-  private dragStartY = 0;
-  private dragPointerId: number | null = null;
+  // zoom modal
+  zoomOpen = false;
+  zoomScale = 1;
+  zoomMin = 1;
+  zoomMax = 4;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private productService: ProductService,
+    public productService: ProductService,
     public cartService: CartService,
     private reviewService: ProductReviewService,
     private wishlistService: WishlistService,
@@ -95,6 +103,7 @@ export class ProductDetailComponent implements OnInit {
         this.isOutOfStock = this.stockAvailable <= 0;
 
         this.activeImageIndex = 0;
+        this.dragOffsetX = 0;
 
         this.cartService.loadCart().subscribe();
         this.loadReviews(id);
@@ -109,13 +118,66 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  /* ================== GALERIE ================== */
+  /* =========================================================
+   ✅ PROMO HELPERS (affichage détail)
+   ========================================================= */
 
+  get effectivePrice(): number {
+    if (!this.product) return 0;
+    return this.productService.getEffectivePrice(this.product);
+  }
+
+  get discountPercent(): number {
+    if (!this.product) return 0;
+    return this.productService.getDiscountPercent(this.product);
+  }
+
+  get promoStatus(): PromoStatus {
+    const p = this.product;
+    if (!p) return 'NONE';
+
+    const promo = typeof p.promoPrice === 'number' ? p.promoPrice : null;
+    const start = p.promoStartAt ? new Date(p.promoStartAt).getTime() : null;
+    const end = p.promoEndAt ? new Date(p.promoEndAt).getTime() : null;
+
+    if (!promo || promo <= 0 || promo >= (p.price ?? 0)) return 'NONE';
+
+    const now = Date.now();
+
+    if (start != null && now < start) return 'UPCOMING';
+    if (end != null && now > end) return 'EXPIRED';
+    return 'ACTIVE';
+  }
+
+  get hasPromo(): boolean {
+    return this.promoStatus !== 'NONE' && this.discountPercent > 0;
+  }
+
+  get promoStatusLabel(): string {
+    switch (this.promoStatus) {
+      case 'UPCOMING':
+        return 'Promo bientôt disponible';
+      case 'ACTIVE':
+        return 'Promo en cours';
+      case 'EXPIRED':
+        return 'Promo expirée';
+      default:
+        return '';
+    }
+  }
+
+  /* =======================
+   ✅ helpers images
+   ======================= */
   get images(): string[] {
     return this.product?.imageUrls ?? [];
   }
 
   get hasThumbs(): boolean {
+    return this.images.length > 1;
+  }
+
+  get canSlide(): boolean {
     return this.images.length > 1;
   }
 
@@ -125,36 +187,143 @@ export class ProductDetailComponent implements OnInit {
     return 'http://localhost:8080' + this.images[idx];
   }
 
-  private triggerSlideAnim(dir: SlideDir): void {
-    this.imageAnimClass = dir === 'left' ? 'slide-left' : 'slide-right';
-    // reset pour permettre de rejouer l'anim même si on change vite
-    setTimeout(() => (this.imageAnimClass = ''), 220);
+  private normalizeIndex(i: number): number {
+    const n = this.images.length;
+    if (!n) return 0;
+    return (i % n + n) % n;
+  }
+
+  private animateTo(offset: number): void {
+    this.isAnimating = true;
+    this.dragOffsetX = offset;
+    setTimeout(() => (this.isAnimating = false), 220);
+  }
+
+  private commitSlide(nextIndex: number, direction: 'next' | 'prev'): void {
+    if (!this.canSlide) return;
+
+    const w = this.getCarouselWidth();
+    if (!w) {
+      this.activeImageIndex = this.normalizeIndex(nextIndex);
+      this.dragOffsetX = 0;
+      return;
+    }
+
+    const out = direction === 'next' ? -w : w;
+    this.animateTo(out);
+
+    setTimeout(() => {
+      this.activeImageIndex = this.normalizeIndex(nextIndex);
+      this.isAnimating = true;
+      this.dragOffsetX = 0;
+      setTimeout(() => (this.isAnimating = false), 120);
+    }, 200);
   }
 
   prevImage(): void {
-    if (this.images.length <= 1) return;
-    this.triggerSlideAnim('right'); // l'image arrive de la gauche visuellement => on simule inverse
-    this.activeImageIndex = (this.activeImageIndex - 1 + this.images.length) % this.images.length;
+    if (!this.canSlide) return;
+    this.commitSlide(this.activeImageIndex - 1, 'prev');
   }
 
   nextImage(): void {
-    if (this.images.length <= 1) return;
-    this.triggerSlideAnim('left');
-    this.activeImageIndex = (this.activeImageIndex + 1) % this.images.length;
+    if (!this.canSlide) return;
+    this.commitSlide(this.activeImageIndex + 1, 'next');
   }
 
   setActiveImage(i: number): void {
     if (!this.images.length) return;
     if (i < 0 || i >= this.images.length) return;
-    const dir: SlideDir = i > this.activeImageIndex ? 'left' : 'right';
-    this.triggerSlideAnim(dir);
-    this.activeImageIndex = i;
+    if (i === this.activeImageIndex) return;
+
+    const direction: 'next' | 'prev' = i > this.activeImageIndex ? 'next' : 'prev';
+    this.commitSlide(i, direction);
   }
 
-  // clavier (quand tu es sur la page)
+  /* =======================
+   ✅ drag / swipe (pointer)
+   ======================= */
+  onCarouselPointerDown(e: PointerEvent): void {
+    if (!this.canSlide) return;
+    if ((e as any).button === 2) return;
+
+    this.isDragging = true;
+    this.dragPointerId = e.pointerId;
+    this.dragStartX = e.clientX;
+    this.dragStartY = e.clientY;
+    this.dragStartOffset = this.dragOffsetX;
+    this.isAnimating = false;
+  }
+
+  onCarouselPointerMove(e: PointerEvent): void {
+    if (!this.isDragging) return;
+    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
+
+    const dx = e.clientX - this.dragStartX;
+    const dy = e.clientY - this.dragStartY;
+
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) return;
+
+    const w = this.getCarouselWidth() || 300;
+    const raw = this.dragStartOffset + dx;
+
+    const resistance = 0.35;
+    const capped = Math.max(Math.min(raw, w * resistance), -w * resistance);
+    this.dragOffsetX = capped;
+  }
+
+  onCarouselPointerUp(e: PointerEvent): void {
+    if (!this.isDragging) return;
+    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
+
+    const dx = e.clientX - this.dragStartX;
+    const dy = e.clientY - this.dragStartY;
+
+    this.isDragging = false;
+    this.dragPointerId = null;
+
+    if (Math.abs(dy) > Math.abs(dx)) {
+      this.animateTo(0);
+      return;
+    }
+
+    const w = this.getCarouselWidth() || 300;
+    const threshold = Math.min(120, w * 0.25);
+
+    if (dx <= -threshold) {
+      this.nextImage();
+      return;
+    }
+    if (dx >= threshold) {
+      this.prevImage();
+      return;
+    }
+
+    this.animateTo(0);
+  }
+
+  onCarouselPointerCancel(): void {
+    this.isDragging = false;
+    this.dragPointerId = null;
+    this.animateTo(0);
+  }
+
+  private getCarouselWidth(): number {
+    const el = document.querySelector('.image-wrapper') as HTMLElement | null;
+    return el ? el.clientWidth : 0;
+  }
+
+  // clavier
   @HostListener('window:keydown', ['$event'])
   onKeyDown(e: KeyboardEvent): void {
-    // évite de voler les flèches quand tu tapes dans un textarea/select/input
+    if (this.zoomOpen) {
+      if (e.key === 'Escape') this.closeZoom();
+      if (e.key === 'ArrowLeft') this.prevImage();
+      if (e.key === 'ArrowRight') this.nextImage();
+      if (e.key === '+' || e.key === '=') this.zoomIn();
+      if (e.key === '-') this.zoomOut();
+      return;
+    }
+
     const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
 
@@ -162,43 +331,44 @@ export class ProductDetailComponent implements OnInit {
     if (e.key === 'ArrowRight') this.nextImage();
   }
 
-  // swipe / drag (pointer events -> souris + touch)
-  onPointerDown(e: PointerEvent): void {
-    if (this.images.length <= 1) return;
-    this.dragging = true;
-    this.dragPointerId = e.pointerId;
-    this.dragStartX = e.clientX;
-    this.dragStartY = e.clientY;
+  /* =======================
+   ✅ zoom modal
+   ======================= */
+  openZoom(): void {
+    if (!this.images.length) return;
+    this.zoomOpen = true;
+    this.zoomScale = 1;
+    document.body.style.overflow = 'hidden';
   }
 
-  onPointerMove(e: PointerEvent): void {
-    if (!this.dragging) return;
-    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
-    // on ne fait rien en live (simple + fluide), on décide au release
+  closeZoom(): void {
+    this.zoomOpen = false;
+    this.zoomScale = 1;
+    document.body.style.overflow = '';
   }
 
-  onPointerUp(e: PointerEvent): void {
-    if (!this.dragging) return;
-    if (this.dragPointerId !== null && e.pointerId !== this.dragPointerId) return;
-
-    const dx = e.clientX - this.dragStartX;
-    const dy = e.clientY - this.dragStartY;
-
-    this.dragging = false;
-    this.dragPointerId = null;
-
-    // si geste vertical (scroll) -> ignore
-    if (Math.abs(dy) > Math.abs(dx)) return;
-
-    // seuil swipe
-    const TH = 50;
-    if (dx > TH) this.prevImage();
-    if (dx < -TH) this.nextImage();
+  zoomIn(): void {
+    this.zoomScale = Math.min(this.zoomMax, Number((this.zoomScale + 0.25).toFixed(2)));
   }
 
-  onPointerCancel(): void {
-    this.dragging = false;
-    this.dragPointerId = null;
+  zoomOut(): void {
+    this.zoomScale = Math.max(this.zoomMin, Number((this.zoomScale - 0.25).toFixed(2)));
+  }
+
+  resetZoom(): void {
+    this.zoomScale = 1;
+  }
+
+  onZoomWheel(e: WheelEvent): void {
+    if (!this.zoomOpen) return;
+    e.preventDefault();
+    if (e.deltaY < 0) this.zoomIn();
+    else this.zoomOut();
+  }
+
+  onZoomBackdropClick(e: MouseEvent): void {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('zoom-backdrop')) this.closeZoom();
   }
 
   /* ================== LOGIN ================== */
@@ -216,7 +386,6 @@ export class ProductDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    // si tu veux un vrai retour historique : this.router.navigateByUrl('/products') est ok
     this.router.navigate(['/products']);
   }
 
@@ -402,10 +571,7 @@ export class ProductDetailComponent implements OnInit {
     this.editSubmitting = true;
 
     this.reviewService
-      .updateReview(r.id, {
-        rating: this.editRating,
-        comment: this.editComment.trim(),
-      })
+      .updateReview(r.id, { rating: this.editRating, comment: this.editComment.trim() })
       .subscribe({
         next: (updated: ProductReview) => {
           this.reviews = this.reviews.map((x) => (x.id === updated.id ? updated : x));

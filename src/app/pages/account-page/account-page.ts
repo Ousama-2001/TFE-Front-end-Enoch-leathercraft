@@ -6,7 +6,7 @@ import { AccountService, Profile, UserOrder } from '../../services/account.servi
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 import { LanguageService } from '../../services/language.service';
-import {TranslatePipe} from '../../pipes/translate.pipe';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 type AccountTab = 'overview' | 'profile' | 'address' | 'orders' | 'security';
 
@@ -54,6 +54,12 @@ export class AccountPageComponent implements OnInit {
   newPassword = '';
   confirmPassword = '';
 
+  // ✅ CHANGEMENT EMAIL
+  newEmail = '';
+  emailCurrentPassword = '';
+  requestingEmailChange = false;
+  emailChangeInfo = '';
+
   constructor(
     private accountService: AccountService,
     private router: Router,
@@ -73,6 +79,7 @@ export class AccountPageComponent implements OnInit {
     this.activeTab = tab;
     this.error = '';
     this.success = '';
+    this.emailChangeInfo = '';
   }
 
   loadProfile(): void {
@@ -113,7 +120,6 @@ export class AccountPageComponent implements OnInit {
 
     this.accountService.getMyOrders().subscribe({
       next: (orders) => {
-        // ✅ si ton API renvoie pas trié : on force du plus récent au plus ancien
         this.myOrders = [...orders].sort((a, b) => {
           const da = new Date(a.createdAt as any).getTime();
           const db = new Date(b.createdAt as any).getTime();
@@ -137,6 +143,7 @@ export class AccountPageComponent implements OnInit {
   submitPasswordChange(): void {
     this.error = '';
     this.success = '';
+    this.emailChangeInfo = '';
 
     if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
       this.error = this.tr('account.error.requiredFields');
@@ -155,7 +162,6 @@ export class AccountPageComponent implements OnInit {
       newPassword: this.newPassword
     }).subscribe({
       next: (msg: string) => {
-        // si ton backend renvoie déjà un message propre, sinon fallback i18n
         this.success = (msg && msg.trim().length)
           ? msg
           : this.tr('account.success.passwordUpdated');
@@ -166,13 +172,66 @@ export class AccountPageComponent implements OnInit {
         this.changingPassword = false;
       },
       error: (err: HttpErrorResponse) => {
-        // si backend renvoie une string (souvent déjà en FR), on garde. sinon fallback i18n
         if (typeof err.error === 'string' && err.error.trim().length) {
           this.error = err.error;
         } else {
           this.error = this.tr('account.error.changePassword');
         }
         this.changingPassword = false;
+      }
+    });
+  }
+
+  // ✅ Demande changement email (envoi lien au nouvel email)
+  submitEmailChangeRequest(): void {
+    this.error = '';
+    this.success = '';
+    this.emailChangeInfo = '';
+
+    const email = (this.newEmail || '').trim().toLowerCase();
+    const pwd = this.emailCurrentPassword || '';
+
+    if (!email || !pwd) {
+      this.error = this.tr('account.error.requiredFields');
+      return;
+    }
+
+    // petit check front (le back re-valide)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) {
+      this.error = 'Email invalide.';
+      return;
+    }
+
+    this.requestingEmailChange = true;
+
+    this.accountService.requestEmailChange({ newEmail: email, currentPassword: pwd }).subscribe({
+      next: () => {
+        this.emailChangeInfo = 'Un lien de confirmation a été envoyé sur le nouvel email. Clique dessus pour valider le changement.';
+        this.newEmail = '';
+        this.emailCurrentPassword = '';
+        this.requestingEmailChange = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        const code = err?.error;
+
+        if (code === 'EMAIL_ALREADY_USED') {
+          this.error = 'Cet email est déjà utilisé.';
+        } else if (code === 'EMAIL_INVALID') {
+          this.error = 'Email invalide.';
+        } else if (code === 'BAD_PASSWORD') {
+          this.error = 'Mot de passe incorrect.';
+        } else if (code === 'EMAIL_SAME_AS_CURRENT') {
+          this.error = 'C’est déjà ton email actuel.';
+        } else if (code === 'PASSWORD_REQUIRED') {
+          this.error = 'Mot de passe requis.';
+        } else if (code === 'EMAIL_REQUIRED') {
+          this.error = 'Email requis.';
+        } else {
+          this.error = "Impossible d'envoyer le lien. Réessaie.";
+        }
+
+        this.requestingEmailChange = false;
       }
     });
   }
@@ -192,6 +251,7 @@ export class AccountPageComponent implements OnInit {
       }
     });
   }
+
   getOrderStatusLabel(status: string): string {
     return this.tr(`order.status.${status}`);
   }

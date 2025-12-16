@@ -1,8 +1,5 @@
-<!-- src/app/app.html -->
 <div class="app-shell">
-  <!-- ======================= NAVBAR ======================= -->
   <header class="topbar" *ngIf="!isAuthPage()">
-    <!-- ===== GAUCHE : LOGO + NAV ===== -->
     <div class="topbar-left">
       <a routerLink="/home" class="brand">
         <img
@@ -13,44 +10,27 @@
         <span class="brand-title">ENOCH LEATHERCRAFT</span>
       </a>
 
-      <!-- ===== NAVIGATION PRINCIPALE ===== -->
       <nav class="main-nav">
         <div class="nav-item">
-          <a
-            routerLink="/home"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-          >
+          <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             {{ 'nav.home' | t }}
           </a>
         </div>
 
         <div class="nav-item">
-          <a
-            routerLink="/products"
-            [queryParams]="{ sort: 'newest' }"
-            routerLinkActive="active"
-          >
+          <a routerLink="/products" [queryParams]="{ sort: 'newest' }" routerLinkActive="active">
             {{ 'nav.new' | t }}
           </a>
         </div>
 
         <div class="nav-item">
-          <a
-            routerLink="/products"
-            [queryParams]="{ segment: 'homme' }"
-            routerLinkActive="active"
-          >
+          <a routerLink="/products" [queryParams]="{ segment: 'homme' }" routerLinkActive="active">
             {{ 'nav.men' | t }}
           </a>
         </div>
 
         <div class="nav-item">
-          <a
-            routerLink="/products"
-            [queryParams]="{ segment: 'femme' }"
-            routerLinkActive="active"
-          >
+          <a routerLink="/products" [queryParams]="{ segment: 'femme' }" routerLinkActive="active">
             {{ 'nav.women' | t }}
           </a>
         </div>
@@ -66,44 +46,26 @@
         </div>
 
         <div class="nav-item">
-          <a routerLink="/about" routerLinkActive="active">
-            {{ 'nav.about' | t }}
-          </a>
+          <a routerLink="/about" routerLinkActive="active">{{ 'nav.about' | t }}</a>
         </div>
 
         <div class="nav-item">
-          <a routerLink="/contact" routerLinkActive="active">
-            {{ 'nav.contact' | t }}
-          </a>
+          <a routerLink="/contact" routerLinkActive="active">{{ 'nav.contact' | t }}</a>
         </div>
       </nav>
     </div>
 
-    <!-- ===== DROITE : LANG / WISHLIST / CART / AUTH ===== -->
     <div class="topbar-right">
       <!-- 🌍 LANG -->
       <div class="lang-switcher">
         <div class="lang-toggle">
-          <div
-            class="lang-toggle-indicator"
-            [class.right]="currentLang === 'en'"
-          ></div>
+          <div class="lang-toggle-indicator" [class.right]="currentLang === 'en'"></div>
 
-          <button
-            type="button"
-            class="lang-option"
-            [class.active]="currentLang === 'fr'"
-            (click)="changeLang('fr')"
-          >
+          <button type="button" class="lang-option" [class.active]="currentLang === 'fr'" (click)="changeLang('fr')">
             FR
           </button>
 
-          <button
-            type="button"
-            class="lang-option"
-            [class.active]="currentLang === 'en'"
-            (click)="changeLang('en')"
-          >
+          <button type="button" class="lang-option" [class.active]="currentLang === 'en'" (click)="changeLang('en')">
             EN
           </button>
         </div>
@@ -112,16 +74,9 @@
 
       <!-- ❤️ WISHLIST -->
       <div class="wishlist-wrapper">
-        <button
-          class="wishlist-button"
-          type="button"
-          (click)="goToWishlist()"
-          aria-label="Wishlist"
-        >
+        <button class="wishlist-button" type="button" (click)="goToWishlist()" aria-label="Wishlist">
           <span class="wishlist-icon">♥</span>
-          <span class="wishlist-badge" *ngIf="wishlistCount > 0">
-            {{ wishlistCount }}
-          </span>
+          <span class="wishlist-badge" *ngIf="wishlistCount > 0">{{ wishlistCount }}</span>
         </button>
       </div>
 
@@ -133,41 +88,41 @@
       >
         <button class="cart-button" (click)="goToCart()">
           🧺
-          <span class="cart-badge" *ngIf="cartQuantity > 0">
-            {{ cartQuantity }}
-          </span>
+          <span class="cart-badge" *ngIf="cartQuantity > 0">{{ cartQuantity }}</span>
         </button>
 
-        <!-- ✅ FIX : on récupère cart via async + as cart -->
         <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
           <h3 class="cart-popover-title">{{ 'cart.title' | t }}</h3>
 
-          <!-- ✅ TIMER dans la popover (seulement si panier non vide) -->
-          <div class="mini-timer" *ngIf="(cart.items?.length ?? 0) > 0">
+          <div class="mini-timer" *ngIf="cart.items.length > 0">
             <ng-container *ngIf="(timeLeftMs$ | async) as ms">
               <span *ngIf="ms > 0">⏳ {{ formatMs(ms) }}</span>
               <span class="danger" *ngIf="ms === 0">⌛ Expiré</span>
             </ng-container>
           </div>
 
-          <ng-container *ngIf="(cart.items?.length ?? 0) > 0; else emptyCart">
+          <ng-container *ngIf="cart.items.length > 0; else emptyCart">
             <div class="cart-items">
               <div class="cart-item" *ngFor="let item of cart.items">
                 <div class="cart-item-left">
-                  <div class="cart-thumb" *ngIf="item.imageUrl">
-                    <img [src]="item.imageUrl" [alt]="item.name" />
+                  <div class="cart-thumb">
+                    <img
+                      [src]="cartService.getCartItemImage(item)"
+                      [alt]="item.name"
+                      (error)="onImgError($event)"
+                    />
                   </div>
 
                   <div class="cart-info">
                     <div class="name">{{ item.name }}</div>
                     <div class="meta">
-                      x{{ item.quantity }} • {{ item.unitPrice | currency : 'EUR' }}
+                      x{{ item.quantity }} • {{ item.unitPrice | currency:'EUR' }}
                     </div>
                   </div>
                 </div>
 
                 <div class="cart-item-total">
-                  {{ item.lineTotal | currency : 'EUR' }}
+                  {{ item.lineTotal | currency:'EUR' }}
                 </div>
               </div>
             </div>
@@ -175,7 +130,7 @@
             <div class="cart-popover-footer">
               <div class="summary">
                 <span>{{ cart.totalQuantity }} {{ 'cart.itemsCount' | t }}</span>
-                <span class="total">{{ cart.totalAmount | currency : 'EUR' }}</span>
+                <span class="total">{{ cart.totalAmount | currency:'EUR' }}</span>
               </div>
 
               <button class="view-cart-btn" (click)="goToCart()">
@@ -201,50 +156,26 @@
       </ng-container>
 
       <ng-template #guest>
-        <button class="btn-chip btn-login" routerLink="/login">
-          {{ 'nav.login' | t }}
-        </button>
-        <button class="btn-chip btn-register" routerLink="/register">
-          {{ 'nav.register' | t }}
-        </button>
+        <button class="btn-chip btn-login" routerLink="/login">{{ 'nav.login' | t }}</button>
+        <button class="btn-chip btn-register" routerLink="/register">{{ 'nav.register' | t }}</button>
       </ng-template>
 
-      <!-- ☰ BURGER (mobile) -->
-      <button class="burger" type="button" (click)="mobileNavOpen = !mobileNavOpen">
-        ☰
-      </button>
+      <button class="burger" type="button" (click)="mobileNavOpen = !mobileNavOpen">☰</button>
     </div>
 
-    <!-- ===== MENU MOBILE ===== -->
     <div class="mobile-nav" *ngIf="mobileNavOpen">
       <a routerLink="/home" (click)="mobileNavOpen=false">{{ 'nav.home' | t }}</a>
-      <a routerLink="/products" [queryParams]="{ sort: 'newest' }" (click)="mobileNavOpen=false">
-        {{ 'nav.new' | t }}
-      </a>
-      <a routerLink="/products" [queryParams]="{ segment: 'homme' }" (click)="mobileNavOpen=false">
-        {{ 'nav.men' | t }}
-      </a>
-      <a routerLink="/products" [queryParams]="{ segment: 'femme' }" (click)="mobileNavOpen=false">
-        {{ 'nav.women' | t }}
-      </a>
-      <a routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }" (click)="mobileNavOpen=false">
-        {{ 'nav.smallLeather' | t }}
-      </a>
+      <a routerLink="/products" (click)="mobileNavOpen=false">{{ 'nav.new' | t }}</a>
       <a routerLink="/about" (click)="mobileNavOpen=false">{{ 'nav.about' | t }}</a>
       <a routerLink="/contact" (click)="mobileNavOpen=false">{{ 'nav.contact' | t }}</a>
     </div>
   </header>
 
-  <!-- MESSAGE VISITEUR -->
-  <div class="auth-warning" *ngIf="authWarning">
-    {{ authWarning }}
-  </div>
+  <div class="auth-warning" *ngIf="authWarning">{{ authWarning }}</div>
 
-  <!-- ======================= CONTENU ======================= -->
   <main class="page">
     <router-outlet></router-outlet>
   </main>
 
-  <!-- COOKIE -->
   <app-cookie-banner></app-cookie-banner>
 </div>

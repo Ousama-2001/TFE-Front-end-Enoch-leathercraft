@@ -5,10 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { ProductService, Product } from '../../services/products.service';
 import { CartService, CartItem } from '../../services/cart.service';
-import {
-  WishlistService,
-  WishlistItemResponse,
-} from '../../services/wishlist.service';
+import { WishlistService, WishlistItemResponse } from '../../services/wishlist.service';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService } from '../../services/auth.service';
 
@@ -16,8 +13,8 @@ import { AuthService } from '../../services/auth.service';
   selector: 'app-products',
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyPipe, FormsModule, TranslatePipe],
-  templateUrl: './products.html', // Assure-toi que c'est le bon nom
-  styleUrls: ['./products.scss'], // Assure-toi que c'est le bon nom
+  templateUrl: './products.html',
+  styleUrls: ['./products.scss'],
 })
 export class ProductsComponent implements OnInit {
   products: Product[] = [];
@@ -68,7 +65,7 @@ export class ProductsComponent implements OnInit {
       this.searchTerm = params['search'] || '';
       this.sortBy = params['sort'] || this.sortBy || '';
 
-      if (this.products && this.products.length > 0) {
+      if (this.products.length > 0) {
         this.applyFilters();
       }
     });
@@ -114,12 +111,9 @@ export class ProductsComponent implements OnInit {
   private requireLoginOrRedirect(): boolean {
     if (this.auth.isAuthenticated()) return true;
 
-    this.authWarning =
-      'Vous devez être connecté ou inscrit pour effectuer cette action.';
+    this.authWarning = 'Vous devez être connecté ou inscrit pour effectuer cette action.';
     setTimeout(() => {
-      this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url },
-      });
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       this.authWarning = '';
     }, 1200);
 
@@ -190,8 +184,7 @@ export class ProductsComponent implements OnInit {
       result = result.filter(
         (p) =>
           (p.name && p.name.toLowerCase().includes(term)) ||
-          ((p as any).description &&
-            (p as any).description.toLowerCase().includes(term))
+          ((p as any).description && (p as any).description.toLowerCase().includes(term))
       );
     }
 

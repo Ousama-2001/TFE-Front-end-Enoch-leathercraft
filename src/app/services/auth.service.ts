@@ -50,6 +50,21 @@ export class AuthService {
       .pipe(tap((res) => this.setSession(res)));
   }
 
+  // ✅ disponibilité username/email
+  isUsernameAvailable(username: string) {
+    return this.http.get<{ available: boolean }>(
+      `${this.api}/auth/availability/username`,
+      { params: { username } }
+    );
+  }
+
+  isEmailAvailable(email: string) {
+    return this.http.get<{ available: boolean }>(
+      `${this.api}/auth/availability/email`,
+      { params: { email } }
+    );
+  }
+
   private setSession(res: LoginResponse): void {
     localStorage.setItem(this.tokenKey, res.token);
     localStorage.setItem(this.roleKey, res.role);
@@ -90,7 +105,6 @@ export class AuthService {
     });
   }
 
-  // 🔥 demande de réactivation AVEC message
   requestReactivation(email: string, message?: string) {
     return this.http.post(`${this.api}/auth/reactivation-request`, {
       email,
@@ -103,9 +117,6 @@ export class AuthService {
     return url.startsWith('/login') || url.startsWith('/register');
   }
 
-  // =========================================================
-  // ✅ clé utilisateur stable depuis le JWT
-  // =========================================================
   getUserKey(): string | null {
     const token = this.getToken();
     if (!token) return null;
