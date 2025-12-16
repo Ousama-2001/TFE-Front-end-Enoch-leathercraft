@@ -42,20 +42,16 @@ export class AdminDashboardComponent implements OnInit {
   returnsPage = 1;
   productsPage = 1;
 
-  // Filtres Commandes
   orderStatusFilter: OrderStatusFilter = 'ALL';
   orderSearchTerm: string = '';
-
-  // Filtres Retours
   returnStatusFilter: string = 'ALL';
   returnSearchTerm: string = '';
 
-  // Filtres Produits
   selectedProductFilter: ProductFilter = 'ALL';
   productSearchTerm: string = '';
   productsMode: 'active' | 'archived' = 'active';
 
-  // ✅ Variable pour afficher l'erreur en haut du formulaire
+  // ✅ Variable pour message d'erreur formulaire
   productFormError: string | null = null;
 
   stats: SalesStatsResponse | null = null;
@@ -69,7 +65,6 @@ export class AdminDashboardComponent implements OnInit {
   selectedOrder: AdminOrderResponse | null = null;
   modalStatus: string = 'PENDING';
 
-  // Listes déroulantes (Français en dur)
   orderStatusOptions = [
     { value: 'PENDING', label: 'En attente' },
     { value: 'PAID', label: 'Payée' },
@@ -163,7 +158,6 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   get hasPromo(): boolean { return this.newProduct.promoStartAt !== null; }
-
   togglePromo(): void {
     if (this.hasPromo) {
       this.newProduct.promoPrice = null;
@@ -194,7 +188,7 @@ export class AdminDashboardComponent implements OnInit {
 
     obs.subscribe({
       next: (l) => { this.products = l ?? []; this.loading = false; },
-      error: () => { this.error = "Erreur chargement produits"; this.loading = false; }
+      error: () => { this.error = 'Erreur chargement produits'; this.loading = false; }
     });
   }
 
@@ -275,12 +269,12 @@ export class AdminDashboardComponent implements OnInit {
     this.currentImages = [];
   }
   deleteExistingImage(imageId: number): void {
-    if(imageId < 0) { alert("Impossible de supprimer cette image."); return; }
+    if(imageId < 0) { alert("Impossible de supprimer."); return; }
     if(!this.editingProductId) return;
-    if(!confirm("Voulez-vous vraiment supprimer cette image ?")) return;
+    if(!confirm("Supprimer l'image ?")) return;
     (this.productService as any).deleteImage(this.editingProductId, imageId).subscribe({
       next: () => { this.currentImages = this.currentImages.filter(i => i.id !== imageId); },
-      error: () => alert("Erreur lors de la suppression.")
+      error: () => alert("Erreur suppression.")
     });
   }
 
@@ -290,7 +284,7 @@ export class AdminDashboardComponent implements OnInit {
   get sortedOrders() { return [...this.orders].sort((a,b)=>new Date((b as any).createdAt).getTime()-new Date((a as any).createdAt).getTime()); }
   getStatusClass(s:string){ return s.toLowerCase(); }
 
-  // Helper pour afficher le statut "Joli" dans le tableau
+  // Helper pour afficher le statut propre
   getStatusLabel(status: string): string {
     const allOptions = [...this.orderStatusOptions, ...this.returnStatusOptions];
     const found = allOptions.find(o => o.value === status);
@@ -332,22 +326,17 @@ export class AdminDashboardComponent implements OnInit {
 
   toggleCreateForm(){
     if(this.selectedProductFilter === 'ARCHIVED') { alert("Impossible de créer un produit dans les archives."); return; }
-
-    if(this.editingProductId !== null) {
-      this.resetForm();
-    } else {
-      this.showCreateForm = !this.showCreateForm;
-      this.productFormError = null;
-    }
+    if(this.editingProductId!==null) this.resetForm();
+    else { this.showCreateForm=!this.showCreateForm; this.productFormError=null; }
   }
 
   resetForm(){
-    this.showCreateForm = false;
-    this.editingProductId = null;
-    this.isSubmitting = false;
+    this.showCreateForm=false;
+    this.editingProductId=null;
+    this.isSubmitting=false;
     this.clearSelectedFiles();
-    this.productFormError = null;
-    this.newProduct = {sku:'',name:'',description:'',price:null,weightGrams:null,isActive:true,currency:'EUR',slug:'',segmentCategoryId:null,typeCategoryId:null} as any;
+    this.productFormError=null;
+    this.newProduct={sku:'',name:'',description:'',price:null,weightGrams:null,isActive:true,currency:'EUR',slug:'',segmentCategoryId:null,typeCategoryId:null} as any;
   }
 
   startEdit(p: Product){
@@ -368,7 +357,7 @@ export class AdminDashboardComponent implements OnInit {
     return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + String(Date.now()).slice(-4);
   }
 
-  // ✅ VALIDATION STRICTE DU FORMULAIRE
+  // ✅ VALIDATION STRICTE
   submitForm(){
     this.productFormError = null;
 
@@ -380,11 +369,11 @@ export class AdminDashboardComponent implements OnInit {
 
     // 2. Validation Catégories
     if (!this.newProduct.segmentCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Segment (Homme, Femme...).";
+      this.productFormError = "Veuillez sélectionner un Segment.";
       return;
     }
     if (!this.newProduct.typeCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Type (Sac, Ceinture...).";
+      this.productFormError = "Veuillez sélectionner un Type.";
       return;
     }
 
@@ -394,7 +383,7 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    // 4. Validation Prix
+    // 4. Validation Prix (Max 1000€)
     if (this.newProduct.price === null || this.newProduct.price === undefined) {
       this.productFormError = "Le prix est obligatoire.";
       return;
@@ -403,24 +392,51 @@ export class AdminDashboardComponent implements OnInit {
       this.productFormError = "Le prix ne peut pas être négatif.";
       return;
     }
+    if (Number(this.newProduct.price) > 1000) {
+      this.productFormError = "Le prix ne peut pas dépasser 1000€.";
+      return;
+    }
 
-    // 5. Validation Promo
+    // 5. Validation Poids (Max 5kg)
+    if (this.newProduct.weightGrams !== null && this.newProduct.weightGrams !== undefined) {
+      if(Number(this.newProduct.weightGrams) < 0) {
+        this.productFormError = "Le poids ne peut pas être négatif.";
+        return;
+      }
+      if(Number(this.newProduct.weightGrams) > 5000) {
+        this.productFormError = "Le poids ne peut pas dépasser 5000g (5kg).";
+        return;
+      }
+    }
+
+    // 6. Validation Description (Max 1000 chars)
+    if (this.newProduct.description && this.newProduct.description.length > 1000) {
+      this.productFormError = "La description est trop longue (max 1000 caractères).";
+      return;
+    }
+
+    // 7. Validation Promo
     if (this.hasPromo) {
       if (this.newProduct.promoPrice === null || this.newProduct.promoPrice === undefined) {
         this.productFormError = "Le prix promo est obligatoire.";
         return;
       }
       if (Number(this.newProduct.promoPrice) >= Number(this.newProduct.price)) {
-        this.productFormError = "Le prix promo doit être strictement inférieur au prix normal.";
+        this.productFormError = "Le prix promo doit être inférieur au prix normal.";
         return;
       }
       if (!this.newProduct.promoStartAt) {
         this.productFormError = "La date de début est obligatoire.";
         return;
       }
+      // Validation dates
+      if (this.newProduct.promoEndAt && new Date(this.newProduct.promoStartAt) > new Date(this.newProduct.promoEndAt)) {
+        this.productFormError = "La date de début ne peut pas être postérieure à la date de fin.";
+        return;
+      }
     }
 
-    this.isSubmitting = true;
+    this.isSubmitting=true;
     if(!(this.newProduct as any).slug) (this.newProduct as any).slug = this.slugify(this.newProduct.name);
 
     const pl={...this.newProduct};
@@ -429,7 +445,7 @@ export class AdminDashboardComponent implements OnInit {
     if(this.editingProductId===null) {
       this.productService.create(pl,this.selectedFiles).subscribe({
         next:c=>{this.products.unshift(c);this.resetForm();this.isSubmitting=false},
-        error:(e)=>{console.error(e); this.productFormError="Erreur lors de la création."; this.isSubmitting=false}
+        error:(e)=>{console.error(e); this.productFormError="Erreur création produit"; this.isSubmitting=false}
       });
     } else {
       this.productService.update(this.editingProductId, pl, this.selectedFiles.length?this.selectedFiles:null).subscribe({

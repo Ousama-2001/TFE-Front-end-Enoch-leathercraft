@@ -177,10 +177,7 @@
         </div>
 
         <div class="row-2">
-          <div>
-            <label>Nom <span class="req">*</span></label>
-            <input [(ngModel)]="newProduct.name" placeholder="Nom du produit" [class.input-error]="!newProduct.name && productFormError" />
-          </div>
+          <div><label>Nom <span class="req">*</span></label><input [(ngModel)]="newProduct.name" placeholder="Nom du produit" [class.input-error]="!newProduct.name && productFormError" /></div>
           <div>
             <label>SKU <span class="req">*</span></label>
             <div class="row-actions" style="justify-content:flex-start; gap:8px; align-items:center;">
@@ -213,7 +210,18 @@
         </div>
 
         <label>Description</label>
-        <textarea [(ngModel)]="newProduct.description" rows="3"></textarea>
+        <div class="textarea-wrapper">
+            <textarea
+              [(ngModel)]="newProduct.description"
+              rows="4"
+              maxlength="1000"
+              placeholder="Description du produit..."
+              [class.input-error]="newProduct.description && newProduct.description.length > 1000">
+            </textarea>
+          <div class="char-count" [class.limit-reached]="(newProduct.description?.length || 0) >= 1000">
+            {{ newProduct.description?.length || 0 }} / 1000
+          </div>
+        </div>
 
         <div class="divider"></div>
         <div class="section-head" style="margin-bottom: 10px; display:flex; align-items:center; justify-content:space-between;">
