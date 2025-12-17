@@ -12,7 +12,6 @@
   </section>
 
   <section class="filters-card">
-
     <div class="filters-top">
       <div class="search-bar">
         <span class="search-icon">🔍</span>
@@ -31,7 +30,6 @@
     </div>
 
     <div class="filters-grid">
-
       <div class="filter-group">
         <label>{{ 'products.filters.segment' | t }}</label>
         <select [(ngModel)]="selectedSegment" (ngModelChange)="onFiltersChange()">
@@ -96,7 +94,6 @@
           <option value="newest">{{ 'products.filters.sort.newest' | t }}</option>
         </select>
       </div>
-
     </div>
   </section>
 
@@ -111,7 +108,6 @@
           <div class="product-image shimmer"></div>
           <div class="product-body">
             <div class="line shimmer"></div>
-            <div class="line short shimmer"></div>
           </div>
           <div class="card-footer">
             <div class="price shimmer line short"></div>
@@ -123,11 +119,9 @@
         <article class="product-card" *ngFor="let p of paginatedProducts">
           <div class="product-image">
             <img [src]="productService.getImageUrl(p)" [alt]="p.name" />
-
             <div class="discount-badge" *ngIf="productService.isPromoValid(p)">
               -{{ productService.getDiscountPercent(p) }}%
             </div>
-
             <button type="button" class="fav-btn" (click)="toggleFavorite(p)" [class.active]="isFavorite(p)">
               ♥
             </button>
@@ -135,11 +129,6 @@
 
           <div class="product-body">
             <h3 class="product-name">{{ p.name }}</h3>
-            <p class="product-description" *ngIf="p.description; else noDesc">{{ p.description }}</p>
-            <ng-template #noDesc>
-              <p class="product-description muted">{{ 'products.description.missing' | t }}</p>
-            </ng-template>
-
             <p class="stock-info" *ngIf="p.stockQuantity != null">
               <span *ngIf="p.stockQuantity > 0; else outOfStock">
                 {{ 'products.stock.inStockPrefix' | t }}{{ p.stockQuantity }} {{ 'products.stock.inStockSuffix' | t }}

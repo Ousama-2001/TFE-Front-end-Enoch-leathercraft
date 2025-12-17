@@ -17,9 +17,12 @@ export class AdminReviewsPageComponent implements OnInit {
   error = '';
 
   // Filtres
-  // 'ALL' n'est pas un ReviewStatus, c'est juste pour le front
   filterStatus: 'ALL' | ReviewStatus = 'ALL';
   searchTerm: string = '';
+
+  // ✅ Pagination
+  pageSize = 12; // ajuste si tu veux (8/12/16…)
+  page = 1;
 
   constructor(private reviewService: AdminReviewsService) {}
 
@@ -31,14 +34,18 @@ export class AdminReviewsPageComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    // Si le filtre est 'ALL', on envoie undefined au service pour qu'il ne filtre pas par statut
     const statusParam = this.filterStatus === 'ALL' ? undefined : this.filterStatus;
 
     this.reviewService.search({ status: statusParam }).subscribe({
       next: (data) => {
-        // Tri par date décroissante (plus récent en haut)
-        this.reviews = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        // Tri par date décroissante
+        this.reviews = (data ?? []).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         this.loading = false;
+
+        // ✅ reset page si besoin
+        this.page = 1;
       },
       error: (err) => {
         console.error(err);
@@ -48,13 +55,10 @@ export class AdminReviewsPageComponent implements OnInit {
     });
   }
 
-  // Filtrage local pour la recherche textuelle uniquement
-  // (Le filtrage par statut est déjà fait via l'API dans loadReviews,
-  // mais on peut le refaire ici si on veut éviter de rappeler le serveur à chaque clic sur les boutons filtres)
+  // Filtrage local (statut + recherche)
   get filteredReviews() {
     let list = this.reviews;
 
-    // Si on change le filtre localement sans recharger l'API (optionnel, sinon appeler loadReviews() au changement)
     if (this.filterStatus !== 'ALL') {
       list = list.filter(r => r.status === this.filterStatus);
     }
@@ -68,34 +72,58 @@ export class AdminReviewsPageComponent implements OnInit {
         (r.comment && r.comment.toLowerCase().includes(term))
       );
     }
+
     return list;
   }
 
-  // Action: Rendre visible (équivalent à Approuver/Restaurer)
+  // ✅ Pagination calculée
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredReviews.length / this.pageSize));
+  }
+
+  get paginatedReviews(): AdminReview[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredReviews.slice(start, start + this.pageSize);
+  }
+
+  changePage(delta: number): void {
+    this.page = Math.max(1, Math.min(this.totalPages, this.page + delta));
+  }
+
+  setPageSize(size: number): void {
+    this.pageSize = size;
+    this.page = 1;
+  }
+
+  // Action: Visible
   makeVisible(id: number): void {
     this.updateStatus(id, 'VISIBLE');
   }
 
-  // Action: Supprimer (équivalent à Rejeter/Masquer)
+  // Action: Supprimer (Masquer)
   deleteReview(id: number): void {
-    if(!confirm("Masquer cet avis du site public ?")) return;
+    if (!confirm("Masquer cet avis du site public ?")) return;
     this.updateStatus(id, 'DELETED');
   }
 
   private updateStatus(id: number, status: ReviewStatus): void {
     this.reviewService.changeStatus(id, status).subscribe({
       next: (updatedReview) => {
-        // Mise à jour locale
         this.reviews = this.reviews.map(r => r.id === updatedReview.id ? updatedReview : r);
+
+        // ✅ si la page devient vide après update, on recule d’une page
+        if (this.paginatedReviews.length === 0 && this.page > 1) {
+          this.page--;
+        }
       },
       error: () => alert("Erreur lors de la mise à jour.")
     });
   }
 
-  // Méthode pour recharger lors du clic sur les filtres
   setFilter(status: 'ALL' | ReviewStatus) {
     this.filterStatus = status;
-    // Option 1 : Filtrage local immédiat (rapide) -> ne rien faire d'autre
-    // Option 2 : Recharger depuis le serveur (plus sûr si pagination) -> this.loadReviews();
+    this.page = 1; // ✅ important
+    // Optionnel: si tu veux recharger depuis le serveur à chaque filtre
+    // this.loadReviews();
   }
 }

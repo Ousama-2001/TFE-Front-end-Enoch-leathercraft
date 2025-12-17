@@ -164,3 +164,59 @@ button {
 .empty { text-align: center; color: #94a3b8; margin-top: 2rem; font-size: 1.1rem; }
 .loading { text-align: center; color: #94a3b8; margin-top: 2rem; }
 .error { color: #fca5a5; background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+
+.right-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  label {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  select {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    cursor: pointer;
+
+    &:focus { border-color: #6366f1; }
+  }
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 16px 0 22px;
+
+  .page-info {
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .btn.small.ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: #fff; }
+  }
+}

@@ -10,19 +10,39 @@
       <button class="filter-btn visible" [class.active]="filterStatus === 'VISIBLE'" (click)="setFilter('VISIBLE')">Visibles</button>
       <button class="filter-btn deleted" [class.active]="filterStatus === 'DELETED'" (click)="setFilter('DELETED')">Supprimés</button>
     </div>
-    <div class="search-box">
-      <input type="text" [(ngModel)]="searchTerm" placeholder="🔍 Rechercher (client, produit, avis)...">
+
+    <div class="right-tools">
+      <div class="search-box">
+        <input type="text" [(ngModel)]="searchTerm" placeholder="🔍 Rechercher (client, produit, avis)...">
+      </div>
+
+      <!-- ✅ taille de page -->
+      <div class="page-size">
+        <label>Par page</label>
+        <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+          <option [ngValue]="8">8</option>
+          <option [ngValue]="12">12</option>
+          <option [ngValue]="16">16</option>
+          <option [ngValue]="24">24</option>
+        </select>
+      </div>
     </div>
   </div>
 
   <div *ngIf="loading" class="loading">Chargement...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
-  <div class="reviews-grid" *ngIf="!loading">
+  <!-- ✅ pagination controls top (optionnel, tu peux enlever si tu veux) -->
+  <div class="pagination-controls" *ngIf="!loading && filteredReviews.length > pageSize">
+    <button class="btn small ghost" (click)="changePage(-1)" [disabled]="page === 1">←</button>
+    <span class="page-info">{{ page }} / {{ totalPages }}</span>
+    <button class="btn small ghost" (click)="changePage(1)" [disabled]="page === totalPages">→</button>
+  </div>
 
+  <div class="reviews-grid" *ngIf="!loading">
     <div
       class="review-card"
-      *ngFor="let r of filteredReviews"
+      *ngFor="let r of paginatedReviews"
       [ngClass]="{
         'status-visible': r.status === 'VISIBLE',
         'status-deleted': r.status === 'DELETED'
@@ -53,23 +73,22 @@
       </div>
 
       <div class="card-actions">
-        <button
-          *ngIf="r.status === 'DELETED'"
-          class="btn-approve"
-          (click)="makeVisible(r.id)">
+        <button *ngIf="r.status === 'DELETED'" class="btn-approve" (click)="makeVisible(r.id)">
           ♻️ Restaurer
         </button>
 
-        <button
-          *ngIf="r.status === 'VISIBLE'"
-          class="btn-delete"
-          (click)="deleteReview(r.id)"
-          title="Masquer cet avis">
+        <button *ngIf="r.status === 'VISIBLE'" class="btn-delete" (click)="deleteReview(r.id)" title="Masquer cet avis">
           🚫 Supprimer
         </button>
       </div>
     </div>
+  </div>
 
+  <!-- ✅ pagination controls bottom -->
+  <div class="pagination-controls" *ngIf="!loading && filteredReviews.length > pageSize">
+    <button class="btn small ghost" (click)="changePage(-1)" [disabled]="page === 1">←</button>
+    <span class="page-info">{{ page }} / {{ totalPages }}</span>
+    <button class="btn small ghost" (click)="changePage(1)" [disabled]="page === totalPages">→</button>
   </div>
 
   <div *ngIf="!loading && filteredReviews.length === 0" class="empty">
