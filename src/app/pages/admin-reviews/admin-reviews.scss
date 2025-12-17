@@ -104,20 +104,33 @@
 
 /* --- CONTENU --- */
 
-.card-header {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-bottom: 0.5rem; gap: 10px;
+.product-name {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  /* On permet le passage à la ligne pour voir le nom complet */
+  word-wrap: break-word;
+  flex: 1; /* Prend tout l'espace disponible à gauche du badge */
+  margin-right: 8px;
 }
 
-.product-name {
-  font-weight: 700; color: #fff; font-size: 1.1rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Aligne le badge en haut si le texte est long */
+  margin-bottom: 0.5rem;
+  gap: 10px;
 }
 
 .status-badge {
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  padding: 0.3rem 0.8rem; border-radius: 6px; letter-spacing: 0.05em;
+  font-size: 0.7rem; /* Légèrement plus petit */
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
   white-space: nowrap;
+  flex-shrink: 0; /* Empêche le badge de s'écraser */
 }
 
 .card-body {
