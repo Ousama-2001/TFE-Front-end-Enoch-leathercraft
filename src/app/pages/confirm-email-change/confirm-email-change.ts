@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AccountService } from '../../services/account.service';
 import { AuthService } from '../../services/auth.service';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 type State = 'loading' | 'success' | 'error';
 
 @Component({
   selector: 'app-confirm-email-change',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './confirm-email-change.html',
   styleUrls: ['./confirm-email-change.scss'],
 })

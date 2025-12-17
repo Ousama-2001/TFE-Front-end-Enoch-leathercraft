@@ -2,8 +2,7 @@
 
   <div class="topbar">
     <button class="back-pill" type="button" (click)="goBack()">
-      <span class="arrow">←</span>
-      <span class="txt">Retour aux produits</span>
+      <span class="txt">{{ 'product.detail.back' | t }}</span>
     </button>
   </div>
 
@@ -64,7 +63,7 @@
 
       <div class="wishlist-row">
         <button type="button" class="wishlist-btn" [class.active]="isInWishlist" (click)="toggleWishlist()">
-          {{ isInWishlist ? '❤️ Retirer' : '🤍 Wishlist' }}
+          {{ isInWishlist ? ('product.wishlist.remove' | t) : ('product.wishlist.add' | t) }}
         </button>
       </div>
 
@@ -72,8 +71,12 @@
         <p *ngIf="product.description">{{ product.description }}</p>
       </div>
 
-      <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">Stock : {{ stockAvailable }}</p>
-      <p class="stock-msg stock-error" *ngIf="isOutOfStock">Rupture de stock</p>
+      <p class="stock-msg stock-warning" *ngIf="!isOutOfStock">
+        {{ 'product.detail.stockAvailablePrefix' | t }} {{ stockAvailable }}
+      </p>
+      <p class="stock-msg stock-error" *ngIf="isOutOfStock">
+        {{ 'product.outOfStock' | t }}
+      </p>
 
       <div class="qty-row">
         <button type="button" class="round-btn" (click)="decrease()" [disabled]="quantity === 0">−</button>
@@ -82,7 +85,7 @@
       </div>
 
       <button class="btn-cart-animated" type="button" (click)="addToCart()" [disabled]="isOutOfStock || !canIncrease">
-        Ajouter au panier
+        {{ 'product.addToCart' | t }}
       </button>
       <span class="added-msg" *ngIf="addedMessage">{{ addedMessage }}</span>
     </div>
@@ -90,19 +93,19 @@
 
   <section class="reviews-section">
     <header class="reviews-header-block">
-      <h3>Avis clients</h3>
+      <h3>{{ 'reviews.title' | t }}</h3>
       <div class="rating-overview">
         <div class="big-rating">{{ totalReviews > 0 ? (averageRating | number:'1.1-1') : '-' }} <span class="max">/5</span></div>
         <div class="stars-display">
           <span *ngFor="let s of [1,2,3,4,5]" class="star big" [class.filled]="s <= roundedAverage">★</span>
         </div>
-        <div class="total-count">Basé sur {{ totalReviews }} avis</div>
+        <div class="total-count">{{ 'reviews.basedOn' | t }} {{ totalReviews }} {{ 'reviews.countLabel' | t }}</div>
       </div>
     </header>
 
     <div class="reviews-list-container">
-      <p *ngIf="reviewsLoading" class="loading-text">Chargement des avis...</p>
-      <div *ngIf="!reviewsLoading && reviews.length === 0" class="empty-state">Aucun avis pour le moment.</div>
+      <p *ngIf="reviewsLoading" class="loading-text">{{ 'reviews.loading' | t }}</p>
+      <div *ngIf="!reviewsLoading && reviews.length === 0" class="empty-state">{{ 'reviews.noReviews' | t }}</div>
 
       <ul class="review-list" *ngIf="!reviewsLoading && reviews.length > 0">
         <li *ngFor="let r of reviews" class="review-card">
@@ -121,7 +124,7 @@
           </div>
 
           <div *ngIf="r.status === 'DELETED'" class="alert-deleted">
-            ⛔ Cet avis a été supprimé par l'équipe de modération (non-respect des conditions).
+            {{ 'reviews.deletedByMod' | t }}
           </div>
 
           <div class="review-content" [class.content-muted]="r.status === 'DELETED'">
@@ -129,30 +132,30 @@
               <p class="comment-text">{{ r.comment }}</p>
 
               <div class="review-actions" *ngIf="r.mine && r.status !== 'DELETED'">
-                <button type="button" class="text-btn" (click)="startEdit(r)">Modifier</button>
+                <button type="button" class="text-btn" (click)="startEdit(r)">{{ 'reviews.edit' | t }}</button>
                 <span class="separator">•</span>
-                <button type="button" class="text-btn danger" (click)="deleteReview(r)">Supprimer</button>
+                <button type="button" class="text-btn danger" (click)="deleteReview(r)">{{ 'reviews.delete' | t }}</button>
               </div>
 
               <div class="review-actions" *ngIf="r.mine && r.status === 'DELETED'">
-                <button type="button" class="text-btn danger" (click)="deleteReview(r)">Supprimer définitivement</button>
+                <button type="button" class="text-btn danger" (click)="deleteReview(r)">{{ 'reviews.deleteForever' | t }}</button>
               </div>
             </div>
 
             <div *ngIf="editingReviewId === r.id" class="edit-box">
               <div class="form-row">
                 <select [(ngModel)]="editRating" class="input-dark">
-                  <option [value]="5">★★★★★</option>
-                  <option [value]="4">★★★★☆</option>
-                  <option [value]="3">★★★☆☆</option>
-                  <option [value]="2">★★☆☆☆</option>
-                  <option [value]="1">★☆☆☆☆</option>
+                  <option [value]="5">{{ 'reviews.rating.5' | t }}</option>
+                  <option [value]="4">{{ 'reviews.rating.4' | t }}</option>
+                  <option [value]="3">{{ 'reviews.rating.3' | t }}</option>
+                  <option [value]="2">{{ 'reviews.rating.2' | t }}</option>
+                  <option [value]="1">{{ 'reviews.rating.1' | t }}</option>
                 </select>
               </div>
               <textarea rows="3" [(ngModel)]="editComment" class="input-dark"></textarea>
               <div class="edit-buttons">
-                <button type="button" class="btn-cancel" (click)="cancelEdit()">Annuler</button>
-                <button type="button" class="btn-save" (click)="submitEdit(r)">Enregistrer</button>
+                <button type="button" class="btn-cancel" (click)="cancelEdit()">{{ 'common.cancel' | t }}</button>
+                <button type="button" class="btn-save" (click)="submitEdit(r)">{{ 'reviews.edit.save' | t }}</button>
               </div>
             </div>
           </div>
@@ -162,26 +165,30 @@
 
     <div class="write-review-area">
       <div class="write-card">
-        <h4>Donnez votre avis</h4>
-        <p *ngIf="!isLoggedIn" class="login-prompt"><a routerLink="/login">Connectez-vous</a> pour donner votre avis.</p>
+        <h4>{{ 'reviews.form.title' | t }}</h4>
+        <p *ngIf="!isLoggedIn" class="login-prompt">
+          <a routerLink="/login">{{ 'reviews.form.loginPrompt.link' | t }}</a> {{ 'reviews.form.loginPrompt.suffix' | t }}
+        </p>
 
         <form *ngIf="isLoggedIn" (ngSubmit)="submitReview()" class="write-form">
-          <label>Note</label>
+          <label>{{ 'reviews.rating' | t }}</label>
           <select name="rating" [(ngModel)]="reviewRating" class="input-dark">
-            <option [value]="5">★★★★★ Excellent</option>
-            <option [value]="4">★★★★☆ Très bon</option>
-            <option [value]="3">★★★☆☆ Correct</option>
-            <option [value]="2">★★☆☆☆ Moyen</option>
-            <option [value]="1">★☆☆☆☆ Mauvais</option>
+            <option [value]="5">{{ 'reviews.rating.5' | t }}</option>
+            <option [value]="4">{{ 'reviews.rating.4' | t }}</option>
+            <option [value]="3">{{ 'reviews.rating.3' | t }}</option>
+            <option [value]="2">{{ 'reviews.rating.2' | t }}</option>
+            <option [value]="1">{{ 'reviews.rating.1' | t }}</option>
           </select>
 
-          <label>Commentaire</label>
-          <textarea name="comment" rows="3" [(ngModel)]="reviewComment" class="input-dark" placeholder="Votre expérience..."></textarea>
+          <label>{{ 'reviews.comment' | t }}</label>
+          <textarea name="comment" rows="3" [(ngModel)]="reviewComment" class="input-dark" [placeholder]="'reviews.form.placeholder' | t"></textarea>
 
           <div class="form-footer">
             <span *ngIf="reviewError" class="error-msg">{{ reviewError }}</span>
             <span *ngIf="reviewSuccessMsg" class="success-msg">{{ reviewSuccessMsg }}</span>
-            <button type="submit" class="btn-submit" [disabled]="reviewSubmitting">Publier</button>
+            <button type="submit" class="btn-submit" [disabled]="reviewSubmitting">
+              {{ reviewSubmitting ? ('reviews.form.submitting' | t) : ('reviews.submit' | t) }}
+            </button>
           </div>
         </form>
       </div>
@@ -201,4 +208,4 @@
   </div>
 </div>
 
-<ng-template #loadingTpl><p class="center">Chargement...</p></ng-template>
+<ng-template #loadingTpl><p class="center">{{ 'home.latest.loading' | t }}</p></ng-template>

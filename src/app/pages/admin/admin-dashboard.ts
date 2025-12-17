@@ -11,6 +11,7 @@ import { AdminReviewsPageComponent } from '../admin-reviews/admin-reviews';
 import { SuperAdminUsersPageComponent } from '../super-admin-users/super-admin-users';
 import { SuperAdminRequestsPageComponent } from '../super-admin-requests/super-admin-requests';
 import { SuperAdminContactMessagesComponent } from '../super-admin-contact-messages/super-admin-contact-messages';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Pipe({ name: 'any', standalone: true })
 export class AnyPipe implements PipeTransform {
@@ -27,7 +28,8 @@ interface ProductImageVm { id: number; url: string; isPrimary: boolean; }
   standalone: true,
   imports: [
     CommonModule, FormsModule, CurrencyPipe, DatePipe, AnyPipe,
-    AdminReviewsPageComponent, SuperAdminUsersPageComponent, SuperAdminRequestsPageComponent, SuperAdminContactMessagesComponent
+    AdminReviewsPageComponent, SuperAdminUsersPageComponent, SuperAdminRequestsPageComponent,
+    SuperAdminContactMessagesComponent, TranslatePipe
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
@@ -51,7 +53,6 @@ export class AdminDashboardComponent implements OnInit {
   productSearchTerm: string = '';
   productsMode: 'active' | 'archived' = 'active';
 
-  // ✅ Variable pour message d'erreur formulaire
   productFormError: string | null = null;
 
   stats: SalesStatsResponse | null = null;
@@ -195,15 +196,12 @@ export class AdminDashboardComponent implements OnInit {
   get filteredProducts() {
     let list = this.products;
     const term = this.productSearchTerm.toLowerCase().trim();
-
     if (term) {
       list = list.filter(p => p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term));
     }
-
     if (this.selectedProductFilter === 'PROMO') {
       list = list.filter(p => !!p.promoPrice && p.promoPrice > 0);
     }
-
     return list;
   }
 
@@ -214,11 +212,9 @@ export class AdminDashboardComponent implements OnInit {
   get totalProductsPages() { return Math.ceil(this.filteredProducts.length / this.pageSize) || 1; }
   changeProductsPage(delta: number) { this.productsPage = Math.max(1, Math.min(this.totalProductsPages, this.productsPage + delta)); }
 
-  // FILTRE COMMANDES
   get filteredOrders() {
     let list = this.sortedOrders;
     list = list.filter(o => !['RETURN_REQUESTED', 'RETURN_APPROVED', 'RETURN_REJECTED'].includes(o.status));
-
     if (this.orderStatusFilter !== 'ALL') { list = list.filter(o => (o as any).status === this.orderStatusFilter); }
     if (this.orderSearchTerm.trim()) { list = list.filter(o => o.reference.toLowerCase().includes(this.orderSearchTerm.toLowerCase())); }
     return list;
@@ -227,14 +223,10 @@ export class AdminDashboardComponent implements OnInit {
   get totalOrdersPages() { return Math.ceil(this.filteredOrders.length/this.pageSize)||1; }
   changeOrdersPage(d:number){ this.ordersPage=Math.max(1,Math.min(this.totalOrdersPages,this.ordersPage+d)); }
 
-  // FILTRE RETOURS
   get sortedReturnOrdersAll() { return this.sortedOrders.filter(o=>{const s=(o as any).status; return s==='RETURN_REQUESTED'||s==='RETURN_APPROVED'||s==='RETURN_REJECTED'}); }
-
   get filteredReturns() {
     let list = this.sortedReturnOrdersAll;
-    if (this.returnStatusFilter !== 'ALL') {
-      list = list.filter(o => o.status === this.returnStatusFilter);
-    }
+    if (this.returnStatusFilter !== 'ALL') { list = list.filter(o => o.status === this.returnStatusFilter); }
     if (this.returnSearchTerm.trim()) {
       const term = this.returnSearchTerm.toLowerCase().trim();
       list = list.filter(o => o.reference.toLowerCase().includes(term));
@@ -284,7 +276,6 @@ export class AdminDashboardComponent implements OnInit {
   get sortedOrders() { return [...this.orders].sort((a,b)=>new Date((b as any).createdAt).getTime()-new Date((a as any).createdAt).getTime()); }
   getStatusClass(s:string){ return s.toLowerCase(); }
 
-  // Helper pour afficher le statut propre
   getStatusLabel(status: string): string {
     const allOptions = [...this.orderStatusOptions, ...this.returnStatusOptions];
     const found = allOptions.find(o => o.value === status);
@@ -305,7 +296,6 @@ export class AdminDashboardComponent implements OnInit {
   saveReturnStatusFromModal(){
     if(!this.selectedReturnOrder) return;
     const id = (this.selectedReturnOrder as any).id;
-
     this.adminStatsService.updateOrderStatus(id, this.modalStatus).subscribe({
       next: u => {
         this.orders = this.orders.map(o => (o as any).id === (u as any).id ? u : o);
@@ -357,95 +347,35 @@ export class AdminDashboardComponent implements OnInit {
     return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-' + String(Date.now()).slice(-4);
   }
 
-  // ✅ VALIDATION STRICTE
   submitForm(){
     this.productFormError = null;
-
-    // 1. Validation Nom
-    if (!this.newProduct.name || this.newProduct.name.trim() === '') {
-      this.productFormError = "Le nom du produit est obligatoire.";
-      return;
+    if (!this.newProduct.name || this.newProduct.name.trim() === '') { this.productFormError = "Le nom du produit est obligatoire."; return; }
+    if (!this.newProduct.segmentCategoryId) { this.productFormError = "Veuillez sélectionner un Segment."; return; }
+    if (!this.newProduct.typeCategoryId) { this.productFormError = "Veuillez sélectionner un Type."; return; }
+    if (!this.newProduct.sku || this.newProduct.sku.trim() === '') { this.productFormError = "Le SKU est obligatoire."; return; }
+    if (this.newProduct.price === null) { this.productFormError = "Le prix est obligatoire."; return; }
+    if (Number(this.newProduct.price) < 0) { this.productFormError = "Le prix ne peut pas être négatif."; return; }
+    if (Number(this.newProduct.price) > 1000) { this.productFormError = "Le prix ne peut pas dépasser 1000€."; return; }
+    if (this.newProduct.weightGrams !== null && (Number(this.newProduct.weightGrams) < 0 || Number(this.newProduct.weightGrams) > 5000)) {
+      this.productFormError = "Poids invalide (0-5000g)."; return;
     }
-
-    // 2. Validation Catégories
-    if (!this.newProduct.segmentCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Segment.";
-      return;
-    }
-    if (!this.newProduct.typeCategoryId) {
-      this.productFormError = "Veuillez sélectionner un Type.";
-      return;
-    }
-
-    // 3. Validation SKU
-    if (!this.newProduct.sku || this.newProduct.sku.trim() === '') {
-      this.productFormError = "Le SKU est obligatoire.";
-      return;
-    }
-
-    // 4. Validation Prix (Max 1000€)
-    if (this.newProduct.price === null || this.newProduct.price === undefined) {
-      this.productFormError = "Le prix est obligatoire.";
-      return;
-    }
-    if (Number(this.newProduct.price) < 0) {
-      this.productFormError = "Le prix ne peut pas être négatif.";
-      return;
-    }
-    if (Number(this.newProduct.price) > 1000) {
-      this.productFormError = "Le prix ne peut pas dépasser 1000€.";
-      return;
-    }
-
-    // 5. Validation Poids (Max 5kg)
-    if (this.newProduct.weightGrams !== null && this.newProduct.weightGrams !== undefined) {
-      if(Number(this.newProduct.weightGrams) < 0) {
-        this.productFormError = "Le poids ne peut pas être négatif.";
-        return;
-      }
-      if(Number(this.newProduct.weightGrams) > 5000) {
-        this.productFormError = "Le poids ne peut pas dépasser 5000g (5kg).";
-        return;
-      }
-    }
-
-    // 6. Validation Description (Max 1000 chars)
     if (this.newProduct.description && this.newProduct.description.length > 1000) {
-      this.productFormError = "La description est trop longue (max 1000 caractères).";
-      return;
+      this.productFormError = "La description est trop longue."; return;
     }
-
-    // 7. Validation Promo
     if (this.hasPromo) {
-      if (this.newProduct.promoPrice === null || this.newProduct.promoPrice === undefined) {
-        this.productFormError = "Le prix promo est obligatoire.";
-        return;
+      if (this.newProduct.promoPrice === null || Number(this.newProduct.promoPrice) >= Number(this.newProduct.price)) {
+        this.productFormError = "Prix promo invalide."; return;
       }
-      if (Number(this.newProduct.promoPrice) >= Number(this.newProduct.price)) {
-        this.productFormError = "Le prix promo doit être inférieur au prix normal.";
-        return;
-      }
-      if (!this.newProduct.promoStartAt) {
-        this.productFormError = "La date de début est obligatoire.";
-        return;
-      }
-      // Validation dates
-      if (this.newProduct.promoEndAt && new Date(this.newProduct.promoStartAt) > new Date(this.newProduct.promoEndAt)) {
-        this.productFormError = "La date de début ne peut pas être postérieure à la date de fin.";
-        return;
-      }
+      if (!this.newProduct.promoStartAt) { this.productFormError = "Date début promo requise."; return; }
     }
-
     this.isSubmitting=true;
     if(!(this.newProduct as any).slug) (this.newProduct as any).slug = this.slugify(this.newProduct.name);
-
     const pl={...this.newProduct};
     if(!pl.promoStartAt) { pl.promoPrice=null; pl.promoStartAt=null; pl.promoEndAt=null; }
-
     if(this.editingProductId===null) {
       this.productService.create(pl,this.selectedFiles).subscribe({
         next:c=>{this.products.unshift(c);this.resetForm();this.isSubmitting=false},
-        error:(e)=>{console.error(e); this.productFormError="Erreur création produit"; this.isSubmitting=false}
+        error:(e)=>{this.productFormError="Erreur création produit"; this.isSubmitting=false}
       });
     } else {
       this.productService.update(this.editingProductId, pl, this.selectedFiles.length?this.selectedFiles:null).subscribe({
@@ -476,7 +406,6 @@ export class AdminDashboardComponent implements OnInit {
   restoreProduct(p:Product){ if(p.id) this.productService.restore(p.id).subscribe({next:()=>this.loadProducts()}); }
 
   loadCoupons(){ this.couponsLoading=true; this.couponService.getAllAdmin().subscribe({next:l=>{this.coupons=(l??[]).sort((a,b)=>(a.code||'').localeCompare(b.code||''));this.couponsLoading=false},error:()=>this.couponsLoading=false}); }
-  clampCouponPercent(){ let v=Number(this.couponForm.percent); if(v<1)v=1; if(v>90)v=90; this.couponForm.percent=v; }
   resetCouponForm(){ this.editingCouponId=null; this.couponForm={code:'',percent:10,startsAt:null,endsAt:null,active:true,maxUses:null}; }
   submitCouponForm(){
     const pl={...this.couponForm, code:this.couponForm.code.toUpperCase(), startsAt:this.couponForm.startsAt?`${this.couponForm.startsAt}T00:00:00Z`:null, endsAt:this.couponForm.endsAt?`${this.couponForm.endsAt}T23:59:59Z`:null};
@@ -502,7 +431,6 @@ export class AdminDashboardComponent implements OnInit {
     const label = this.getPromoStatusLabel(p);
     if (label === 'En cours') return 'promo-active';
     if (label === 'À venir') return 'pill-soft';
-    if (label === 'Expirée') return 'pill-off';
     return 'pill-off';
   }
 }

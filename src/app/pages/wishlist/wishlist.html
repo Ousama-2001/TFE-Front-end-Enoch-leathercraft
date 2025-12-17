@@ -1,45 +1,40 @@
 <div class="wishlist-page">
   <div class="wishlist-inner">
-    <!-- HEADER -->
     <div class="wishlist-header">
-      <h1>Ma wishlist</h1>
+      <h1>{{ 'wishlist.title' | t }}</h1>
       <p class="subtitle">
-        Retrouvez ici les pièces que vous avez ajoutées à vos favoris.
+        {{ 'wishlist.subtitle' | t }}
       </p>
     </div>
 
-    <!-- Chargement -->
     <div *ngIf="loading" class="wishlist-loading">
-      Chargement de votre wishlist...
+      {{ 'wishlist.loading' | t }}
     </div>
 
-    <!-- Erreur -->
     <div *ngIf="!loading && error" class="wishlist-empty">
       {{ error }}
     </div>
 
-    <!-- État vide -->
     <div
       *ngIf="!loading && !error && items.length === 0"
       class="wishlist-empty"
     >
-      Votre wishlist est vide.
-      <a routerLink="/products">Voir les produits</a>
+      {{ 'wishlist.empty' | t }}
+      <br>
+      <a routerLink="/products">{{ 'wishlist.empty.backToShop' | t }}</a>
     </div>
+
     <div class="wishlist-actions" *ngIf="items.length > 0">
       <button class="btn-clear" (click)="clearWishlist()">
-        Vider ma wishlist
+        {{ 'wishlist.actions.clear' | t }}
       </button>
     </div>
 
-
-    <!-- LISTE DES PRODUITS -->
     <div
       class="wishlist-grid"
       *ngIf="!loading && !error && items.length > 0"
     >
       <article class="wishlist-card" *ngFor="let w of paginatedItems">
-        <!-- IMAGE -->
         <div
           class="wishlist-card-image"
           (click)="goToProduct(w.product.id)"
@@ -50,7 +45,6 @@
           />
         </div>
 
-        <!-- CONTENU -->
         <div class="wishlist-card-body">
           <h3 class="wishlist-product-name">
             {{ w.product.name }}
@@ -61,14 +55,13 @@
           </p>
         </div>
 
-        <!-- ACTIONS -->
         <div class="wishlist-card-footer">
           <button
             type="button"
             class="wishlist-remove-btn"
             (click)="remove(w.product.id)"
           >
-            Retirer
+            {{ 'wishlist.actions.remove' | t }}
           </button>
 
           <button
@@ -77,18 +70,16 @@
             (click)="addToCart(w)"
             [disabled]="isAddDisabled(w)"
           >
-            Ajouter au panier
+            {{ 'product.addToCart' | t }}
           </button>
         </div>
 
-        <!-- ✅ MESSAGE STOCK -->
         <p class="wishlist-stock-warning" *ngIf="isMaxQuantityReached(w)">
-          Stock maximum atteint pour ce produit.
+          {{ 'products.stock.maxReached' | t }}
         </p>
       </article>
     </div>
 
-    <!-- PAGINATION -->
     <div
       class="wishlist-pagination"
       *ngIf="!loading && !error && items.length > pageSize"
@@ -98,11 +89,11 @@
         [disabled]="page === 1"
         (click)="changePage(page - 1)"
       >
-        ← Précédent
+        {{ 'products.pagination.prev' | t }}
       </button>
 
       <span class="wishlist-page-info">
-        Page {{ page }} / {{ totalPages }}
+        {{ 'products.pagination.pageInfo' | t }} {{ page }} / {{ totalPages }}
       </span>
 
       <button
@@ -110,7 +101,7 @@
         [disabled]="page === totalPages"
         (click)="changePage(page + 1)"
       >
-        Suivant →
+        {{ 'products.pagination.next' | t }}
       </button>
     </div>
   </div>

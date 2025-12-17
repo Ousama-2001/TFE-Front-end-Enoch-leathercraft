@@ -1,18 +1,20 @@
-// src/app/pages/super-admin-users/super-admin-users.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, UpperCasePipe, SlicePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   SuperAdminUsersService,
   SaUser,
   UserRole
 } from '../../services/super-admin.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 type StatusFilter = 'all' | 'active' | 'deleted';
+type RoleFilter = 'ALL' | 'SUPER_ADMIN' | 'ADMIN' | 'CUSTOMER';
 
 @Component({
   selector: 'app-super-admin-users',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, UpperCasePipe, SlicePipe, TranslatePipe],
   templateUrl: './super-admin-users.html',
   styleUrls: ['./super-admin-users.scss'],
 })
@@ -21,16 +23,16 @@ export class SuperAdminUsersPageComponent implements OnInit {
   users: SaUser[] = [];
   loading = false;
   error = '';
+  searchTerm = '';
 
   actionLoadingId: number | null = null;
-
   deleteConfirmId: number | null = null;
   deleteConfirmName = '';
 
-  pageSize = 6;
+  pageSize = 9;
   currentPage = 1;
-
   statusFilter: StatusFilter = 'all';
+  roleFilter: RoleFilter = 'ALL'; // Nouveau filtre
 
   constructor(private superAdminService: SuperAdminUsersService) {}
 
@@ -41,40 +43,42 @@ export class SuperAdminUsersPageComponent implements OnInit {
   loadUsers(): void {
     this.loading = true;
     this.error = '';
-
     this.superAdminService.getAll().subscribe({
       next: (data: SaUser[]) => {
         this.users = data;
-        this.currentPage = 1;
         this.loading = false;
       },
-      error: (err: any) => {
-        console.error('Erreur chargement utilisateurs', err);
+      error: () => {
         this.error = 'Impossible de charger les utilisateurs.';
         this.loading = false;
       },
     });
   }
 
-  // ---------- helpers ----------
-
-  isDeleted(u: SaUser): boolean {
-    return !!u.deleted;
-  }
-
   get filteredUsers(): SaUser[] {
-    switch (this.statusFilter) {
-      case 'active':
-        return this.users.filter(u => !this.isDeleted(u));
-      case 'deleted':
-        return this.users.filter(u => this.isDeleted(u));
-      case 'all':
-      default:
-        return this.users;
-    }
-  }
+    let list = this.users;
 
-  // ---------- pagination ----------
+    // 1. Filtre Statut
+    if (this.statusFilter === 'active') list = list.filter(u => !u.deleted);
+    if (this.statusFilter === 'deleted') list = list.filter(u => !!u.deleted);
+
+    // 2. Filtre Rôle
+    if (this.roleFilter !== 'ALL') {
+      list = list.filter(u => u.role === this.roleFilter);
+    }
+
+    // 3. Filtre Recherche
+    if (this.searchTerm.trim()) {
+      const s = this.searchTerm.toLowerCase();
+      list = list.filter(u =>
+        u.email.toLowerCase().includes(s) ||
+        (u.firstName || '').toLowerCase().includes(s) ||
+        (u.lastName || '').toLowerCase().includes(s) ||
+        (u.username || '').toLowerCase().includes(s)
+      );
+    }
+    return list;
+  }
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredUsers.length / this.pageSize));
@@ -85,145 +89,81 @@ export class SuperAdminUsersPageComponent implements OnInit {
     return this.filteredUsers.slice(start, start + this.pageSize);
   }
 
+  onFilterChange(): void {
+    this.currentPage = 1;
+  }
+
+  setStatusFilter(filter: StatusFilter): void {
+    this.statusFilter = filter;
+    this.currentPage = 1;
+  }
+
   goToPage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
   }
 
-  prevPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  nextPage(): void {
-    this.goToPage(this.currentPage + 1);
-  }
-
-  // ---------- helpers d'affichage ----------
+  prevPage(): void { this.goToPage(this.currentPage - 1); }
+  nextPage(): void { this.goToPage(this.currentPage + 1); }
 
   getDisplayName(u: SaUser): string {
     const full = `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim();
-    if (full) return full;
-    if (u.username) return `@${u.username}`;
-    return u.email;
+    return full || u.username || u.email;
   }
 
   getRoleLabel(role: UserRole): string {
     switch (role) {
-      case 'CUSTOMER':    return 'Client';
-      case 'ADMIN':       return 'Admin';
+      case 'ADMIN': return 'Admin';
       case 'SUPER_ADMIN': return 'Super admin';
+      default: return 'Client';
     }
   }
 
-  getRoleClass(role: UserRole): string {
-    switch (role) {
-      case 'CUSTOMER':
-        return 'role-pill role-customer';
-      case 'ADMIN':
-        return 'role-pill role-admin';
-      case 'SUPER_ADMIN':
-        return 'role-pill role-superadmin';
-    }
-  }
-
-  canModify(u: SaUser): boolean {
-    // pas de changement de rôle / delete sur un compte désactivé
-    if (this.isDeleted(u)) return false;
-    return true;
-  }
-
-  canRestore(u: SaUser): boolean {
-    return this.isDeleted(u);
-  }
-
-  // ---------- changement de rôle ----------
+  isDeleted(u: SaUser): boolean { return !!u.deleted; }
 
   changeRole(user: SaUser, newRole: UserRole): void {
-    if (!this.canModify(user) || this.actionLoadingId !== null) return;
-
+    if (this.isDeleted(user) || this.actionLoadingId !== null) return;
     this.actionLoadingId = user.id;
-
     this.superAdminService.updateRole(user.id, newRole).subscribe({
-      next: (updated: SaUser) => {
-        this.users = this.users.map(u => (u.id === updated.id ? updated : u));
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
         this.actionLoadingId = null;
       },
-      error: (err: any) => {
-        console.error('Erreur changement de rôle', err);
-        alert('Impossible de changer le rôle de cet utilisateur.');
-        this.actionLoadingId = null;
-      },
+      error: () => this.actionLoadingId = null
     });
   }
 
-  // ---------- soft delete ----------
-
   openDeleteConfirm(user: SaUser): void {
-    if (!this.canModify(user) || this.actionLoadingId !== null) return;
     this.deleteConfirmId = user.id;
     this.deleteConfirmName = this.getDisplayName(user);
   }
 
-  cancelDelete(): void {
-    this.deleteConfirmId = null;
-    this.deleteConfirmName = '';
-  }
+  cancelDelete(): void { this.deleteConfirmId = null; }
 
   confirmDelete(): void {
     if (this.deleteConfirmId == null) return;
-
-    const id = this.deleteConfirmId;
-    this.actionLoadingId = id;
-
-    this.superAdminService.softDelete(id).subscribe({
-      next: (updated: SaUser) => {
-        this.users = this.users.map(u => (u.id === updated.id ? updated : u));
-        this.actionLoadingId = null;
+    this.superAdminService.softDelete(this.deleteConfirmId).subscribe({
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
         this.cancelDelete();
-
-        const totalAfter = this.filteredUsers.length;
-        if (totalAfter === 0 && this.currentPage > 1) {
-          this.currentPage--;
-        }
+        this.adjustPagination();
       },
-      error: (err: any) => {
-        console.error('Erreur suppression utilisateur', err);
-        alert('Impossible de supprimer cet utilisateur.');
-        this.actionLoadingId = null;
-        this.cancelDelete();
-      },
+      error: () => this.cancelDelete()
     });
   }
-
-  // ---------- restore ----------
 
   restoreUser(user: SaUser): void {
-    if (!this.canRestore(user) || this.actionLoadingId !== null) return;
-
-    this.actionLoadingId = user.id;
-
     this.superAdminService.restore(user.id).subscribe({
-      next: (updated: SaUser) => {
-        this.users = this.users.map(u => (u.id === updated.id ? updated : u));
-        this.actionLoadingId = null;
-
-        const totalAfter = this.filteredUsers.length;
-        if (totalAfter === 0 && this.currentPage > 1) {
-          this.currentPage--;
-        }
-      },
-      error: (err: any) => {
-        console.error('Erreur restauration utilisateur', err);
-        alert('Impossible de restaurer cet utilisateur.');
-        this.actionLoadingId = null;
-      },
+      next: (updated) => {
+        this.users = this.users.map(u => u.id === updated.id ? updated : u);
+        this.adjustPagination();
+      }
     });
   }
 
-  // ---------- filtre ----------
-
-  setStatusFilter(filter: StatusFilter): void {
-    this.statusFilter = filter;
-    this.currentPage = 1;
+  private adjustPagination(): void {
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
   }
 }

@@ -31,26 +31,27 @@
           <button type="button" class="lang-opt" [class.active]="currentLang === 'en'" (click)="changeLang('en')">EN</button>
         </div>
 
-        <button class="icon-btn" (click)="goToWishlist()" title="Favoris">
+        <button class="icon-btn" (click)="goToWishlist()" [title]="'nav.wishlist' | t">
           <span class="icon">♥</span>
           <span class="badge" *ngIf="wishlistCount > 0">{{ wishlistCount }}</span>
         </button>
 
         <div class="cart-wrapper" (mouseenter)="miniCartOpen = true" (mouseleave)="miniCartOpen = false">
           <button class="icon-btn cart-btn" (click)="goToCart()">
-            <span class="icon">🛒</span> <span class="badge cart-badge" *ngIf="cartQuantity > 0">{{ cartQuantity }}</span>
+            <span class="icon">🛒</span>
+            <span class="badge cart-badge" *ngIf="cartQuantity > 0">{{ cartQuantity }}</span>
           </button>
 
           <div class="cart-popover" *ngIf="miniCartOpen && (cart$ | async) as cart">
             <div class="popover-header">
               <h3>{{ 'cart.title' | t }}</h3>
-              <span class="qty-total">{{ cart.totalQuantity }} art.</span>
+              <span class="qty-total">{{ cart.totalQuantity }} {{ 'cart.itemsCount' | t }}</span>
             </div>
 
             <div class="mini-timer" *ngIf="cart.items.length > 0">
               <ng-container *ngIf="(timeLeftMs$ | async) as ms">
-                <span *ngIf="ms > 0">Temps restant : <strong>{{ formatMs(ms) }}</strong></span>
-                <span class="danger" *ngIf="ms === 0">Expiré</span>
+                <span *ngIf="ms > 0">{{ 'cart.timer.prefix' | t }} : <strong>{{ formatMs(ms) }}</strong></span>
+                <span class="danger" *ngIf="ms === 0">{{ 'cart.timer.expired' | t }}</span>
               </ng-container>
             </div>
 
@@ -67,7 +68,7 @@
 
             <div class="popover-footer" *ngIf="cart.items.length > 0">
               <div class="subtotal">
-                <span>Total</span>
+                <span>{{ 'cart.summary.totalPrefix' | t }}</span>
                 <span>{{ cart.totalAmount | currency:'EUR' }}</span>
               </div>
               <button class="btn-view-cart" (click)="goToCart()">{{ 'cart.view' | t }}</button>
@@ -82,17 +83,17 @@
         <a *ngIf="isAdminOrSuperAdmin"
            routerLink="/admin"
            class="admin-link"
-           title="Panneau Administrateur">
-          Admin
+           [title]="'nav.adminPanel' | t">
+          {{ 'nav.admin' | t }}
         </a>
 
         <div class="auth-actions" *ngIf="isLoggedIn; else guest">
-          <a routerLink="/profile" class="auth-link">Mon Compte</a>
-          <button class="auth-link logout" (click)="logout()">Déconnexion</button>
+          <a routerLink="/profile" class="auth-link">{{ 'nav.account' | t }}</a>
+          <button class="auth-link logout" (click)="logout()">{{ 'nav.logout' | t }}</button>
         </div>
 
         <ng-template #guest>
-          <a routerLink="/login" class="auth-link">Connexion</a>
+          <a routerLink="/login" class="auth-link">{{ 'nav.login' | t }}</a>
         </ng-template>
 
         <button class="burger" (click)="mobileNavOpen = !mobileNavOpen">
@@ -110,7 +111,9 @@
       <a routerLink="/about" (click)="mobileNavOpen=false">{{ 'nav.about' | t }}</a>
       <a routerLink="/contact" (click)="mobileNavOpen=false">{{ 'nav.contact' | t }}</a>
 
-      <a *ngIf="isAdminOrSuperAdmin" routerLink="/admin" (click)="mobileNavOpen=false" style="color: #f59e0b;">Panneau Admin</a>
+      <a *ngIf="isAdminOrSuperAdmin" routerLink="/admin" (click)="mobileNavOpen=false" style="color: #f59e0b;">
+        {{ 'nav.adminPanel' | t }}
+      </a>
     </div>
   </header>
 

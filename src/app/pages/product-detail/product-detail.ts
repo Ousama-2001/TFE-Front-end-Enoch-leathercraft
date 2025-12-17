@@ -8,13 +8,14 @@ import { CartService, CartItem } from '../../services/cart.service';
 import { ProductReviewService, ProductReview } from '../../services/product-review.service';
 import { WishlistService, WishlistItemResponse } from '../../services/wishlist.service';
 import { AuthService } from '../../services/auth.service';
+import {TranslatePipe} from '../../pipes/translate.pipe';
 
 type PromoStatus = 'NONE' | 'UPCOMING' | 'ACTIVE' | 'EXPIRED';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, DecimalPipe, FormsModule, RouterLink],
+  imports: [CommonModule, CurrencyPipe, DatePipe, DecimalPipe, FormsModule, RouterLink, TranslatePipe],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.scss'],
 })

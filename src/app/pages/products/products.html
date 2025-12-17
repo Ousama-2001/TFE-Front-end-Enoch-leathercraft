@@ -74,14 +74,14 @@
       </div>
 
       <div class="filter-group">
-        <label>Offres</label>
+        <label>{{ 'products.filters.offers' | t }}</label>
         <button
           type="button"
           class="promo-toggle-btn"
           [class.active]="showPromosOnly"
           (click)="togglePromoFilter()">
           <span class="icon">🏷️</span>
-          <span>En Promo</span>
+          <span>{{ 'products.filters.onSale' | t }}</span>
         </button>
       </div>
 
@@ -89,8 +89,8 @@
         <label>{{ 'products.filters.sort' | t }}</label>
         <select [(ngModel)]="sortBy" (ngModelChange)="onFiltersChange()">
           <option value="">{{ 'products.filters.sort.default' | t }}</option>
-          <option value="price-asc">Prix Croissant</option>
-          <option value="price-desc">Prix Décroissant</option>
+          <option value="price-asc">{{ 'products.filters.sort.priceAsc' | t }}</option>
+          <option value="price-desc">{{ 'products.filters.sort.priceDesc' | t }}</option>
           <option value="newest">{{ 'products.filters.sort.newest' | t }}</option>
         </select>
       </div>
@@ -99,7 +99,7 @@
 
   <section class="products-section" *ngIf="filteredProducts && filteredProducts.length; else noProducts">
     <h2 class="section-title">
-      {{ showPromosOnly ? 'Nos Promotions Spéciales' : ('products.section.title' | t) }}
+      {{ showPromosOnly ? ('products.section.promoTitle' | t) : ('products.section.title' | t) }}
     </h2>
 
     <div class="products-grid">

@@ -8,7 +8,7 @@
             <img [src]="logoUrl" alt="Logo" class="mini-logo">
             <span>Enoch Leathercraft</span>
           </div>
-          <h1>L'Élégance du Cuir,<br>Façonnée Main.</h1>
+          <h1>{{ 'home.hero.title' | t }}</h1>
           <p class="subtitle">{{ 'home.hero.subtitle' | t }}</p>
 
           <div class="cta-group">
@@ -16,15 +16,15 @@
               {{ 'home.hero.cta' | t }}
             </button>
             <div class="tags">
-              <span>💎 Artisanal</span>
-              <span>🌍 Durable</span>
+              <span>{{ 'home.hero.tag.artisanal' | t }}</span>
+              <span>{{ 'home.hero.tag.durable' | t }}</span>
             </div>
           </div>
         </div>
 
         <div class="hero-visual">
           <div class="highlight-card" *ngIf="latestProducts.length > 0">
-            <span class="badge-new">Nouveauté</span>
+            <span class="badge-new">{{ 'home.highlight.newSelection' | t }}</span>
             <img [src]="getImage(latestProducts[0])" [alt]="latestProducts[0].name" class="card-img">
             <div class="card-info">
               <h3>{{ latestProducts[0].name }}</h3>
@@ -46,19 +46,19 @@
         <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'homme' }">
           <div class="cat-content">
             <h3>{{ 'home.categories.men.title' | t }}</h3>
-            <span class="link">Découvrir ➜</span>
+            <span class="link">{{ 'home.categories.men.cta' | t }}</span>
           </div>
         </div>
         <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'femme' }">
           <div class="cat-content">
             <h3>{{ 'home.categories.women.title' | t }}</h3>
-            <span class="link">Découvrir ➜</span>
+            <span class="link">{{ 'home.categories.women.cta' | t }}</span>
           </div>
         </div>
         <div class="cat-card" routerLink="/products" [queryParams]="{ segment: 'petite-maroquinerie' }">
           <div class="cat-content">
             <h3>{{ 'home.categories.smallLeather.title' | t }}</h3>
-            <span class="link">Découvrir ➜</span>
+            <span class="link">{{ 'home.categories.smallLeather.cta' | t }}</span>
           </div>
         </div>
       </div>
@@ -120,17 +120,18 @@
       </div>
 
       <div class="col">
-        <h4>Boutique</h4>
+        <h4>{{ 'footer.shop' | t }}</h4>
         <a routerLink="/products">{{ 'footer.shop.all' | t }}</a>
         <a routerLink="/products" [queryParams]="{segment:'homme'}">{{ 'footer.shop.men' | t }}</a>
         <a routerLink="/products" [queryParams]="{segment:'femme'}">{{ 'footer.shop.women' | t }}</a>
       </div>
 
       <div class="col">
-        <h4>Informations Légales</h4>
+        <h4>{{ 'footer.info' | t }}</h4>
         <a routerLink="/about">{{ 'footer.info.about' | t }}</a>
         <a routerLink="/contact">{{ 'footer.info.contact' | t }}</a>
-        <a routerLink="/terms">{{ 'footer.info.terms' | t }}</a> <a routerLink="/privacy">{{ 'footer.info.privacy' | t }}</a>
+        <a routerLink="/terms">{{ 'footer.info.terms' | t }}</a>
+        <a routerLink="/privacy">{{ 'footer.info.privacy' | t }}</a>
       </div>
 
       <div class="col">

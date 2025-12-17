@@ -39,13 +39,17 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'cart.empty.backToShop': '← Retour à la boutique',
 
     // ===== HOMEPAGE / HERO =====
-    'home.hero.title': 'Pièces artisanales en cuir, pensées pour durer.',
+    'home.hero.title': 'L\'Élégance du Cuir, Façonnée Main.',
+    'home.categories.men.cta': 'Découvrir ➜',
+    'home.categories.women.cta': 'Découvrir ➜',
+    'home.categories.smallLeather.cta': 'Découvrir ➜',
     'home.hero.subtitle':
       'Sacs, sacoches et petite maroquinerie fabriqués à la main en petites séries. Chaque pièce est conçue pour vous accompagner des années.',
     'home.hero.cta': 'Voir la collection',
-    'home.hero.tag.artisanal': '✓ Fabrication artisanale',
+    'home.hero.tag.artisanal': '💎 Artisanal',
     'home.hero.tag.unique': '✓ Pièces uniques',
     'home.hero.tag.trackedShipping': '✓ Envoi suivi',
+    'home.hero.tag.durable': '🌍 Durable',
 
     'home.highlight.newSelection': 'NOUVELLE SÉLECTION',
     'home.highlight.cta': 'Découvrir maintenant',
@@ -55,17 +59,17 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'home.categories.men.title': 'Homme',
     'home.categories.men.text':
       'Sacs, ceintures et accessoires adaptés au quotidien.',
-    'home.categories.men.cta': 'Découvrir →',
+
 
     'home.categories.women.title': 'Femme',
     'home.categories.women.text':
       'Sacoches, sacs à main & petite maroquinerie.',
-    'home.categories.women.cta': 'Voir les pièces →',
+
 
     'home.categories.smallLeather.title': 'Petite maroquinerie',
     'home.categories.smallLeather.text':
       'Portefeuilles, porte-cartes & sets artisanaux.',
-    'home.categories.smallLeather.cta': 'Explorer →',
+
 
     // ===== HOMEPAGE / NOUVEAUTÉS =====
     'home.latest.title': 'Dernières pièces ajoutées',
@@ -262,7 +266,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'product.addToCart': 'Ajouter au panier',
 
     'product.detail.back': '← Retour aux produits',
-    'product.detail.stockAvailablePrefix': 'Stock disponible :',
     'product.detail.stockAvailableSuffix': 'pièce(s).',
     'product.detail.outOfStock': 'Produit actuellement en rupture de stock.',
     'product.detail.addToCart': 'Ajouter au panier',
@@ -298,11 +301,15 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'products.filters.material.fabric': 'Tissu',
     'products.filters.material.mix': 'Mixte',
 
+    'products.filters.offers': 'Offres',
+    'products.filters.onSale': 'En Promo',
+    'products.filters.sort.priceAsc': 'Prix croissant',
+    'products.filters.sort.priceDesc': 'Prix décroissant',
+    'products.section.promoTitle': 'Nos Promotions Spéciales',
+
     'products.filters.price': 'Prix (€)',
     'products.filters.sort': 'Tri',
     'products.filters.sort.default': 'Par défaut',
-    'products.filters.sort.priceAsc': 'Prix croissant',
-    'products.filters.sort.priceDesc': 'Prix décroissant',
     'products.filters.sort.newest': 'Nouveautés',
     'products.filters.reset': 'Réinitialiser',
 
@@ -318,6 +325,23 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'products.pagination.pageInfo': 'Page',
     'products.empty': 'Aucun produit disponible pour le moment.',
 
+// Section Détail Produit & Wishlist (FR)
+    'product.detail.stockAvailablePrefix': 'Stock :',
+    'product.wishlist.add': '🤍 Wishlist',
+    'product.wishlist.remove': '❤️ Retirer',
+
+// Section Avis (FR)
+    'reviews.rating.5': '★★★★★ Excellent',
+    'reviews.rating.4': '★★★★☆ Très bon',
+    'reviews.rating.3': '★★★☆☆ Correct',
+    'reviews.rating.2': '★★☆☆☆ Moyen',
+    'reviews.rating.1': '★☆☆☆☆ Mauvais',
+    'reviews.deletedByMod': '⛔ Cet avis a été supprimé par l’équipe de modération.',
+    'reviews.deleteForever': 'Supprimer définitivement',
+    'reviews.form.loginPrompt.link': 'Connectez-vous',
+    'reviews.form.loginPrompt.suffix': 'pour donner votre avis.',
+    'reviews.countLabel': 'avis',
+
     // ===== AVIS (reviews) =====
     'reviews.title': 'Avis clients',
     'reviews.noReviews': 'Aucun avis pour le moment.',
@@ -329,7 +353,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
 
     'reviews.header.title': 'Avis clients',
     'reviews.basedOn': 'Basé sur',
-    'reviews.countLabel': 'avis',
     'reviews.loading': 'Chargement des avis...',
     'reviews.error': 'Impossible de charger les avis pour le moment.',
     'reviews.emptyState': 'Soyez le premier à donner votre avis sur ce produit !',
@@ -342,8 +365,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
 
     'reviews.form.title': 'Donnez votre avis',
     'reviews.form.loginPrompt.prefix': 'Pour partager votre expérience,',
-    'reviews.form.loginPrompt.link': 'connectez-vous',
-    'reviews.form.loginPrompt.suffix': '.',
+
     'reviews.form.ratingLabel': 'Votre note globale',
     'reviews.form.commentLabel': 'Votre commentaire',
     'reviews.form.placeholder':
@@ -354,11 +376,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       'Une erreur est survenue lors de l’envoi de votre avis.',
     'reviews.form.success': 'Merci, votre avis a bien été publié.',
 
-    'reviews.rating.5': '★★★★★ - Excellent',
-    'reviews.rating.4': '★★★★☆ - Très bon',
-    'reviews.rating.3': '★★★☆☆ - Correct',
-    'reviews.rating.2': '★★☆☆☆ - Moyen',
-    'reviews.rating.1': '★☆☆☆☆ - Mauvais',
 
 // ===== CONTACT =====
     'contact.title': 'Contact',
@@ -629,7 +646,92 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       alwaysOn: 'Toujours actif',
       "manage": "Gérer les cookies"
     },
+    'account.security.changeEmail.title': 'Changer mon email',
+    'account.security.changeEmail.hint': 'Un lien de confirmation sera envoyé sur le nouvel email.',
+    'account.security.changeEmail.newEmail': 'Nouvel email',
+    'account.security.changeEmail.currentPassword': 'Mot de passe actuel',
+    'account.security.changeEmail.submit': 'Envoyer le lien',
+
+
+    'nav.wishlist': 'Favoris',
+    'nav.admin': 'Admin',
+    'nav.adminPanel': 'Panneau Administrateur',
+    'cart.timer.prefix': 'Temps restant',
+    'cart.timer.expired': 'Expiré',
+
+    'wishlist.title': 'Ma wishlist',
+    'wishlist.subtitle': 'Retrouvez ici les pièces que vous avez ajoutées à vos favoris.',
+    'wishlist.loading': 'Chargement de votre wishlist...',
+    'wishlist.empty': 'Votre wishlist est vide.',
+    'wishlist.empty.backToShop': 'Voir les produits',
+    'wishlist.actions.clear': 'Vider ma wishlist',
+    'wishlist.actions.remove': 'Retirer',
+
+    // --- AJOUTS FR ---
+    // Dashboard
+    'admin.title': 'Tableau de bord administrateur',
+    'admin.subtitle': 'Gestion globale de la boutique Enoch Leathercraft.',
+    'admin.tabs.stats': 'Stats',
+    'admin.tabs.orders': 'Commandes',
+    'admin.tabs.returns': 'Retours',
+    'admin.tabs.products': 'Produits',
+    'admin.tabs.coupons': 'Coupons',
+    'admin.tabs.stock': 'Stock',
+    'admin.tabs.reviews': 'Avis',
+    'admin.tabs.contact': 'Contact',
+    'admin.tabs.users': 'Utilisateurs',
+    'admin.tabs.requests': 'Demandes',
+
+    // Stats
+    'admin.stats.revenue': 'Chiffre d’affaires',
+    'admin.stats.orders': 'Commandes',
+    'admin.stats.average': 'Panier moyen',
+
+    // Produits & Formulaire
+    'admin.products.new': '+ Nouveau',
+    'admin.products.edit': 'Modifier le produit',
+    'admin.products.create': 'Créer un produit',
+    'admin.products.sku': 'SKU',
+    'admin.products.segment': 'Segment',
+    'admin.products.type': 'Type',
+    'admin.products.weight': 'Poids (g)',
+    'admin.products.promo.activate': 'Activer une promo',
+    'admin.products.promo.disable': 'Désactiver la promo',
+
+    // Support / Contact
+    'admin.support.title': 'Contact / Support',
+    'admin.support.hint': 'Messages envoyés via la page “Contact”.',
+    'admin.support.filter.pending': 'Non traités',
+    'admin.support.filter.handled': 'Traités',
+    'admin.support.toggle.on': 'Marquer traité',
+    'admin.support.toggle.off': 'Marquer non traité',
+
+    // Utilisateurs & Demandes
+    'admin.users.title': 'Super Admin · Utilisateurs',
+    'admin.users.hint': 'Gérez les rôles et désactivez / restaurez les comptes.',
+    'admin.users.status.active': 'Actif',
+    'admin.users.status.deleted': 'Désactivé',
+    'admin.users.action.delete': 'Désactiver (soft delete)',
+    'admin.users.action.restore': 'Réactiver',
+    'admin.requests.title': 'Demandes & réactivations de compte',
+    'admin.requests.subtitle': 'Vue des demandes envoyées par les utilisateurs dont le compte est désactivé.',
+
+    // Boutons et labels génériques Admin
+    'admin.common.close': 'Fermer',
+    'admin.common.save': 'Enregistrer',
+    'admin.common.details': 'Détails',
+    'admin.orders.client': 'Client',
+
+    // Status des commandes (utilisés dans les selects et badges)
+    'admin.order.status.all': 'Tous les statuts',
+    'admin.order.status.pending': 'En attente',
+    'admin.order.status.paid': 'Payée',
+    'admin.order.status.shipped': 'Expédiée',
+    'admin.order.status.delivered': 'Livrée',
+    'admin.order.status.cancelled': 'Annulée',
+
   },
+
 
   en: {
 // ===== NAVBAR =====
@@ -677,6 +779,7 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
 
     'home.highlight.newSelection': 'NEW SELECTION',
     'home.highlight.cta': 'Discover now',
+    'home.hero.tag.durable': '🌍 Sustainable',
 
     // ===== HOMEPAGE / CATEGORIES =====
     'home.categories.title': 'Categories',
@@ -890,7 +993,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'product.addToCart': 'Add to cart',
 
     'product.detail.back': '← Back to products',
-    'product.detail.stockAvailablePrefix': 'Available stock:',
     'product.detail.stockAvailableSuffix': 'item(s).',
     'product.detail.outOfStock': 'Product currently out of stock.',
     'product.detail.addToCart': 'Add to cart',
@@ -926,13 +1028,18 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'products.filters.material.fabric': 'Fabric',
     'products.filters.material.mix': 'Mixed',
 
+
+    'products.filters.offers': 'Offers',
+    'products.filters.onSale': 'On Sale',
+    'products.filters.sort.priceAsc': 'Price: Low to High',
+    'products.filters.sort.priceDesc': 'Price: High to Low',
+    'products.section.promoTitle': 'Our Special Promotions',
     'products.filters.price': 'Price (€)',
     'products.filters.sort': 'Sort by',
     'products.filters.sort.default': 'Default',
-    'products.filters.sort.priceAsc': 'Price: Low to high',
-    'products.filters.sort.priceDesc': 'Price: High to low',
     'products.filters.sort.newest': 'Newest',
     'products.filters.reset': 'Reset',
+
 
     'products.section.title': 'Our products',
     'products.description.missing': 'Description coming soon.',
@@ -946,6 +1053,23 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
     'products.pagination.pageInfo': 'Page',
     'products.empty': 'No products available at the moment.',
 
+// Section Product Detail & Wishlist (EN)
+    'product.detail.stockAvailablePrefix': 'Stock:',
+    'product.wishlist.add': '🤍 Wishlist',
+    'product.wishlist.remove': '❤️ Remove',
+
+// Section Reviews (EN)
+    'reviews.rating.5': '★★★★★ Excellent',
+    'reviews.rating.4': '★★★★☆ Very good',
+    'reviews.rating.3': '★★★☆☆ Fair',
+    'reviews.rating.2': '★★☆☆☆ Poor',
+    'reviews.rating.1': '★☆☆☆☆ Bad',
+    'reviews.deletedByMod': '⛔ This review was removed by the moderation team.',
+    'reviews.deleteForever': 'Delete permanently',
+    'reviews.form.loginPrompt.link': 'Log in',
+    'reviews.form.loginPrompt.suffix': 'to leave a review.',
+    'reviews.countLabel': 'reviews',
+
     // ===== REVIEWS =====
     'reviews.title': 'Customer reviews',
     'reviews.noReviews': 'No reviews yet.',
@@ -957,7 +1081,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
 
     'reviews.header.title': 'Customer reviews',
     'reviews.basedOn': 'Based on',
-    'reviews.countLabel': 'reviews',
     'reviews.loading': 'Loading reviews...',
     'reviews.error': 'Could not load reviews at the moment.',
     'reviews.emptyState': 'Be the first to review this product!',
@@ -970,8 +1093,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
 
     'reviews.form.title': 'Share your review',
     'reviews.form.loginPrompt.prefix': 'To share your experience,',
-    'reviews.form.loginPrompt.link': 'log in',
-    'reviews.form.loginPrompt.suffix': '.',
     'reviews.form.ratingLabel': 'Your overall rating',
     'reviews.form.commentLabel': 'Your comment',
     'reviews.form.placeholder':
@@ -982,11 +1103,6 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       'An error occurred while submitting your review.',
     'reviews.form.success': 'Thank you, your review has been published.',
 
-    'reviews.rating.5': '★★★★★ - Excellent',
-    'reviews.rating.4': '★★★★☆ - Very good',
-    'reviews.rating.3': '★★★☆☆ - Fair',
-    'reviews.rating.2': '★★☆☆☆ - Poor',
-    'reviews.rating.1': '★☆☆☆☆ - Bad',
 
 // ===== CONTACT =====
     'contact.title': 'Contact',
@@ -1257,5 +1373,89 @@ export const TRANSLATIONS: Record<Lang, Record<string, any>> = {
       alwaysOn: 'Always on',
       "manage": "Manage cookies"
     },
+    'account.security.changeEmail.title': 'Change my email',
+    'account.security.changeEmail.hint': 'A confirmation link will be sent to the new email.',
+    'account.security.changeEmail.newEmail': 'New email',
+    'account.security.changeEmail.currentPassword': 'Current password',
+    'account.security.changeEmail.submit': 'Send link',
+
+    'nav.wishlist': 'Wishlist',
+    'nav.admin': 'Admin',
+    'nav.adminPanel': 'Admin Panel',
+    'cart.timer.prefix': 'Time left',
+    'cart.timer.expired': 'Expired',
+
+    'wishlist.title': 'My wishlist',
+    'wishlist.subtitle': 'Find here the pieces you have added to your favorites.',
+    'wishlist.loading': 'Loading your wishlist...',
+    'wishlist.empty': 'Your wishlist is empty.',
+    'wishlist.empty.backToShop': 'View products',
+    'wishlist.actions.clear': 'Clear my wishlist',
+    'wishlist.actions.remove': 'Remove',
+
+    // --- AJOUTS EN ---
+    // Dashboard
+    'admin.title': 'Admin Dashboard',
+    'admin.subtitle': 'Global management of Enoch Leathercraft shop.',
+    'admin.tabs.stats': 'Stats',
+    'admin.tabs.orders': 'Orders',
+    'admin.tabs.returns': 'Returns',
+    'admin.tabs.products': 'Products',
+    'admin.tabs.coupons': 'Coupons',
+    'admin.tabs.stock': 'Stock',
+    'admin.tabs.reviews': 'Reviews',
+    'admin.tabs.contact': 'Contact',
+    'admin.tabs.users': 'Users',
+    'admin.tabs.requests': 'Requests',
+
+    // Stats
+    'admin.stats.revenue': 'Total Revenue',
+    'admin.stats.orders': 'Orders',
+    'admin.stats.average': 'Average Order',
+
+    // Products & Form
+    'admin.products.new': '+ New Product',
+    'admin.products.edit': 'Edit product',
+    'admin.products.create': 'Create product',
+    'admin.products.sku': 'SKU',
+    'admin.products.segment': 'Segment',
+    'admin.products.type': 'Type',
+    'admin.products.weight': 'Weight (g)',
+    'admin.products.promo.activate': 'Activate promo',
+    'admin.products.promo.disable': 'Disable promo',
+
+    // Support / Contact
+    'admin.support.title': 'Contact / Support',
+    'admin.support.hint': 'Messages sent via the "Contact" page.',
+    'admin.support.filter.pending': 'Unresolved',
+    'admin.support.filter.handled': 'Resolved',
+    'admin.support.toggle.on': 'Mark as handled',
+    'admin.support.toggle.off': 'Mark as unhandled',
+
+    // Users & Requests
+    'admin.users.title': 'Super Admin · Users',
+    'admin.users.hint': 'Manage roles and disable / restore accounts.',
+    'admin.users.status.active': 'Active',
+    'admin.users.status.deleted': 'Disabled',
+    'admin.users.action.delete': 'Disable (soft delete)',
+    'admin.users.action.restore': 'Restore account',
+    'admin.requests.title': 'Requests & Account Reactivations',
+    'admin.requests.subtitle': 'View requests sent by users with disabled accounts.',
+
+    // Admin Generic buttons
+    'admin.common.close': 'Close',
+    'admin.common.save': 'Save',
+    'admin.common.details': 'Details',
+    'admin.orders.client': 'Customer',
+
+    // Order status
+    'admin.order.status.all': 'All Statuses',
+    'admin.order.status.pending': 'Pending',
+    'admin.order.status.paid': 'Paid',
+    'admin.order.status.shipped': 'Shipped',
+    'admin.order.status.delivered': 'Delivered',
+    'admin.order.status.cancelled': 'Cancelled',
+
   },
+
 };

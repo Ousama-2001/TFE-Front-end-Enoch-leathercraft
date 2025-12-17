@@ -1,6 +1,5 @@
 <div class="account">
 
-  <!-- HEADER -->
   <div class="account-header">
     <div>
       <h1>{{ 'account.title' | t }}</h1>
@@ -10,7 +9,6 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button [class.active]="activeTab === 'overview'" (click)="switchTab('overview')">
       {{ 'account.tabs.overview' | t }}
@@ -29,16 +27,11 @@
     </button>
   </div>
 
-  <!-- ALERTS -->
   <p *ngIf="error" class="alert error">{{ error }}</p>
   <p *ngIf="success" class="alert success">{{ success }}</p>
 
-  <!-- ========== OVERVIEW ========== -->
   <section *ngIf="activeTab === 'overview'" class="section">
-
     <div class="overview-grid">
-
-      <!-- Bloc identité -->
       <div class="card profile-card">
         <div class="avatar">
           {{ (profile.firstName || profile.lastName || profile.email || 'U').charAt(0) | uppercase }}
@@ -57,21 +50,18 @@
         </div>
       </div>
 
-      <!-- Stat: total commandes -->
       <div class="card stat-card">
         <span class="stat-label">{{ 'account.overview.totalOrders' | t }}</span>
         <span class="stat-value">{{ myOrders.length }}</span>
         <span class="stat-hint">{{ 'account.overview.sinceAccountCreation' | t }}</span>
       </div>
 
-      <!-- Stat: total dépensé -->
       <div class="card stat-card">
         <span class="stat-label">{{ 'account.overview.totalSpent' | t }}</span>
         <span class="stat-value">{{ totalSpent | currency:'EUR' }}</span>
         <span class="stat-hint">{{ 'account.overview.totalAmountHint' | t }}</span>
       </div>
 
-      <!-- Dernière commande -->
       <div class="card last-order-card" *ngIf="myOrders.length; else noOrder">
         <span class="stat-label">{{ 'account.overview.lastOrder' | t }}</span>
         <div class="last-order-main">
@@ -90,38 +80,31 @@
           <p class="muted">{{ 'account.orders.empty' | t }}</p>
         </div>
       </ng-template>
-
     </div>
   </section>
 
-  <!-- ========== PROFIL ========== -->
   <section *ngIf="activeTab === 'profile'" class="section">
     <div class="card">
       <h2>{{ 'account.profile.title' | t }}</h2>
-
       <form (ngSubmit)="saveProfile()">
         <div class="grid">
           <label>
             {{ 'account.profile.firstName' | t }}
             <input [(ngModel)]="profile.firstName" name="fn">
           </label>
-
           <label>
             {{ 'account.profile.lastName' | t }}
             <input [(ngModel)]="profile.lastName" name="ln">
           </label>
-
           <label>
             {{ 'account.profile.email' | t }}
             <input [value]="profile.email" disabled>
           </label>
-
           <label>
             {{ 'account.profile.phone' | t }}
             <input [(ngModel)]="profile.phone" name="ph">
           </label>
         </div>
-
         <button class="btn primary" [disabled]="savingProfile">
           {{ savingProfile ? ('account.profile.saving' | t) : ('account.profile.save' | t) }}
         </button>
@@ -129,34 +112,28 @@
     </div>
   </section>
 
-  <!-- ========== ADRESSE ========== -->
   <section *ngIf="activeTab === 'address'" class="section">
     <div class="card">
       <h2>{{ 'account.address.title' | t }}</h2>
-
       <form (ngSubmit)="saveProfile()">
         <div class="grid">
           <label>
             {{ 'account.address.address' | t }}
             <input [(ngModel)]="profile.addressLine1" name="ad">
           </label>
-
           <label>
             {{ 'account.address.postalCode' | t }}
             <input [(ngModel)]="profile.postalCode" name="pc">
           </label>
-
           <label>
             {{ 'account.address.city' | t }}
             <input [(ngModel)]="profile.city" name="ct">
           </label>
-
           <label>
             {{ 'account.address.country' | t }}
             <input [(ngModel)]="profile.country" name="co">
           </label>
         </div>
-
         <button class="btn primary" [disabled]="savingProfile">
           {{ savingProfile ? ('account.address.saving' | t) : ('account.address.save' | t) }}
         </button>
@@ -164,17 +141,13 @@
     </div>
   </section>
 
-  <!-- ========== COMMANDES ========== -->
   <section *ngIf="activeTab === 'orders'" class="section">
     <div class="card">
       <h2>{{ 'account.orders.title' | t }}</h2>
-
       <p *ngIf="loadingOrders">{{ 'account.orders.loading' | t }}</p>
-
       <p *ngIf="!loadingOrders && !myOrders.length" class="muted">
         {{ 'account.orders.empty' | t }}
       </p>
-
       <ul *ngIf="!loadingOrders && myOrders.length" class="mini-orders-list">
         <li *ngFor="let o of myOrders | slice:0:3">
           <div class="mini-order-main">
@@ -189,7 +162,6 @@
           </span>
         </li>
       </ul>
-
       <div class="orders-link-wrapper" *ngIf="myOrders.length">
         <a routerLink="/my-orders" class="btn primary">
           {{ 'account.orders.seeAll' | t }} →
@@ -198,71 +170,59 @@
     </div>
   </section>
 
-  <!-- ========== SÉCURITÉ ========== -->
   <section *ngIf="activeTab === 'security'" class="section security-section">
-
-    <!-- Changement mot de passe -->
     <div class="card">
       <h2>{{ 'account.security.title' | t }}</h2>
-
       <form (ngSubmit)="submitPasswordChange()">
         <label>
           {{ 'account.security.oldPassword' | t }}
           <input type="password" [(ngModel)]="oldPassword" name="old">
         </label>
-
         <label>
           {{ 'account.security.newPassword' | t }}
           <input type="password" [(ngModel)]="newPassword" name="new">
         </label>
-
         <label>
           {{ 'account.security.confirm' | t }}
           <input type="password" [(ngModel)]="confirmPassword" name="cnf">
         </label>
-
         <button class="btn primary" [disabled]="changingPassword">
           {{ changingPassword ? ('account.security.changing' | t) : ('account.security.change' | t) }}
         </button>
       </form>
     </div>
 
-    <!-- ✅ Changement email -->
     <div class="card">
-      <h2>Changer mon email</h2>
+      <h2>{{ 'account.security.changeEmail.title' | t }}</h2>
       <p class="muted">
-        Un lien de confirmation sera envoyé sur le nouvel email.
+        {{ 'account.security.changeEmail.hint' | t }}
       </p>
 
       <form (ngSubmit)="submitEmailChangeRequest()">
         <label>
-          Nouvel email
+          {{ 'account.security.changeEmail.newEmail' | t }}
           <input type="email" [(ngModel)]="newEmail" name="newEmail" placeholder="nouvel@email.com">
         </label>
 
         <label>
-          Mot de passe actuel
+          {{ 'account.security.changeEmail.currentPassword' | t }}
           <input type="password" [(ngModel)]="emailCurrentPassword" name="emailPwd" placeholder="••••••••">
         </label>
 
         <button class="btn primary" [disabled]="requestingEmailChange">
-          {{ requestingEmailChange ? 'Envoi...' : 'Envoyer le lien' }}
+          {{ requestingEmailChange ? ('account.security.changing' | t) : ('account.security.changeEmail.submit' | t) }}
         </button>
 
         <p *ngIf="emailChangeInfo" class="alert success">{{ emailChangeInfo }}</p>
       </form>
     </div>
 
-    <!-- Danger zone -->
     <div class="card danger-card">
       <h2>{{ 'account.security.dangerZone' | t }}</h2>
       <p class="muted">{{ 'account.security.deleteHint' | t }}</p>
-
       <button class="btn danger" (click)="deleteAccount()">
         {{ 'account.security.deleteAccount' | t }}
       </button>
     </div>
-
   </section>
-
 </div>
